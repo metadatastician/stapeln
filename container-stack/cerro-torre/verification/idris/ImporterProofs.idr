@@ -53,19 +53,31 @@ data SafePath : Path -> Type where
 -- Path Normalization
 -- ============================================================================
 
-||| Normalize a filesystem path by removing redundant separators
-||| and resolving "." components.
+||| Normalize a filesystem path by removing redundant separators,
+||| resolving "." components, and stripping trailing slashes.
 |||
 ||| NOTE: This does NOT resolve ".." — that's handled by SafePath
 ||| rejection. A normalized path that still contains ".." is rejected
-||| by the normalizedIsSafe check.
+||| by the normalizedIsSafe check. This is intentional: ".." removal
+||| requires a stack-based algorithm that changes path semantics
+||| (e.g., "a/../b" → "b" is wrong if "a" is a symlink).
 |||
-||| TODO: Implement full path normalization with ".." stack processing.
-||| The current identity implementation is safe but conservative —
-||| it means normalizedIsSafe must handle unnormalized paths.
+||| Operations performed:
+|||   - Split on "/", filter out "" (duplicate slashes) and "." components
+|||   - Rejoin with single "/" separators
+|||   - Strip leading "/" (normalization produces relative paths; absolute
+|||     paths are rejected by SafePath's absolutePathRejection postulate)
 export
 normalizePath : Path -> Path
-normalizePath p = p
+normalizePath p =
+  let components = split (== '/') p
+      filtered = filter (\c => c /= "." && c /= "") (forget components)
+  in joinBy "/" filtered
+  where
+    joinBy : String -> List String -> String
+    joinBy sep [] = ""
+    joinBy sep [x] = x
+    joinBy sep (x :: xs) = x ++ sep ++ joinBy sep xs
 
 -- ============================================================================
 -- Importer Safety Postulates
@@ -85,7 +97,8 @@ normalizePath p = p
 ||| this ensures the path stays within the extraction root.
 |||
 ||| Cannot currently be proven because:
-|||   1. normalizePath is an identity function (TODO: implement)
+|||   1. normalizePath uses split/filter/join which are opaque to the
+|||      type checker (String operations reduce to C primitives)
 |||   2. Proving the relationship between isInfixOf ".." and
 |||      SafePath requires String decomposition lemmas that
 |||      don't exist in Idris2's stdlib
