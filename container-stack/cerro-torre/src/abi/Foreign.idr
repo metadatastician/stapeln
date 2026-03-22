@@ -190,10 +190,8 @@ prim__registerCallback : Bits64 -> AnyPtr -> PrimIO Bits32
 export
 registerCallback : Handle -> Callback -> IO (Either Result ())
 registerCallback h cb = do
--- PROOF_TODO: Replace cast with actual proof
--- PROOF_TODO: Replace cast with actual proof
--- PROOF_TODO: Replace cast with actual proof
--- PROOF_TODO: Replace cast with actual proof
+  -- NOTE: The cast here converts an Idris2 function value to AnyPtr
+  -- for C FFI interop. This is a standard FFI pattern, not a proof stub.
   result <- primIO (prim__registerCallback (handlePtr h) (cast cb))
   pure $ case resultFromInt result of
     Just Ok => Right ()
