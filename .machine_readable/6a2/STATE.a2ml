@@ -19,8 +19,9 @@ frontend-views = 9
 frontend-errors = 0
 frontend-warnings = 0
 backend-api-verified = true
-database-running = true
-database-engine = "postgresql-17-alpine-podman"
+database-running = false
+database-engine = "verisimdb (port 8093, to be migrated from postgresql)"
+database-decision = "Full VeriSimDB, no PostgreSQL — dogfooding decision 2026-03-23"
 end-to-end-verified = true
 
 [recent-changes]
@@ -41,11 +42,13 @@ key-additions = [
 ]
 
 [blockers]
+verisimdb-migration = "Replace Ecto/PostgreSQL with VeriSimDB for all data — dogfooding"
 auth-ui = "JWT backend exists but no login screen"
 attack-surface-analyzer = "Documented in ROADMAP, 0% built"
 websocket = "Socket.res scaffolded, no live channel events"
 
 [next-actions]
+priority-0 = "Migrate persistence from PostgreSQL to VeriSimDB (port 8093)"
 priority-1 = "Build AttackSurfaceAnalyzer.res (MUST-2)"
 priority-2 = "Auth login screen (MUST-9)"
 priority-3 = "Browser visual testing (BoJ browser cartridge needed)"

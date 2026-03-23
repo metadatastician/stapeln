@@ -39,8 +39,17 @@ A reasonably IT-capable 12-year-old can help their parents build a secure contai
 - **DOM‑mounter track:** Extracted to `/var/mnt/eclipse/repos/stapeln-dom-mounter`.
 - This work is not on the critical path for the container‑hater MVP.
 
+## Architectural Decision: VeriSimDB (2026-03-23)
+
+**All Stapeln data will use VeriSimDB, not PostgreSQL.** Dogfooding decision.
+- Dedicated instance: port 8093, volume `stapeln-verisimdb-data`
+- Existing `Stapeln.VeriSimDB.Client` module to be extended for stack CRUD
+- Ecto/DbStore/PostgreSQL layer to be removed (was a conventional shortcut)
+- The PostgreSQL container has been stopped; migrations were verified working but are superseded
+
 ## What Is Not Implemented Yet
 
+- **VeriSimDB as primary store:** Client exists for audit logging; needs extending for stack/user/settings CRUD
 - **Backend runtime orchestration API:** Not implemented in `stapeln/backend` by design; runtime operations belong to Svalinn/Vordr.
 - **Validation Engine Depth:** 12 check categories returning real findings; not yet parity with full security roadmap.
 - **Formal Verification Layers:** Idris2 types are now present for ABI contracts, but full proof pipeline is not wired.
