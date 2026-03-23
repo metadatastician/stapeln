@@ -1,6 +1,6 @@
 <!-- SPDX-License-Identifier: PMPL-1.0-or-later -->
 <!-- TOPOLOGY.md — Project architecture map and completion dashboard -->
-<!-- Last updated: 2026-03-10 -->
+<!-- Last updated: 2026-03-23 -->
 
 # stapeln — Project Topology
 
@@ -16,7 +16,7 @@
                         +-----------------------------------------+
                         |         FRONTEND (RESCRIPT TEA)         |
                         |  +-----------+  +-------------------+  |
-                        |  | 8 Views   |  | Socket.res        |  |
+                        |  | 9 Views   |  | Socket.res        |  |
                         |  | (Tabbed)  |  | (WebSocket)       |  |
                         |  +-----+-----+  +--------+----------+  |
                         |        |    ApiClient     |             |
@@ -76,42 +76,45 @@
 ```
 COMPONENT                          STATUS              NOTES
 ---------------------------------  ------------------  ---------------------------------
-FRONTEND
-  Frontend UI (8 views)            ########..  80%     Views exist; dark mode hardcoded, no durable state sync
-  Frontend-Backend Wiring          ######....  60%     REST wired; WS scaffolded but no live events
+FRONTEND (51 ReScript modules, 0 errors, 0 warnings)
+  Frontend UI (9 views)            #########.  92%     9 tabs inc. Pipeline Designer; dark mode, undo/redo, auto-save
+  Frontend-Backend Wiring          #########.  90%     REST proxy wired; security/gap views call real API; auto-trigger
+  Pipeline Designer (NEW)          #########.  90%     3-panel node-graph: canvas, palette, output; 6 templates
   Lago Grey Designer               #######...  70%     Catalog + editor; export not fully wired
-  Drag-and-Drop Canvas             #######...  70%     Snap-to-grid present; undo/delete partial
+  Drag-and-Drop Canvas             ########..  85%     Snap-to-grid, full undo/redo stack (50-depth), bezier connections
+  Conversational Errors (NEW)      #########.  90%     UX Manifesto Rule 4; [Fix It] buttons on all API error paths
   WebSocket Integration            #####.....  50%     Socket.res exists; no channel push/receive logic
+  URL Routing (NEW)                ##########  100%    AppRouter: URL sync, back/forward, 404 page
 
 BACKEND & API
-  Phoenix API (REST+GQL+WS)        ########..  80%     CRUD + validation live; some endpoints thin
-  Auth (JWT + Plug)                ######....  60%     Module exists; no session/token refresh/revoke
-  Settings Persistence             #######...  70%     GenServer store; no DB persistence yet
+  Phoenix API (REST+GQL+WS)        #########.  92%     CRUD + validation + security-scan + gap-analysis all verified
+  Auth (JWT + Plug)                ######....  60%     Module exists; no session/token refresh/revoke; no login UI
+  Settings Persistence             ########..  85%     DbStore auto-switches GenServer↔PostgreSQL
   Firewall Config                  #####.....  50%     Schema present; nftables integration absent
-  Database Integration             #####.....  50%     Ecto schemas + conditional Repo; no migrations
+  Database Integration             ##########  100%    PostgreSQL via Podman; migrations run; CRUD verified
   Codegen Engine                   ########..  80%     Containerfile + compose output works
 
 SECURITY & ANALYSIS
-  Security Inspector               #######...  70%     Scanner module exists; miniKanren rules basic
-  Gap Analysis                     #######...  70%     Analyzer module exists; rule coverage limited
-  Security Reasoning (miniKanren)  ######....  60%     Core module; small rule set, not deeply tested
+  Security Inspector               #########.  90%     Real vulns from backend; miniKanren + checks + ports; empty state UX
+  Gap Analysis                     #########.  90%     Real gaps from backend; 8 checks; fix commands; empty state UX
+  Security Reasoning (miniKanren)  #######...  70%     Port analysis + db vulns working; KeyError fixed
   Post-Quantum Crypto              ###.......  30%     Module scaffolded; no real XMSS implementation
-  Stack Validator                  ########..  80%     12 check categories defined; some stub-level
+  Stack Validator                  #########.  90%     12 checks verified returning real findings with scores
 
 SIMULATION & EXPORT
-  Simulation Mode                  #######...  70%     Packet flow UI; no real backend simulation
-  Export / Import                  #######...  70%     JSON + compose export; K8s/Helm templates only
+  Simulation Mode                  #######...  70%     Packet flow UI fully renders; no real backend simulation
+  Export / Import                  ########..  80%     JSON + compose; working file picker→TEA dispatch; error recovery
 
 ABI / FFI
   Idris2 ABI (Formal Proofs)       #########.  90%     8 genuine proofs, no believe_me, 5 postulates
-  Zig FFI                          ########..  80%     CRUD + validate + dispatch; CLI bridge partial
+  Zig FFI                          ########..  80%     CRUD + validate + dispatch; real SHA-256 + Ed25519
 
 DATA & DOCS
   VeriSimDB Integration            ######....  60%     JSONL fallback + remote client; no query UI
-  Documentation                    ######....  60%     Extensive docs; many claims aspirational
+  Documentation                    ########..  80%     STATUS.md truth-aligned; TOPOLOGY.md updated 2026-03-23
 
 ---------------------------------------------------------------------------
-OVERALL:                           #######...  ~65%    Solid MVP skeleton; many features partial
+OVERALL:                           ########..  ~82%    End-to-end verified: frontend→proxy→backend→PostgreSQL
 ```
 
 ## Key Dependencies

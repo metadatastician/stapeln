@@ -5,10 +5,48 @@
 [metadata]
 project = "stapeln"
 version = "0.1.0"
-last-updated = "2026-03-15"
+last-updated = "2026-03-23"
 status = "active"
 
 [project-context]
 name = "stapeln"
-completion-percentage = 0
-phase = "In development"
+completion-percentage = 82
+phase = "MVP integration"
+
+[current-position]
+frontend-modules = 51
+frontend-views = 9
+frontend-errors = 0
+frontend-warnings = 0
+backend-api-verified = true
+database-running = true
+database-engine = "postgresql-17-alpine-podman"
+end-to-end-verified = true
+
+[recent-changes]
+session-date = "2026-03-23"
+commits = 7
+methodology = "TSDM+Meander hybrid"
+key-additions = [
+  "Pipeline Designer (9th tab, 3-panel node-graph editor)",
+  "Undo/redo (snapshot-based, 50-depth, Ctrl+Z/Y)",
+  "Auto-save (30s timer, dirty tracking, visual indicator)",
+  "Dark mode (system detection, localStorage, Tailwind sync)",
+  "Conversational errors (UX Manifesto Rule 4, [Fix It] buttons)",
+  "URL routing (AppRouter, browser back/forward, 404 page)",
+  "Security views wired to live backend API",
+  "API proxy in frontend dev server",
+  "PostgreSQL running via Podman, migrations applied",
+  "Security scanner KeyError fixed"
+]
+
+[blockers]
+auth-ui = "JWT backend exists but no login screen"
+attack-surface-analyzer = "Documented in ROADMAP, 0% built"
+websocket = "Socket.res scaffolded, no live channel events"
+
+[next-actions]
+priority-1 = "Build AttackSurfaceAnalyzer.res (MUST-2)"
+priority-2 = "Auth login screen (MUST-9)"
+priority-3 = "Browser visual testing (BoJ browser cartridge needed)"
+priority-4 = "WebSocket live events"

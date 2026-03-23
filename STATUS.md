@@ -27,13 +27,12 @@ A reasonably IT-capable 12-year-old can help their parents build a secure contai
 
 ## What Is Partial or Scaffolded
 
-- **Security views display sample data:** SecurityInspector and GapAnalysis render hardcoded demo data, not live validation results from the backend.
 - **WebSocket integration:** Socket.res exists but no live channel push/receive logic.
-- **Auth:** JWT + Plug module present but no token refresh, revocation, or session management.
-- **Firewall:** Schema exists but no nftables integration.
-- **Database:** Ecto schemas and conditional Repo present but no migrations.
+- **Auth:** JWT + Plug module present but no token refresh, revocation, or session management. No login UI.
+- **Firewall:** Schema present but no nftables integration.
 - **Post-Quantum Crypto:** Module scaffolded; no real XMSS implementation.
 - **Simulation:** Packet flow UI fully renders with animation and stats but no real backend simulation engine.
+- **AttackSurfaceAnalyzer:** Documented in ROADMAP but not yet built (0%).
 
 ## Preserved Future Work
 
@@ -43,8 +42,7 @@ A reasonably IT-capable 12-year-old can help their parents build a secure contai
 ## What Is Not Implemented Yet
 
 - **Backend runtime orchestration API:** Not implemented in `stapeln/backend` by design; runtime operations belong to Svalinn/Vordr.
-- **Validation Engine Depth:** Rules are basic MVP checks; not yet parity with full security roadmap.
-- **Persistence:** No durable save/load outside ad-hoc import/export.
+- **Validation Engine Depth:** 12 check categories returning real findings; not yet parity with full security roadmap.
 - **Formal Verification Layers:** Idris2 types are now present for ABI contracts, but full proof pipeline is not wired.
 
 ## Known Inconsistencies

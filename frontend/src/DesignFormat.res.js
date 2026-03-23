@@ -198,7 +198,12 @@ function modelFromJson(json) {
       gapLoading: Model.initialModel.gapLoading,
       currentStackId: Model.initialModel.currentStackId,
       settings: Model.initialModel.settings,
-      wsState: Model.initialModel.wsState
+      wsState: Model.initialModel.wsState,
+      undoStack: Model.initialModel.undoStack,
+      redoStack: Model.initialModel.redoStack,
+      isDirty: Model.initialModel.isDirty,
+      lastSavedAt: Model.initialModel.lastSavedAt,
+      activeErrors: Model.initialModel.activeErrors
     };
   }
 }
