@@ -246,7 +246,7 @@ module PaletteItemView = {
                  focus:outline-none focus:ring-2 focus:ring-blue-500"
       onClick={_ => onAdd(item)}
       draggable=true
-      onDragStart={e => {
+      onDragStart={_e => {
         // Encode the node kind label so the canvas can decode on drop
         let _label = item.label
         ignore(%raw(`e.dataTransfer.setData("text/plain", _label)`))

@@ -278,6 +278,11 @@ let make = () => {
           | NetworkView =>
             TopologyView.view(state.model, state.isDark, stackMsg => dispatch(StackMsg(stackMsg)))
           | StackView => StackView.view(state.model)
+          | PipelineView =>
+            <PipelineDesigner
+              state={PipelineModel.initialState()}
+              dispatch={_pMsg => ()}
+            />
           | LagoGreyView => <LagoGreyImageDesigner />
           | PortConfigView =>
             <PortConfigPanel

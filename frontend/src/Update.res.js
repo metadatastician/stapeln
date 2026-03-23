@@ -2,7 +2,6 @@
 
 import * as Model from "./Model.res.js";
 import * as Export from "./Export.res.js";
-import * as Import from "./Import.res.js";
 import * as Belt_Array from "@rescript/runtime/lib/es6/Belt_Array.js";
 import * as GapAnalysis from "./GapAnalysis.res.js";
 import * as Primitive_option from "@rescript/runtime/lib/es6/Primitive_option.js";
@@ -547,11 +546,6 @@ function update(model, msg) {
         Export.exportToHelmChart(model);
         return model;
       case "TriggerImportDesign" :
-        Import.triggerImport(importedModel => {
-          console.log("Design imported successfully:", importedModel);
-        }, error => {
-          console.error("Import failed:", error);
-        });
         return model;
       case "SaveStack" :
         console.log("Saving stack to backend...");

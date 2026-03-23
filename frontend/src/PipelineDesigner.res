@@ -172,8 +172,8 @@ module StatusBar = {
         {(Int.toString(connCount) ++ " connection" ++ (connCount === 1 ? "" : "s"))->React.string}
       </span>
       <span className="text-gray-600"> {"|"->React.string} </span>
-      <span className={snd(validationStatus)} ariaLabel={"Validation: " ++ fst(validationStatus)}>
-        {fst(validationStatus)->React.string}
+      <span className={Pair.second(validationStatus)} ariaLabel={"Validation: " ++ Pair.first(validationStatus)}>
+        {Pair.first(validationStatus)->React.string}
       </span>
 
       // Spacer
@@ -223,153 +223,6 @@ module StatusBar = {
 }
 
 // ---------------------------------------------------------------------------
-// Center canvas placeholder
-// ---------------------------------------------------------------------------
-
-// The canvas renders pipeline nodes and edges. This placeholder provides
-// the flex container; a full graph renderer (SVG or Canvas) would be
-// mounted here once the node-graph engine is implemented.
-module CanvasPlaceholder = {
-  @react.component
-  let make = (
-    ~state: pipelineDesignerState,
-    ~dispatch: pipelineMsg => unit,
-  ) => {
-    let nodeCount = Array.length(state.pipeline.nodes)
-
-    <div
-      className="flex-1 relative bg-gray-950 overflow-hidden"
-      role="application"
-      ariaLabel="Pipeline canvas"
-      ariaRoledescription="Node graph editor"
-      tabIndex={0}
-      onDragOver={e => ReactEvent.Mouse.preventDefault(e)}
-      onDrop={e => {
-        ReactEvent.Mouse.preventDefault(e)
-        // Read the node type label from the drag transfer
-        let _label: string = %raw(`e.dataTransfer.getData("text/plain")`)
-        // Calculate drop position relative to the canvas
-        let rect: {..} = %raw(`e.currentTarget.getBoundingClientRect()`)
-        let x = Float.fromInt(ReactEvent.Mouse.clientX(e)) -. rect["left"]
-        let y = Float.fromInt(ReactEvent.Mouse.clientY(e)) -. rect["top"]
-        // Default to a Source node; a real implementation would decode _label
-        dispatch(AddNode(Source({imageRef: "", tag: "latest"}), {x, y}))
-      }}
-    >
-      // Grid background pattern
-      <div
-        className="absolute inset-0 opacity-10"
-        style={{
-          backgroundImage: "radial-gradient(circle, #555 1px, transparent 1px)",
-          backgroundSize: "24px 24px",
-        }}
-      />
-
-      // Render nodes
-      {nodeCount === 0
-        ? // Empty state
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
-            <div className="text-4xl mb-4"> {"+"->React.string} </div>
-            <p className="text-sm mb-1">
-              {"Drag components from the palette"->React.string}
-            </p>
-            <p className="text-xs text-gray-600">
-              {"or select a template to get started"->React.string}
-            </p>
-          </div>
-        : // Render each node as a positioned card
-          state.pipeline.nodes
-          ->Array.mapWithIndex((idx, node) => {
-            let isSelected = state.pipeline.selectedNode === Some(node.id)
-            <div
-              key={node.id ++ Int.toString(idx)}
-              className={
-                "absolute rounded-lg shadow-lg border-2 cursor-move select-none "
-                ++ "transition-shadow "
-                ++ (isSelected
-                  ? "border-blue-400 shadow-blue-500/30 ring-2 ring-blue-400/50"
-                  : "border-gray-600 hover:border-gray-400")
-              }
-              style={{
-                left: Float.toString(node.x) ++ "px",
-                top: Float.toString(node.y) ++ "px",
-                width: Float.toString(node.width) ++ "px",
-                minHeight: Float.toString(node.height) ++ "px",
-                transform: "scale(" ++ Float.toString(state.pipeline.zoom) ++ ")",
-                transformOrigin: "top left",
-              }}
-              onClick={_ => dispatch(SelectNode(Some(node.id)))}
-              role="button"
-              ariaLabel={node.label ++ " (" ++ nodeKindToString(node.kind) ++ ")"}
-              tabIndex={0}
-              onKeyDown={e => {
-                if ReactEvent.Keyboard.key(e) === "Delete" || ReactEvent.Keyboard.key(e) === "Backspace" {
-                  dispatch(RemoveNode(node.id))
-                }
-              }}
-            >
-              // Node header
-              <div
-                className="flex items-center gap-2 px-3 py-2 rounded-t-lg text-white text-sm font-medium"
-                style={{backgroundColor: nodeColor(node.kind)}}
-              >
-                <span> {nodeIcon(node.kind)->React.string} </span>
-                <span className="truncate"> {node.label->React.string} </span>
-              </div>
-              // Node body
-              <div className="px-3 py-2 bg-gray-800 rounded-b-lg">
-                <div className="text-xs text-gray-400">
-                  {nodeKindToString(node.kind)->React.string}
-                </div>
-                // Show validation errors if any
-                {Array.length(node.validationErrors) > 0
-                  ? <div className="mt-1 text-xs text-red-400">
-                      {Array.getUnsafe(node.validationErrors, 0)->React.string}
-                    </div>
-                  : React.null}
-              </div>
-            </div>
-          })
-          ->React.array}
-
-      // Render connections as SVG lines
-      {Array.length(state.pipeline.connections) > 0
-        ? <svg
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            style={{zIndex: "0"}}
-          >
-            {state.pipeline.connections
-            ->Array.mapWithIndex((idx, conn) => {
-              // Look up source and target node positions
-              let fromNode = Belt.Array.getBy(state.pipeline.nodes, n => n.id === conn.fromNode)
-              let toNode = Belt.Array.getBy(state.pipeline.nodes, n => n.id === conn.toNode)
-              switch (fromNode, toNode) {
-              | (Some(from), Some(to_)) =>
-                let x1 = Float.toString(from.x +. from.width /. 2.0)
-                let y1 = Float.toString(from.y +. from.height)
-                let x2 = Float.toString(to_.x +. to_.width /. 2.0)
-                let y2 = Float.toString(to_.y)
-                <line
-                  key={conn.id ++ Int.toString(idx)}
-                  x1
-                  y1
-                  x2
-                  y2
-                  stroke="#555"
-                  strokeWidth="2"
-                  strokeDasharray="4"
-                />
-              | _ => React.null
-              }
-            })
-            ->React.array}
-          </svg>
-        : React.null}
-    </div>
-  }
-}
-
-// ---------------------------------------------------------------------------
 // Main PipelineDesigner component
 // ---------------------------------------------------------------------------
 
@@ -380,7 +233,7 @@ let make = (
 ): React.element => {
   // Keyboard shortcut handler
   React.useEffect0(() => {
-    let handler = (e: {..}) => {
+    let _handler = (e: {..}) => {
       let key: string = e["key"]
       let ctrlKey: bool = e["ctrlKey"]
       let metaKey: bool = e["metaKey"]
@@ -394,10 +247,10 @@ let make = (
         dispatch(RunValidation)
       }
     }
-    let _: unit = %raw(`document.addEventListener("keydown", handler)`)
+    let _: unit = %raw(`document.addEventListener("keydown", _handler)`)
     Some(
       () => {
-        let _: unit = %raw(`document.removeEventListener("keydown", handler)`)
+        let _: unit = %raw(`document.removeEventListener("keydown", _handler)`)
       },
     )
   })
@@ -419,8 +272,8 @@ let make = (
       // Left panel - Palette
       <PipelinePalette.make state dispatch />
 
-      // Center - Canvas
-      <CanvasPlaceholder state dispatch />
+      // Center - Canvas (full SVG node-graph with bezier connections, minimap, context menu)
+      <PipelineCanvas pipeline={state.pipeline} dispatch />
 
       // Right panel - Output
       <PipelineOutput.make state dispatch />

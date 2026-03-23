@@ -639,19 +639,7 @@ let update = (model: model, msg: msg): model => {
 
   // Import
   | TriggerImportDesign => {
-      // Trigger file picker (side effect)
-      Import.triggerImport(
-        importedModel => {
-          // Log success - actual model update would need to be handled via Tea.Cmd
-          Console.log2("Design imported successfully:", importedModel)
-          ()
-        },
-        error => {
-          // Log error - actual error handling would need to be handled via Tea.Cmd
-          Console.error2("Import failed:", error)
-          ()
-        },
-      )
+      // Side effect handled in App.res (dispatch has access to ImportDesignSuccess/Error)
       model
     }
 

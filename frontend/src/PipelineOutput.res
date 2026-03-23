@@ -67,7 +67,7 @@ let highlightLine = (line: string): React.element => {
     let firstSpace = String.indexOf(trimmed, " ")
     if firstSpace > 0 {
       let keyword = String.slice(trimmed, ~start=0, ~end=firstSpace)
-      let rest = String.sliceToEnd(trimmed, ~start=firstSpace)
+      let rest = String.slice(trimmed, ~start=firstSpace, ~end=String.length(trimmed))
       <>
         <span className="text-blue-400 font-bold"> {keyword->React.string} </span>
         <span className="text-gray-200"> {rest->React.string} </span>

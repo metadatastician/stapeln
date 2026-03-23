@@ -657,14 +657,14 @@ let make = (
   ~dispatch: PipelineModel.pipelineMsg => unit,
 ): React.element => {
   // Local state for canvas dimensions (measured from container)
-  let containerRef: React.ref<Js.nullable<Dom.element>> = React.useRef(Js.Nullable.null)
+  let containerRef: React.ref<Nullable.t<Dom.element>> = React.useRef(Nullable.null)
   let (canvasSize, setCanvasSize) = React.useState(() => (1200.0, 800.0))
   let (contextMenu, setContextMenu) = React.useState(() => None)
 
   // Measure canvas container on mount and window resize
   React.useEffect0(() => {
     let measure = () => {
-      switch Js.Nullable.toOption(containerRef.current) {
+      switch Nullable.toOption(containerRef.current) {
       | Some(el) => {
           let rect = getBoundingClientRect(el)
           setCanvasSize(_ => (rect.width, rect.height))

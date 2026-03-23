@@ -8,6 +8,8 @@ function routeToPath(route) {
       return "/";
     case "StackView" :
       return "/stack";
+    case "PipelineView" :
+      return "/pipeline";
     case "LagoGreyView" :
       return "/lago-grey";
     case "PortConfigView" :
@@ -33,6 +35,8 @@ function pathToRoute(path) {
       return "GapAnalysisView";
     case "/lago-grey" :
       return "LagoGreyView";
+    case "/pipeline" :
+      return "PipelineView";
     case "/ports" :
       return "PortConfigView";
     case "/security" :
@@ -87,6 +91,12 @@ let navigationItems = [
     label: "Stack",
     icon: "📦",
     description: "Vertical stack view"
+  },
+  {
+    route: "PipelineView",
+    label: "Pipeline",
+    icon: "🔧",
+    description: "Assembly pipeline designer"
   },
   {
     route: "LagoGreyView",

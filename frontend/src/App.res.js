@@ -2,10 +2,12 @@
 
 import * as Model from "./Model.res.js";
 import * as React from "react";
+import * as Import from "./Import.res.js";
 import * as Socket from "./Socket.res.js";
 import * as Update from "./Update.res.js";
 import * as Belt_Int from "@rescript/runtime/lib/es6/Belt_Int.js";
 import * as ApiClient from "./ApiClient.res.js";
+import * as AppRouter from "./AppRouter.res.js";
 import * as StackView from "./StackView.res.js";
 import * as Belt_Array from "@rescript/runtime/lib/es6/Belt_Array.js";
 import * as IdrisBadge from "./IdrisBadge.res.js";
@@ -24,10 +26,12 @@ import * as SecurityInspector from "./SecurityInspector.res.js";
 import * as JsxRuntime from "react/jsx-runtime";
 import * as LagoGreyImageDesigner from "./LagoGreyImageDesigner.res.js";
 
+let initialAppState_currentPage = AppRouter.getCurrentRoute();
+
 let initialAppState_pipelineDesigner = PipelineModel.initialState();
 
 let initialAppState = {
-  currentPage: "NetworkView",
+  currentPage: initialAppState_currentPage,
   model: Model.initialModel,
   pipelineDesigner: initialAppState_pipelineDesigner,
   isDark: true
@@ -61,6 +65,14 @@ function App(props) {
     }));
     if (typeof msg !== "object") {
       switch (msg) {
+        case "TriggerImportDesign" :
+          return Import.triggerImport(importedModel => dispatch({
+            TAG: "ImportDesignSuccess",
+            _0: importedModel
+          }), error => dispatch({
+            TAG: "ImportDesignError",
+            _0: error
+          }));
         case "SaveStack" :
           let body = serializeStack(newModel);
           ApiClient.saveStack(body).then(result => {
@@ -256,12 +268,23 @@ function App(props) {
       });
     }
   };
-  let switchPage = page => setState(prev => ({
-    currentPage: page,
-    model: prev.model,
-    pipelineDesigner: prev.pipelineDesigner,
-    isDark: prev.isDark
-  }));
+  let switchPage = page => {
+    AppRouter.navigateTo(page);
+    setState(prev => ({
+      currentPage: page,
+      model: prev.model,
+      pipelineDesigner: prev.pipelineDesigner,
+      isDark: prev.isDark
+    }));
+  };
+  React.useEffect(() => {
+    AppRouter.onRouteChange(route => setState(prev => ({
+      currentPage: route,
+      model: prev.model,
+      pipelineDesigner: prev.pipelineDesigner,
+      isDark: prev.isDark
+    })));
+  }, []);
   let match$1 = state.currentPage;
   let tmp;
   switch (match$1) {
@@ -328,6 +351,37 @@ function App(props) {
             isDark: newSettings.theme === "dark"
           };
         })
+      });
+      break;
+    case "NotFound" :
+      tmp = JsxRuntime.jsxs("div", {
+        children: [
+          JsxRuntime.jsx("h1", {
+            children: "404",
+            style: {
+              color: "#64b5f6",
+              fontSize: "3rem",
+              marginBottom: "1rem"
+            }
+          }),
+          JsxRuntime.jsx("p", {
+            children: "Page not found",
+            style: {
+              color: "#8892a6",
+              marginBottom: "2rem"
+            }
+          }),
+          JsxRuntime.jsx("button", {
+            children: "Go to Network View",
+            className: "action-btn",
+            onClick: param => switchPage("NetworkView")
+          })
+        ],
+        className: "page",
+        style: {
+          paddingTop: "4rem",
+          textAlign: "center"
+        }
       });
       break;
   }

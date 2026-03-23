@@ -50,7 +50,7 @@ function highlightLine(line) {
     });
   }
   let keyword = trimmed.slice(0, firstSpace);
-  let rest = trimmed.slice(firstSpace);
+  let rest = trimmed.slice(firstSpace, trimmed.length);
   return JsxRuntime.jsxs(JsxRuntime.Fragment, {
     children: [
       JsxRuntime.jsx("span", {

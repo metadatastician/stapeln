@@ -14,9 +14,11 @@ import * as Navigation from "./Navigation.res.js";
 import * as GapAnalysis from "./GapAnalysis.res.js";
 import * as TopologyView from "./TopologyView.res.js";
 import * as ErrorBoundary from "./ErrorBoundary.res.js";
+import * as PipelineModel from "./PipelineModel.res.js";
 import * as SimulationMode from "./SimulationMode.res.js";
 import * as HealthIndicator from "./HealthIndicator.res.js";
 import * as PortConfigPanel from "./PortConfigPanel.res.js";
+import * as PipelineDesigner from "./PipelineDesigner.res.js";
 import * as SecurityInspector from "./SecurityInspector.res.js";
 import * as JsxRuntime from "react/jsx-runtime";
 import * as LagoGreyImageDesigner from "./LagoGreyImageDesigner.res.js";
@@ -322,6 +324,12 @@ function AppIntegrated(props) {
       break;
     case "StackView" :
       tmp = StackView.view(state.model, undefined);
+      break;
+    case "PipelineView" :
+      tmp = JsxRuntime.jsx(PipelineDesigner.make, {
+        state: PipelineModel.initialState(),
+        dispatch: _pMsg => {}
+      });
       break;
     case "LagoGreyView" :
       tmp = JsxRuntime.jsx(LagoGreyImageDesigner.make, {});

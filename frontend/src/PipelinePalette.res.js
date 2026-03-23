@@ -401,7 +401,7 @@ function PipelinePalette$PaletteItemView(props) {
     className: "flex items-start gap-2 w-full p-2 rounded-md text-left\n                 hover:bg-gray-700/50 transition-colors cursor-grab\n                 focus:outline-none focus:ring-2 focus:ring-blue-500",
     draggable: true,
     onClick: param => onAdd(item),
-    onDragStart: e => {
+    onDragStart: _e => {
       ((e.dataTransfer.setData("text/plain", _label)));
     }
   });

@@ -8,16 +8,8 @@ open Update
 // Direct JS binding for Array.join (avoids deprecated Js.Array2.joinWith)
 @send external joinWith: (array<string>, string) => string = "join"
 
-type page =
-  | NetworkView // Cisco-style topology (TopologyView.res)
-  | StackView // Paragon-style vertical (View.res)
-  | PipelineView // Assembly pipeline designer (node-graph editor)
-  | LagoGreyView // Lago Grey image designer
-  | PortConfigView // Port configuration with ephemeral pinholes
-  | SecurityView // Security inspector with attack surface analysis
-  | GapAnalysisView // Gap analysis with automated remediation
-  | SimulationView // Packet animation simulation
-  | SettingsView // Settings and preferences
+// Page type delegated to AppRouter for URL synchronisation
+type page = AppRouter.route
 
 type appState = {
   currentPage: page,
@@ -27,7 +19,7 @@ type appState = {
 }
 
 let initialAppState = {
-  currentPage: NetworkView,
+  currentPage: AppRouter.getCurrentRoute(),
   model: initialModel,
   pipelineDesigner: PipelineModel.initialState(),
   isDark: true,
@@ -246,13 +238,30 @@ let make = () => {
         })
       }
 
+    | TriggerImportDesign => {
+        // Side effect: open file picker, dispatch result back through TEA
+        Import.triggerImport(
+          importedModel => dispatch(ImportDesignSuccess(importedModel)),
+          error => dispatch(ImportDesignError(error)),
+        )
+      }
+
     | _ => ()
     }
   }
 
   let switchPage = page => {
+    AppRouter.navigateTo(page)
     setState(prev => {...prev, currentPage: page})
   }
+
+  // Listen for browser back/forward navigation
+  React.useEffect0(() => {
+    AppRouter.onRouteChange(route => {
+      setState(prev => {...prev, currentPage: route})
+    })
+    None
+  })
 
   <ErrorBoundary>
     <div className="app">
@@ -359,6 +368,21 @@ let make = () => {
               })
             }
           />
+        | NotFound =>
+          <div className="page" style={Sx.make(~textAlign="center", ~paddingTop="4rem", ())}>
+            <h1 style={Sx.make(~fontSize="3rem", ~color="#64b5f6", ~marginBottom="1rem", ())}>
+              {"404"->React.string}
+            </h1>
+            <p style={Sx.make(~color="#8892a6", ~marginBottom="2rem", ())}>
+              {"Page not found"->React.string}
+            </p>
+            <button
+              className="action-btn"
+              onClick={_ => switchPage(NetworkView)}
+            >
+              {"Go to Network View"->React.string}
+            </button>
+          </div>
         }}
       </div>
 
