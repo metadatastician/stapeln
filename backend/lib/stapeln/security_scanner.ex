@@ -474,10 +474,14 @@ defmodule Stapeln.SecurityScanner do
 
   defp convert_kanren_findings(port_findings) do
     Enum.map(port_findings, fn finding ->
+      # Handle both db_findings (%{message, severity}) and proto_findings (%{protocol, risk})
+      message = Map.get(finding, :message, "Port #{finding.port} (#{Map.get(finding, :protocol, "unknown")})")
+      severity = Map.get(finding, :severity, Map.get(finding, :risk, :info))
+
       %{
-        title: finding.message,
-        severity: Atom.to_string(finding.severity),
-        description: "miniKanren reasoning engine flagged port #{finding.port}: #{finding.message}",
+        title: message,
+        severity: if(is_atom(severity), do: Atom.to_string(severity), else: severity),
+        description: "miniKanren reasoning engine flagged port #{finding.port}: #{message}",
         affectedComponent: "port:#{finding.port}",
         cveId: nil,
         fixAvailable: false,
