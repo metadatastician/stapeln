@@ -1,0 +1,451 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// PipelineUpdate.res - Pure state transitions for the assembly pipeline designer
+//
+// All pipeline designer messages are handled here, keeping the main Update.res
+// focused on stack-level concerns. This follows the TEA pattern: messages in,
+// new state out, no side effects.
+
+open PipelineModel
+
+// Direct JS binding for Array.join
+@send external joinWith: (array<string>, string) => string = "join"
+
+// Grid snapping for node placement
+let gridSize = 20.0
+
+let snapToGrid = (v: float): float => {
+  Math.round(v /. gridSize) *. gridSize
+}
+
+// Generate a simple unique ID
+let genId = (): string => generateId()
+
+// ---------------------------------------------------------------------------
+// Pipeline graph validation
+// ---------------------------------------------------------------------------
+
+// Check for cycles using depth-first search
+let hasCycle = (nodes: array<pipelineNode>, connections: array<connection>): bool => {
+  let visited = Dict.make()
+  let inStack = Dict.make()
+
+  let rec dfs = (nodeId: string): bool => {
+    Dict.set(visited, nodeId, true)
+    Dict.set(inStack, nodeId, true)
+
+    let outgoing = Array.keep(connections, c => c.fromNode === nodeId)
+    let foundCycle = Array.some(outgoing, c => {
+      switch Dict.get(inStack, c.toNode) {
+      | Some(true) => true
+      | _ =>
+        switch Dict.get(visited, c.toNode) {
+        | Some(true) => false
+        | _ => dfs(c.toNode)
+        }
+      }
+    })
+
+    Dict.set(inStack, nodeId, false)
+    foundCycle
+  }
+
+  Array.some(nodes, n => {
+    switch Dict.get(visited, n.id) {
+    | Some(true) => false
+    | _ => dfs(n.id)
+    }
+  })
+}
+
+// Validate the full pipeline graph
+let validatePipeline = (pipeline: pipeline): pipelineValidation => {
+  let errors = []
+  let warnings = []
+
+  // Check for empty pipeline
+  if Array.length(pipeline.nodes) === 0 {
+    ignore(Array.concat(errors, [{nodeId: "", message: "Pipeline has no nodes"}]))
+  }
+
+  // Check for orphan nodes (no connections)
+  let orphans = Array.keep(pipeline.nodes, n => {
+    let hasIncoming = Array.some(pipeline.connections, c => c.toNode === n.id)
+    let hasOutgoing = Array.some(pipeline.connections, c => c.fromNode === n.id)
+    !hasIncoming && !hasOutgoing
+  })
+  Array.forEach(orphans, n => {
+    ignore(
+      Array.concat(warnings, [{nodeId: n.id, message: n.label ++ " has no connections"}]),
+    )
+  })
+
+  // Check for cycles
+  if hasCycle(pipeline.nodes, pipeline.connections) {
+    ignore(
+      Array.concat(errors, [{nodeId: "", message: "Pipeline contains a cycle"}]),
+    )
+  }
+
+  {
+    isValid: Array.length(errors) === 0,
+    errors,
+    warnings,
+    securityScore: 0.0,
+    estimatedImageSize: 0,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Code generation (placeholder — produces representative output)
+// ---------------------------------------------------------------------------
+
+let generateOutput = (pipeline: pipeline, format: outputFormat): string => {
+  switch format {
+  | Containerfile => {
+      let lines = Array.map(pipeline.nodes, n => {
+        switch n.kind {
+        | Source({imageRef, tag}) => "FROM " ++ imageRef ++ ":" ++ tag
+        | BuildStep({command}) => "RUN " ++ command
+        | _ => "# " ++ nodeKindToString(n.kind)
+        }
+      })
+      lines->joinWith("\n")
+    }
+  | _ =>
+    "# " ++
+    outputFormatToString(format) ++
+    " output\n# Generated from pipeline: " ++
+    pipeline.name ++
+    "\n# Nodes: " ++
+    Int.toString(Array.length(pipeline.nodes))
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Main update function
+// ---------------------------------------------------------------------------
+
+let update = (state: pipelineDesignerState, msg: pipelineMsg): pipelineDesignerState => {
+  switch msg {
+  // --- Node operations ---
+  | AddNode(kind, pos) => {
+      let node: pipelineNode = {
+        id: genId(),
+        kind,
+        x: snapToGrid(pos.x),
+        y: snapToGrid(pos.y),
+        width: 180.0,
+        height: 80.0,
+        label: nodeKindToString(kind),
+        status: Idle,
+        validationErrors: [],
+      }
+      let pipeline = {
+        ...state.pipeline,
+        nodes: Array.concat(state.pipeline.nodes, [node]),
+      }
+      {...state, pipeline, isDirty: true}
+    }
+
+  | RemoveNode(nodeId) => {
+      let nodes = Array.keep(state.pipeline.nodes, n => n.id !== nodeId)
+      let connections = Array.keep(state.pipeline.connections, c =>
+        c.fromNode !== nodeId && c.toNode !== nodeId
+      )
+      let selectedNode = switch state.pipeline.selectedNode {
+      | Some(id) if id === nodeId => None
+      | other => other
+      }
+      let pipeline = {...state.pipeline, nodes, connections, selectedNode}
+      {...state, pipeline, isDirty: true}
+    }
+
+  | MoveNode(nodeId, pos) => {
+      let nodes = Array.map(state.pipeline.nodes, n =>
+        n.id === nodeId ? {...n, x: snapToGrid(pos.x), y: snapToGrid(pos.y)} : n
+      )
+      let pipeline = {...state.pipeline, nodes}
+      {...state, pipeline, isDirty: true}
+    }
+
+  | SelectNode(nodeId) => {
+      let pipeline = {...state.pipeline, selectedNode: nodeId}
+      {...state, pipeline}
+    }
+
+  | UpdateNodeConfig(nodeId, _key, _value) => {
+      // Config updates would modify the node's kind variant fields
+      // For now, mark dirty to indicate change
+      let _ = nodeId
+      {...state, isDirty: true}
+    }
+
+  | UpdateNodeLabel(nodeId, label) => {
+      let nodes = Array.map(state.pipeline.nodes, n =>
+        n.id === nodeId ? {...n, label} : n
+      )
+      let pipeline = {...state.pipeline, nodes}
+      {...state, pipeline, isDirty: true}
+    }
+
+  // --- Connection operations ---
+  | AddEdge(fromNode, fromPort, toNode, toPort) => {
+      let conn: connection = {
+        id: genId(),
+        fromNode,
+        fromPort,
+        toNode,
+        toPort,
+      }
+      let connections = Array.concat(state.pipeline.connections, [conn])
+      let pipeline = {...state.pipeline, connections}
+      {...state, pipeline, isDirty: true}
+    }
+
+  | RemoveEdge(edgeId) => {
+      let connections = Array.keep(state.pipeline.connections, c => c.id !== edgeId)
+      let pipeline = {...state.pipeline, connections}
+      {...state, pipeline, isDirty: true}
+    }
+
+  // --- Pipeline metadata ---
+  | SetPipelineName(name) => {
+      let pipeline = {...state.pipeline, name}
+      {...state, pipeline, isDirty: true}
+    }
+
+  // --- Left panel (palette) ---
+  | SetPaletteTab(tab) => {
+      let panels = {...state.panels, activeLeftTab: tab}
+      {...state, panels}
+    }
+
+  | SetPaletteSearch(_query) => state
+
+  | TogglePaletteCollapsed => {
+      let panels = {...state.panels, leftCollapsed: !state.panels.leftCollapsed}
+      {...state, panels}
+    }
+
+  | SetPaletteWidth(w) => {
+      let panels = {...state.panels, leftPanelWidth: w}
+      {...state, panels}
+    }
+
+  // --- Right panel (output) ---
+  | SetOutputTab(tab) => {
+      let panels = {...state.panels, activeRightTab: tab}
+      {...state, panels}
+    }
+
+  | ToggleOutputCollapsed => {
+      let panels = {...state.panels, rightCollapsed: !state.panels.rightCollapsed}
+      {...state, panels}
+    }
+
+  | SetOutputWidth(w) => {
+      let panels = {...state.panels, rightPanelWidth: w}
+      {...state, panels}
+    }
+
+  // --- Export / code generation ---
+  | SetOutputFormat(fmt) => {...state, outputFormat: fmt}
+
+  | RegeneratePreview => {
+      let output = generateOutput(state.pipeline, state.outputFormat)
+      {...state, generatedOutput: Some(output)}
+    }
+
+  | CopyToClipboard => state // Side effect handled in App.res
+  | DownloadFile(_) => state
+  | ExportAllZip => state
+  | Deploy => state
+
+  // --- Templates and history ---
+  | LoadTemplate(template) => {
+      let pipeline = template.pipeline
+      {...state, pipeline, isDirty: false, validation: None, generatedOutput: None}
+    }
+
+  | LoadRecentPipeline(_id) => state // Would load from backend
+
+  // --- Validation ---
+  | RunValidation => {
+      let result = validatePipeline(state.pipeline)
+      // Apply validation errors to individual nodes
+      let nodes = Array.map(state.pipeline.nodes, n => {
+        let nodeErrors = Array.keep(result.errors, e => e.nodeId === n.id)
+        let errorMsgs = Array.map(nodeErrors, e => e.message)
+        {...n, validationErrors: errorMsgs}
+      })
+      let pipeline = {...state.pipeline, nodes}
+      {...state, pipeline, validation: Some(result)}
+    }
+
+  | ValidationComplete(result) => {...state, validation: Some(result)}
+
+  // --- Security analysis ---
+  | RunSecurityAnalysis => state // Side effect
+  | SecurityAnalysisComplete => state
+
+  // --- Canvas navigation ---
+  | ZoomIn => {
+      let zoom = Math.min(state.pipeline.zoom *. 1.2, 3.0)
+      let pipeline = {...state.pipeline, zoom}
+      {...state, pipeline}
+    }
+
+  | ZoomOut => {
+      let zoom = Math.max(state.pipeline.zoom /. 1.2, 0.3)
+      let pipeline = {...state.pipeline, zoom}
+      {...state, pipeline}
+    }
+
+  | ResetZoom => {
+      let pipeline = {...state.pipeline, zoom: 1.0, panX: 0.0, panY: 0.0}
+      {...state, pipeline}
+    }
+
+  | SetZoom(zoom) => {
+      let pipeline = {...state.pipeline, zoom}
+      {...state, pipeline}
+    }
+
+  | PanCanvas(pos) => {
+      let pipeline = {...state.pipeline, panX: pos.x, panY: pos.y}
+      {...state, pipeline}
+    }
+
+  | SetPan(x, y) => {
+      let pipeline = {...state.pipeline, panX: x, panY: y}
+      {...state, pipeline}
+    }
+
+  // --- Canvas node dragging ---
+  | StartDrag(nodeId, offsetX, offsetY) => {
+      {...state, isDragging: Some({nodeId, offsetX, offsetY})}
+    }
+
+  | UpdateDrag(worldX, worldY) =>
+    switch state.isDragging {
+    | Some({nodeId, offsetX, offsetY}) => {
+        let x = snapToGrid(worldX -. offsetX)
+        let y = snapToGrid(worldY -. offsetY)
+        let nodes = Array.map(state.pipeline.nodes, n =>
+          n.id === nodeId ? {...n, x, y} : n
+        )
+        let pipeline = {...state.pipeline, nodes}
+        {...state, pipeline, isDirty: true}
+      }
+    | None => state
+    }
+
+  | EndDrag => {...state, isDragging: None}
+
+  // --- Canvas connection drawing ---
+  | StartConnect(fromNode, fromPort, mouseX, mouseY) => {
+      {...state, isConnecting: Some({fromNode, fromPort, mouseX, mouseY})}
+    }
+
+  | UpdateConnect(mouseX, mouseY) =>
+    switch state.isConnecting {
+    | Some(cs) => {...state, isConnecting: Some({...cs, mouseX, mouseY})}
+    | None => state
+    }
+
+  | EndConnect(toNode, toPort) =>
+    switch state.isConnecting {
+    | Some({fromNode, fromPort}) => {
+        let conn: connection = {
+          id: genId(),
+          fromNode,
+          fromPort,
+          toNode,
+          toPort,
+        }
+        let connections = Array.concat(state.pipeline.connections, [conn])
+        let pipeline = {...state.pipeline, connections}
+        {...state, pipeline, isConnecting: None, isDirty: true}
+      }
+    | None => state
+    }
+
+  | CancelConnect => {...state, isConnecting: None}
+
+  // --- Canvas selection ---
+  | SelectConnection(connId) => {
+      let pipeline = {...state.pipeline, selectedConnection: connId}
+      {...state, pipeline}
+    }
+
+  | SelectAll => state // Would select all nodes
+  | DeleteSelected => {
+      switch state.pipeline.selectedNode {
+      | Some(nodeId) => {
+          let nodes = Array.keep(state.pipeline.nodes, n => n.id !== nodeId)
+          let connections = Array.keep(state.pipeline.connections, c =>
+            c.fromNode !== nodeId && c.toNode !== nodeId
+          )
+          let pipeline = {
+            ...state.pipeline,
+            nodes,
+            connections,
+            selectedNode: None,
+          }
+          {...state, pipeline, isDirty: true}
+        }
+      | None =>
+        switch state.pipeline.selectedConnection {
+        | Some(connId) => {
+            let connections = Array.keep(state.pipeline.connections, c => c.id !== connId)
+            let pipeline = {
+              ...state.pipeline,
+              connections,
+              selectedConnection: None,
+            }
+            {...state, pipeline, isDirty: true}
+          }
+        | None => state
+        }
+      }
+    }
+
+  | DuplicateNode(nodeId) =>
+    switch Belt.Array.getBy(state.pipeline.nodes, n => n.id === nodeId) {
+    | Some(original) => {
+        let newNode = {
+          ...original,
+          id: genId(),
+          x: original.x +. 40.0,
+          y: original.y +. 40.0,
+          label: original.label ++ " (copy)",
+        }
+        let nodes = Array.concat(state.pipeline.nodes, [newNode])
+        let pipeline = {...state.pipeline, nodes}
+        {...state, pipeline, isDirty: true}
+      }
+    | None => state
+    }
+
+  | Undo => state // Would pop undo stack
+
+  // --- Context menu ---
+  | OpenContextMenu(_, _) => state
+  | CloseContextMenu => state
+
+  // --- Persistence ---
+  | SavePipeline => {
+      Console.log("Saving pipeline...")
+      {...state, isDirty: false}
+    }
+
+  | LoadPipeline(_id) => {
+      Console.log("Loading pipeline...")
+      state
+    }
+
+  | PipelineSaved => {...state, isDirty: false}
+
+  | PipelineLoaded(newState) => newState
+  }
+}

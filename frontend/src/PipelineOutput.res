@@ -7,6 +7,16 @@
 
 open PipelineModel
 
+// JS Number.toFixed binding (Belt opens over Float, so we bind directly)
+@send external toFixed: (float, int) => string = "toFixed"
+
+// Internal type for the output files panel file entries
+type fileEntry = {
+  name: string,
+  size: int,
+  preview: string,
+}
+
 // ---------------------------------------------------------------------------
 // External clipboard API binding
 // ---------------------------------------------------------------------------
@@ -238,7 +248,7 @@ module ValidationPanel = {
                   : "text-red-400")
               }
             >
-              {(Float.toFixed(v.securityScore, ~digits=0) ++ "/100")->React.string}
+              {(Int.toString(Float.toInt(v.securityScore)) ++ "/100")->React.string}
             </div>
           </div>
 
@@ -250,10 +260,10 @@ module ValidationPanel = {
             <div className="text-2xl font-bold text-gray-100">
               {if v.estimatedImageSize < 1024 * 1024 {
                 let kb = Float.fromInt(v.estimatedImageSize) /. 1024.0
-                Float.toFixed(kb, ~digits=1) ++ " KB"
+                toFixed(kb, 1) ++ " KB"
               } else {
                 let mb = Float.fromInt(v.estimatedImageSize) /. 1024.0 /. 1024.0
-                Float.toFixed(mb, ~digits=1) ++ " MB"
+                toFixed(mb, 1) ++ " MB"
               }->React.string}
             </div>
           </div>
@@ -607,13 +617,6 @@ module SecurityPanel = {
 // ---------------------------------------------------------------------------
 // Main component
 // ---------------------------------------------------------------------------
-
-// Internal type for the output files panel file entries
-type fileEntry = {
-  name: string,
-  size: int,
-  preview: string,
-}
 
 @react.component
 let make = (

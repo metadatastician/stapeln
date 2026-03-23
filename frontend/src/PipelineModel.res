@@ -5,6 +5,27 @@
 // Each node represents a stage in the container assembly pipeline, and directed
 // edges define the flow of artifacts between stages.
 
+// Position type (independent of Model to avoid circular deps)
+type position = {
+  x: float,
+  y: float,
+}
+
+// Simple UUID v4 generation (independent of Model)
+let generateId = () => {
+  let chars = "0123456789abcdef"
+  let uuid = ref("")
+  for i in 0 to 35 {
+    let idx = Float.toInt(Math.random() *. 16.0)
+    let char = String.charAt(chars, idx)
+    uuid := uuid.contents ++ char
+    if i == 7 || i == 12 || i == 17 || i == 22 {
+      uuid := uuid.contents ++ "-"
+    }
+  }
+  uuid.contents
+}
+
 // Status of an individual pipeline node during execution
 type nodeStatus = Idle | Running | Success | Failed | Skipped
 
@@ -155,9 +176,9 @@ type pipelineDesignerState = {
 // Messages dispatched by the pipeline designer UI
 type pipelineMsg =
   // Node operations
-  | AddNode(nodeKind, Model.position)
+  | AddNode(nodeKind, position)
   | RemoveNode(string)
-  | MoveNode(string, Model.position)
+  | MoveNode(string, position)
   | SelectNode(option<string>)
   | UpdateNodeConfig(string, string, string) // nodeId, key, value
   | UpdateNodeLabel(string, string)
@@ -196,7 +217,7 @@ type pipelineMsg =
   | ZoomOut
   | ResetZoom
   | SetZoom(float)
-  | PanCanvas(Model.position)
+  | PanCanvas(position)
   | SetPan(float, float)
   // Canvas node dragging
   | StartDrag(string, float, float) // nodeId, offsetX, offsetY
@@ -228,7 +249,7 @@ type pipelineMsg =
 
 // Create an empty pipeline with sensible defaults
 let emptyPipeline = (): pipeline => {
-  id: Model.generateId(),
+  id: generateId(),
   name: "Untitled Pipeline",
   description: "",
   nodes: [],
@@ -328,7 +349,7 @@ let makeTemplate = (
   description,
   category,
   pipeline: {
-    id: Model.generateId(),
+    id: generateId(),
     name,
     description,
     nodes,

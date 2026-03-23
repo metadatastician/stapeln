@@ -11,6 +11,7 @@ open Update
 type page =
   | NetworkView // Cisco-style topology (TopologyView.res)
   | StackView // Paragon-style vertical (View.res)
+  | PipelineView // Assembly pipeline designer (node-graph editor)
   | LagoGreyView // Lago Grey image designer
   | PortConfigView // Port configuration with ephemeral pinholes
   | SecurityView // Security inspector with attack surface analysis
@@ -21,12 +22,14 @@ type page =
 type appState = {
   currentPage: page,
   model: model, // TEA model for stack designer
+  pipelineDesigner: PipelineModel.pipelineDesignerState,
   isDark: bool,
 }
 
 let initialAppState = {
   currentPage: NetworkView,
   model: initialModel,
+  pipelineDesigner: PipelineModel.initialState(),
   isDark: true,
 }
 
@@ -235,6 +238,14 @@ let make = () => {
         }
       }
 
+    | Pipeline(pipelineMsg) => {
+        // Update pipeline designer state directly in appState
+        setState(prev => {
+          let newPState = PipelineUpdate.update(prev.pipelineDesigner, pipelineMsg)
+          {...prev, pipelineDesigner: newPState}
+        })
+      }
+
     | _ => ()
     }
   }
@@ -257,6 +268,12 @@ let make = () => {
           onClick={_ => switchPage(StackView)}
         >
           {"📚 Stack"->React.string}
+        </button>
+        <button
+          className={state.currentPage == PipelineView ? "tab active" : "tab"}
+          onClick={_ => switchPage(PipelineView)}
+        >
+          {"🔧 Pipeline"->React.string}
         </button>
         <button
           className={state.currentPage == LagoGreyView ? "tab active" : "tab"}
@@ -316,7 +333,12 @@ let make = () => {
       <div className="content">
         {switch state.currentPage {
         | NetworkView => TopologyView.view(state.model, state.isDark, dispatch)
-        | StackView => StackView.view(state.model)
+        | StackView => StackView.view(state.model, ~isDark=state.isDark)
+        | PipelineView =>
+          <PipelineDesigner
+            state={state.pipelineDesigner}
+            dispatch={pMsg => dispatch(Pipeline(pMsg))}
+          />
         | LagoGreyView => <LagoGreyImageDesigner />
         | PortConfigView => <PortConfigPanel />
         | SecurityView =>

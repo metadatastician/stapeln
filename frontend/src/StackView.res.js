@@ -398,8 +398,9 @@ function renderParagonStack(model, isDark) {
   });
 }
 
-function view(model) {
-  return renderParagonStack(model, false);
+function view(model, isDarkOpt) {
+  let isDark = isDarkOpt !== undefined ? isDarkOpt : false;
+  return renderParagonStack(model, isDark);
 }
 
 export {

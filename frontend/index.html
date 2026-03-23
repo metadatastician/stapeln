@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +10,23 @@
     <meta name="color-scheme" content="light dark">
 
     <title>stapeln - Container Stack Designer</title>
+
+    <!-- Tailwind CSS (used by Pipeline Designer components) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            950: '#0a0e1a',
+                        },
+                    },
+                },
+            },
+        };
+    </script>
 
     <!-- Application Styles -->
     <link rel="stylesheet" href="./src/App.css">

@@ -145,7 +145,7 @@ module StatusBar = {
   ) => {
     let nodeCount = Array.length(state.pipeline.nodes)
     let connCount = Array.length(state.pipeline.connections)
-    let zoomPct = Float.toFixed(state.pipeline.zoom *. 100.0, ~digits=0)
+    let zoomPct = Int.toString(Float.toInt(state.pipeline.zoom *. 100.0))
 
     let validationStatus = switch state.validation {
     | None => ("--", "text-gray-500")

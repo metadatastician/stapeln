@@ -1348,6 +1348,8 @@ function update(model, msg) {
           settings: model.settings,
           wsState: model.wsState
         };
+      case "Pipeline" :
+        return model;
     }
   }
 }

@@ -321,7 +321,7 @@ function AppIntegrated(props) {
       }));
       break;
     case "StackView" :
-      tmp = StackView.view(state.model);
+      tmp = StackView.view(state.model, undefined);
       break;
     case "LagoGreyView" :
       tmp = JsxRuntime.jsx(LagoGreyImageDesigner.make, {});

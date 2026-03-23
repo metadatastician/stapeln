@@ -27,6 +27,10 @@ let zoomStep = 0.1
 // Float modulo (not available as fmod in ReScript)
 let fmod = (a: float, b: float): float => a -. Float.fromInt(Float.toInt(a /. b)) *. b
 
+// DOM element rect measurement
+type domRect = {width: float, height: float, top: float, left: float}
+@send external getBoundingClientRect: Dom.element => domRect = "getBoundingClientRect"
+
 // ---------------------------------------------------------------------------
 // Snap-to-grid helper
 // ---------------------------------------------------------------------------
@@ -558,7 +562,7 @@ let renderContextMenu = (
     <div
       style={menuItemStyle}
       onClick={_ => {
-        let pos: Model.position = {x: screenX, y: screenY}
+        let pos: PipelineModel.position = {x: screenX, y: screenY}
         dispatch(PipelineModel.AddNode(Source({imageRef: "", tag: "latest"}), pos))
         dispatch(PipelineModel.CloseContextMenu)
       }}
@@ -568,7 +572,7 @@ let renderContextMenu = (
     <div
       style={menuItemStyle}
       onClick={_ => {
-        let pos: Model.position = {x: screenX, y: screenY}
+        let pos: PipelineModel.position = {x: screenX, y: screenY}
         dispatch(PipelineModel.AddNode(BuildStep({command: "", layer: 0}), pos))
         dispatch(PipelineModel.CloseContextMenu)
       }}
@@ -578,7 +582,7 @@ let renderContextMenu = (
     <div
       style={menuItemStyle}
       onClick={_ => {
-        let pos: Model.position = {x: screenX, y: screenY}
+        let pos: PipelineModel.position = {x: screenX, y: screenY}
         dispatch(
           PipelineModel.AddNode(SecurityGate({policy: "strict", mode: "enforce"}), pos),
         )
@@ -590,7 +594,7 @@ let renderContextMenu = (
     <div
       style={menuItemStyle}
       onClick={_ => {
-        let pos: Model.position = {x: screenX, y: screenY}
+        let pos: PipelineModel.position = {x: screenX, y: screenY}
         dispatch(
           PipelineModel.AddNode(SignStep({keyId: "default", transparency: true}), pos),
         )
@@ -602,7 +606,7 @@ let renderContextMenu = (
     <div
       style={menuItemStyle}
       onClick={_ => {
-        let pos: Model.position = {x: screenX, y: screenY}
+        let pos: PipelineModel.position = {x: screenX, y: screenY}
         dispatch(PipelineModel.AddNode(Push({registry: "", repository: ""}), pos))
         dispatch(PipelineModel.CloseContextMenu)
       }}
@@ -653,17 +657,17 @@ let make = (
   ~dispatch: PipelineModel.pipelineMsg => unit,
 ): React.element => {
   // Local state for canvas dimensions (measured from container)
-  let containerRef = React.useRef(Nullable.null)
+  let containerRef: React.ref<Js.nullable<Dom.element>> = React.useRef(Js.Nullable.null)
   let (canvasSize, setCanvasSize) = React.useState(() => (1200.0, 800.0))
   let (contextMenu, setContextMenu) = React.useState(() => None)
 
   // Measure canvas container on mount and window resize
   React.useEffect0(() => {
     let measure = () => {
-      switch Nullable.toOption(containerRef.current) {
+      switch Js.Nullable.toOption(containerRef.current) {
       | Some(el) => {
-          let rect = el["getBoundingClientRect"]()
-          setCanvasSize(_ => (rect["width"], rect["height"]))
+          let rect = getBoundingClientRect(el)
+          setCanvasSize(_ => (rect.width, rect.height))
         }
       | None => ()
       }

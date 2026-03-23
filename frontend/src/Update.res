@@ -854,6 +854,9 @@ let update = (model: model, msg: msg): model => {
       }
     }
 
+  // Pipeline designer messages are handled in App.res (not in Model)
+  | Pipeline(_) => model
+
   | SettingsLoaded(result) => switch result {
     | Ok(json) => {
         // Parse JSON into settings fields
