@@ -288,6 +288,19 @@ let make = () => {
   let switchPage = page => {
     AppRouter.navigateTo(page)
     setState(prev => {...prev, currentPage: page})
+    // Auto-trigger scans when navigating to security/gap views
+    // (only if we have a stack and no results yet)
+    switch page {
+    | SecurityView =>
+      if state.model.securityState === None && !state.model.securityLoading {
+        dispatch(RunSecurityScan)
+      }
+    | GapAnalysisView =>
+      if state.model.gapState === None && !state.model.gapLoading {
+        dispatch(RunGapAnalysis)
+      }
+    | _ => ()
+    }
   }
 
   // Listen for browser back/forward navigation

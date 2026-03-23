@@ -86,110 +86,18 @@ type msg =
   | ApplyFix(string)
   | RunSecurityScan
 
-// Initialize with sample data
+// Empty initial state (live data loaded from backend via API)
 let init: state = {
   metrics: {
-    security: 85,
-    performance: 92,
-    reliability: 88,
-    compliance: 95,
+    security: 0,
+    performance: 0,
+    reliability: 0,
+    compliance: 0,
   },
-  grade: A,
-  vulnerabilities: [
-    {
-      id: "vuln-1",
-      title: "Unencrypted connection from gateway to application",
-      severity: High,
-      description: "Connection between API Gateway and Auth Service is not encrypted. This exposes sensitive data in transit.",
-      affectedComponent: "conn-1",
-      cveId: None,
-      fixAvailable: true,
-      fixDescription: Some("Enable TLS encryption on connection. Update protocol to HTTPS."),
-    },
-    {
-      id: "vuln-2",
-      title: "Database port exposed without firewall",
-      severity: Critical,
-      description: "PostgreSQL port 5432 is accessible without firewall protection. Database should only accept connections from application tier.",
-      affectedComponent: "node-3",
-      cveId: Some("CWE-284"),
-      fixAvailable: true,
-      fixDescription: Some(
-        "Enable firewall on database node. Configure to only accept connections from Auth Service.",
-      ),
-    },
-    {
-      id: "vuln-3",
-      title: "Container running as root",
-      severity: Medium,
-      description: "Auth Service container is running as root user. This violates least privilege principle.",
-      affectedComponent: "node-2",
-      cveId: Some("CWE-250"),
-      fixAvailable: true,
-      fixDescription: Some("Add USER directive to Containerfile. Create non-privileged user."),
-    },
-  ],
-  checks: [
-    {
-      name: "Image Signatures",
-      description: "All container images are cryptographically signed",
-      result: Pass,
-      details: "3/3 images verified with Ed448+Dilithium5 signatures",
-    },
-    {
-      name: "SBOM Present",
-      description: "Software Bill of Materials available for audit",
-      result: Pass,
-      details: "CycloneDX SBOMs generated for all components",
-    },
-    {
-      name: "Non-Root Containers",
-      description: "Containers run with least privilege",
-      result: Warning,
-      details: "1/3 containers still running as root (Auth Service)",
-    },
-    {
-      name: "Health Checks",
-      description: "All services have health check endpoints",
-      result: Fail,
-      details: "0/3 services have configured health checks",
-    },
-    {
-      name: "Resource Limits",
-      description: "CPU and memory limits configured",
-      result: Pass,
-      details: "All containers have resource constraints",
-    },
-    {
-      name: "Network Segmentation",
-      description: "Services isolated in separate networks",
-      result: Pass,
-      details: "Using stapeln_network with proper isolation",
-    },
-  ],
-  exposedPorts: [
-    {
-      port: 80,
-      protocol: "HTTP",
-      service: "API Gateway",
-      risk: "Medium",
-      publiclyAccessible: true,
-    },
-    {
-      port: 8080,
-      protocol: "HTTP",
-      service: "Auth Service",
-      risk: "Low",
-      publiclyAccessible: false,
-    },
-    {
-      port: 5432,
-      protocol: "TCP",
-      service: "PostgreSQL",
-      risk: "Critical",
-      publiclyAccessible: false,
-    },
-  ],
+  grade: F,
+  vulnerabilities: [],
+  checks: [],
+  exposedPorts: [],
   selectedVulnerability: None,
   showDetails: true,
   filterSeverity: None,
@@ -627,6 +535,11 @@ let make = (~initialState: option<state>=?, ~onStateChange: option<state => unit
     }
   }
 
+  let isEmpty =
+    Array.length(state.checks) === 0 &&
+    Array.length(state.vulnerabilities) === 0 &&
+    state.metrics.security === 0
+
   <div
     className="security-inspector"
     style={Sx.make(~padding="32px", ~background="#0a0e1a", ~minHeight="100vh", ())}
@@ -648,6 +561,66 @@ let make = (~initialState: option<state>=?, ~onStateChange: option<state => unit
       </p>
     </div>
 
+    // Empty state: no scan has been run yet
+    {isEmpty
+      ? <div
+          style={Sx.make(
+            ~padding="60px 40px",
+            ~background="linear-gradient(135deg, #1e2431 0%, #252d3d 100%)",
+            ~border="2px dashed #2a3f5f",
+            ~borderRadius="16px",
+            ~textAlign="center",
+            (),
+          )}
+        >
+          <div style={Sx.make(~fontSize="48px", ~marginBottom="16px", ())}>
+            {"🔍"->React.string}
+          </div>
+          <h2
+            style={Sx.make(
+              ~fontSize="20px",
+              ~fontWeight="700",
+              ~color="#e0e6ed",
+              ~marginBottom="12px",
+              (),
+            )}
+          >
+            {"No security scan results yet"->React.string}
+          </h2>
+          <p
+            style={Sx.make(
+              ~fontSize="14px",
+              ~color="#8892a6",
+              ~marginBottom="24px",
+              ~lineHeight="1.6",
+              (),
+            )}
+          >
+            {"Add components to your stack and run a security scan to see real-time vulnerability assessment, compliance checks, and improvement suggestions."->React.string}
+          </p>
+          <button
+            onClick={_ => dispatch(RunSecurityScan)}
+            style={Sx.make(
+              ~padding="12px 28px",
+              ~background="linear-gradient(135deg, #4a9eff, #7b6cff)",
+              ~color="white",
+              ~border="none",
+              ~borderRadius="8px",
+              ~fontSize="16px",
+              ~fontWeight="600",
+              ~cursor="pointer",
+              (),
+            )}
+          >
+            {"Run Security Scan"->React.string}
+          </button>
+        </div>
+      : React.null}
+
+    // Main content (only shown when scan results exist)
+    {isEmpty
+      ? React.null
+      : <>
     <div
       style={Sx.make(
         ~display="flex",
@@ -827,5 +800,6 @@ let make = (~initialState: option<state>=?, ~onStateChange: option<state => unit
         {"Security analysis powered by miniKanren reasoning engine. All findings logged to VeriSimDB for compliance audit. Auto-fix applies verified security patches with formal verification proofs."->React.string}
       </p>
     </div>
+    </>}
   </div>
 }

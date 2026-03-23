@@ -316,6 +316,22 @@ function App(props) {
       pipelineDesigner: prev.pipelineDesigner,
       isDark: prev.isDark
     }));
+    switch (page) {
+      case "SecurityView" :
+        if (state.model.securityState === undefined && !state.model.securityLoading) {
+          return dispatch("RunSecurityScan");
+        } else {
+          return;
+        }
+      case "GapAnalysisView" :
+        if (state.model.gapState === undefined && !state.model.gapLoading) {
+          return dispatch("RunGapAnalysis");
+        } else {
+          return;
+        }
+      default:
+        return;
+    }
   };
   React.useEffect(() => {
     AppRouter.onRouteChange(route => setState(prev => ({

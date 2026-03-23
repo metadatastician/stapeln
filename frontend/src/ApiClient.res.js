@@ -90,6 +90,13 @@ function loadStack(id) {
   });
 }
 
+function validateStack(stackId) {
+  return fetchJson(baseUrl + "/stacks/" + String(stackId) + "/validate", {
+    method: "POST",
+    headers: authHeaders()
+  });
+}
+
 function runSecurityScan(stackId) {
   return fetchJson(baseUrl + "/stacks/" + String(stackId) + "/security-scan", {
     method: "POST",
@@ -261,6 +268,7 @@ export {
   fetchJson,
   saveStack,
   loadStack,
+  validateStack,
   runSecurityScan,
   runGapAnalysis,
   loadSettings,

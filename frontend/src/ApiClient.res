@@ -107,6 +107,22 @@ let loadStack = (id: string): promise<Result.t<string, string>> => {
 }
 
 // ---------------------------------------------------------------------------
+// Validation
+// ---------------------------------------------------------------------------
+
+// Calls POST /api/stacks/:id/validate
+// Returns { score, findings: [{ id, severity, message, hint }] }
+let validateStack = (stackId: int): promise<Result.t<JSON.t, string>> => {
+  fetchJson(
+    baseUrl ++ "/stacks/" ++ Int.toString(stackId) ++ "/validate",
+    {
+      method: "POST",
+      headers: authHeaders(),
+    },
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Security scan
 // ---------------------------------------------------------------------------
 

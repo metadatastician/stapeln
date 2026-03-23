@@ -6,111 +6,21 @@ import * as Primitive_int from "@rescript/runtime/lib/es6/Primitive_int.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
 let init_metrics = {
-  security: 85,
-  performance: 92,
-  reliability: 88,
-  compliance: 95
+  security: 0,
+  performance: 0,
+  reliability: 0,
+  compliance: 0
 };
 
-let init_vulnerabilities = [
-  {
-    id: "vuln-1",
-    title: "Unencrypted connection from gateway to application",
-    severity: "High",
-    description: "Connection between API Gateway and Auth Service is not encrypted. This exposes sensitive data in transit.",
-    affectedComponent: "conn-1",
-    cveId: undefined,
-    fixAvailable: true,
-    fixDescription: "Enable TLS encryption on connection. Update protocol to HTTPS."
-  },
-  {
-    id: "vuln-2",
-    title: "Database port exposed without firewall",
-    severity: "Critical",
-    description: "PostgreSQL port 5432 is accessible without firewall protection. Database should only accept connections from application tier.",
-    affectedComponent: "node-3",
-    cveId: "CWE-284",
-    fixAvailable: true,
-    fixDescription: "Enable firewall on database node. Configure to only accept connections from Auth Service."
-  },
-  {
-    id: "vuln-3",
-    title: "Container running as root",
-    severity: "Medium",
-    description: "Auth Service container is running as root user. This violates least privilege principle.",
-    affectedComponent: "node-2",
-    cveId: "CWE-250",
-    fixAvailable: true,
-    fixDescription: "Add USER directive to Containerfile. Create non-privileged user."
-  }
-];
+let init_vulnerabilities = [];
 
-let init_checks = [
-  {
-    name: "Image Signatures",
-    description: "All container images are cryptographically signed",
-    result: "Pass",
-    details: "3/3 images verified with Ed448+Dilithium5 signatures"
-  },
-  {
-    name: "SBOM Present",
-    description: "Software Bill of Materials available for audit",
-    result: "Pass",
-    details: "CycloneDX SBOMs generated for all components"
-  },
-  {
-    name: "Non-Root Containers",
-    description: "Containers run with least privilege",
-    result: "Warning",
-    details: "1/3 containers still running as root (Auth Service)"
-  },
-  {
-    name: "Health Checks",
-    description: "All services have health check endpoints",
-    result: "Fail",
-    details: "0/3 services have configured health checks"
-  },
-  {
-    name: "Resource Limits",
-    description: "CPU and memory limits configured",
-    result: "Pass",
-    details: "All containers have resource constraints"
-  },
-  {
-    name: "Network Segmentation",
-    description: "Services isolated in separate networks",
-    result: "Pass",
-    details: "Using stapeln_network with proper isolation"
-  }
-];
+let init_checks = [];
 
-let init_exposedPorts = [
-  {
-    port: 80,
-    protocol: "HTTP",
-    service: "API Gateway",
-    risk: "Medium",
-    publiclyAccessible: true
-  },
-  {
-    port: 8080,
-    protocol: "HTTP",
-    service: "Auth Service",
-    risk: "Low",
-    publiclyAccessible: false
-  },
-  {
-    port: 5432,
-    protocol: "TCP",
-    service: "PostgreSQL",
-    risk: "Critical",
-    publiclyAccessible: false
-  }
-];
+let init_exposedPorts = [];
 
 let init = {
   metrics: init_metrics,
-  grade: "A",
+  grade: "F",
   vulnerabilities: init_vulnerabilities,
   checks: init_checks,
   exposedPorts: init_exposedPorts,
@@ -718,6 +628,7 @@ function SecurityInspector(props) {
       return onStateChange(newState);
     }
   };
+  let isEmpty = state.checks.length === 0 && state.vulnerabilities.length === 0 && state.metrics.security === 0;
   return JsxRuntime.jsxs("div", {
     children: [
       JsxRuntime.jsxs("div", {
@@ -743,201 +654,255 @@ function SecurityInspector(props) {
           marginBottom: "32px"
         }
       }),
-      JsxRuntime.jsx("div", {
-        children: JsxRuntime.jsxs("div", {
+      isEmpty ? JsxRuntime.jsxs("div", {
           children: [
             JsxRuntime.jsx("div", {
-              children: gradeDisplay(state.grade),
+              children: "🔍",
               style: {
-                color: gradeColor(state.grade),
-                fontSize: "72px",
-                fontWeight: "900",
-                marginBottom: "8px"
+                fontSize: "48px",
+                marginBottom: "16px"
               }
             }),
-            JsxRuntime.jsx("div", {
-              children: "Security Grade",
+            JsxRuntime.jsx("h2", {
+              children: "No security scan results yet",
+              style: {
+                color: "#e0e6ed",
+                fontSize: "20px",
+                fontWeight: "700",
+                marginBottom: "12px"
+              }
+            }),
+            JsxRuntime.jsx("p", {
+              children: "Add components to your stack and run a security scan to see real-time vulnerability assessment, compliance checks, and improvement suggestions.",
               style: {
                 color: "#8892a6",
-                fontSize: "16px"
+                fontSize: "14px",
+                lineHeight: "1.6",
+                marginBottom: "24px"
               }
+            }),
+            JsxRuntime.jsx("button", {
+              children: "Run Security Scan",
+              style: {
+                background: "linear-gradient(135deg, #4a9eff, #7b6cff)",
+                border: "none",
+                borderRadius: "8px",
+                color: "white",
+                cursor: "pointer",
+                fontSize: "16px",
+                fontWeight: "600",
+                padding: "12px 28px"
+              },
+              onClick: param => dispatch("RunSecurityScan")
             })
           ],
           style: {
+            background: "linear-gradient(135deg, #1e2431 0%, #252d3d 100%)",
+            border: "2px dashed #2a3f5f",
+            borderRadius: "16px",
+            padding: "60px 40px",
             textAlign: "center"
           }
-        }),
-        style: {
-          alignItems: "center",
-          background: "linear-gradient(135deg, #1e2431 0%, #252d3d 100%)",
-          border: "3px solid " + gradeColor(state.grade),
-          borderRadius: "16px",
-          display: "flex",
-          justifyContent: "center",
-          marginBottom: "32px",
-          padding: "40px"
-        }
-      }),
-      JsxRuntime.jsxs("div", {
-        children: [
-          JsxRuntime.jsx("h3", {
-            children: "📊 Security Metrics",
-            style: {
-              color: "#e0e6ed",
-              fontSize: "20px",
-              fontWeight: "700",
-              marginBottom: "24px"
-            }
-          }),
-          viewMetricBar("Security", state.metrics.security, "#f44336"),
-          viewMetricBar("Performance", state.metrics.performance, "#4caf50"),
-          viewMetricBar("Reliability", state.metrics.reliability, "#2196f3"),
-          viewMetricBar("Compliance", state.metrics.compliance, "#9c27b0")
-        ],
-        style: {
-          background: "linear-gradient(135deg, #1e2431 0%, #252d3d 100%)",
-          border: "2px solid #2a3142",
-          borderRadius: "16px",
-          marginBottom: "32px",
-          padding: "24px"
-        }
-      }),
-      JsxRuntime.jsxs("div", {
-        children: [
-          JsxRuntime.jsx("h3", {
-            children: "✓ Quick Security Checks",
-            style: {
-              color: "#e0e6ed",
-              fontSize: "20px",
-              fontWeight: "700",
-              marginBottom: "16px"
-            }
-          }),
-          Belt_Array.map(state.checks, viewSecurityCheck)
-        ],
-        style: {
-          marginBottom: "32px"
-        }
-      }),
-      JsxRuntime.jsxs("div", {
-        children: [
-          JsxRuntime.jsxs("div", {
-            children: [
-              JsxRuntime.jsxs("h3", {
+        }) : null,
+      isEmpty ? null : JsxRuntime.jsxs(JsxRuntime.Fragment, {
+          children: [
+            JsxRuntime.jsx("div", {
+              children: JsxRuntime.jsxs("div", {
                 children: [
-                  "🚨 Vulnerabilities (",
-                  String(state.vulnerabilities.length),
-                  ")"
+                  JsxRuntime.jsx("div", {
+                    children: gradeDisplay(state.grade),
+                    style: {
+                      color: gradeColor(state.grade),
+                      fontSize: "72px",
+                      fontWeight: "900",
+                      marginBottom: "8px"
+                    }
+                  }),
+                  JsxRuntime.jsx("div", {
+                    children: "Security Grade",
+                    style: {
+                      color: "#8892a6",
+                      fontSize: "16px"
+                    }
+                  })
                 ],
                 style: {
-                  color: "#e0e6ed",
-                  fontSize: "20px",
-                  fontWeight: "700"
+                  textAlign: "center"
                 }
               }),
-              JsxRuntime.jsx("button", {
-                children: "🔍 Run Full Scan",
-                style: {
-                  background: "linear-gradient(135deg, #4a9eff, #7b6cff)",
-                  border: "none",
-                  borderRadius: "8px",
-                  color: "white",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  padding: "10px 20px"
-                },
-                onClick: param => dispatch("RunSecurityScan")
-              })
-            ],
-            style: {
-              alignItems: "center",
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: "16px"
-            }
-          }),
-          state.vulnerabilities.length !== 0 ? Belt_Array.map(state.vulnerabilities, vuln => viewVulnerability(vuln, dispatch)) : JsxRuntime.jsxs("div", {
+              style: {
+                alignItems: "center",
+                background: "linear-gradient(135deg, #1e2431 0%, #252d3d 100%)",
+                border: "3px solid " + gradeColor(state.grade),
+                borderRadius: "16px",
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: "32px",
+                padding: "40px"
+              }
+            }),
+            JsxRuntime.jsxs("div", {
               children: [
-                JsxRuntime.jsx("div", {
-                  children: "✅",
+                JsxRuntime.jsx("h3", {
+                  children: "📊 Security Metrics",
                   style: {
-                    fontSize: "48px",
+                    color: "#e0e6ed",
+                    fontSize: "20px",
+                    fontWeight: "700",
+                    marginBottom: "24px"
+                  }
+                }),
+                viewMetricBar("Security", state.metrics.security, "#f44336"),
+                viewMetricBar("Performance", state.metrics.performance, "#4caf50"),
+                viewMetricBar("Reliability", state.metrics.reliability, "#2196f3"),
+                viewMetricBar("Compliance", state.metrics.compliance, "#9c27b0")
+              ],
+              style: {
+                background: "linear-gradient(135deg, #1e2431 0%, #252d3d 100%)",
+                border: "2px solid #2a3142",
+                borderRadius: "16px",
+                marginBottom: "32px",
+                padding: "24px"
+              }
+            }),
+            JsxRuntime.jsxs("div", {
+              children: [
+                JsxRuntime.jsx("h3", {
+                  children: "✓ Quick Security Checks",
+                  style: {
+                    color: "#e0e6ed",
+                    fontSize: "20px",
+                    fontWeight: "700",
                     marginBottom: "16px"
                   }
                 }),
-                JsxRuntime.jsx("div", {
-                  children: "No Vulnerabilities Detected",
+                Belt_Array.map(state.checks, viewSecurityCheck)
+              ],
+              style: {
+                marginBottom: "32px"
+              }
+            }),
+            JsxRuntime.jsxs("div", {
+              children: [
+                JsxRuntime.jsxs("div", {
+                  children: [
+                    JsxRuntime.jsxs("h3", {
+                      children: [
+                        "🚨 Vulnerabilities (",
+                        String(state.vulnerabilities.length),
+                        ")"
+                      ],
+                      style: {
+                        color: "#e0e6ed",
+                        fontSize: "20px",
+                        fontWeight: "700"
+                      }
+                    }),
+                    JsxRuntime.jsx("button", {
+                      children: "🔍 Run Full Scan",
+                      style: {
+                        background: "linear-gradient(135deg, #4a9eff, #7b6cff)",
+                        border: "none",
+                        borderRadius: "8px",
+                        color: "white",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        padding: "10px 20px"
+                      },
+                      onClick: param => dispatch("RunSecurityScan")
+                    })
+                  ],
                   style: {
-                    color: "#4caf50",
-                    fontSize: "18px",
-                    fontWeight: "700",
-                    marginBottom: "8px"
+                    alignItems: "center",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "16px"
                   }
                 }),
-                JsxRuntime.jsx("div", {
-                  children: "Your stack meets all security requirements",
+                state.vulnerabilities.length !== 0 ? Belt_Array.map(state.vulnerabilities, vuln => viewVulnerability(vuln, dispatch)) : JsxRuntime.jsxs("div", {
+                    children: [
+                      JsxRuntime.jsx("div", {
+                        children: "✅",
+                        style: {
+                          fontSize: "48px",
+                          marginBottom: "16px"
+                        }
+                      }),
+                      JsxRuntime.jsx("div", {
+                        children: "No Vulnerabilities Detected",
+                        style: {
+                          color: "#4caf50",
+                          fontSize: "18px",
+                          fontWeight: "700",
+                          marginBottom: "8px"
+                        }
+                      }),
+                      JsxRuntime.jsx("div", {
+                        children: "Your stack meets all security requirements",
+                        style: {
+                          color: "#8892a6",
+                          fontSize: "14px"
+                        }
+                      })
+                    ],
+                    style: {
+                      background: "rgba(76, 175, 80, 0.1)",
+                      border: "2px solid #4caf50",
+                      borderRadius: "12px",
+                      padding: "40px",
+                      textAlign: "center"
+                    }
+                  })
+              ],
+              style: {
+                marginBottom: "32px"
+              }
+            }),
+            JsxRuntime.jsxs("div", {
+              children: [
+                JsxRuntime.jsx("h3", {
+                  children: "🔌 Exposed Ports Analysis",
                   style: {
-                    color: "#8892a6",
-                    fontSize: "14px"
+                    color: "#e0e6ed",
+                    fontSize: "20px",
+                    fontWeight: "700",
+                    marginBottom: "16px"
+                  }
+                }),
+                Belt_Array.map(state.exposedPorts, viewExposedPort)
+              ]
+            }),
+            JsxRuntime.jsxs("div", {
+              children: [
+                JsxRuntime.jsx("h4", {
+                  children: "⚠️ Security Intelligence",
+                  style: {
+                    color: "#ff9800",
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    marginBottom: "12px"
+                  }
+                }),
+                JsxRuntime.jsx("p", {
+                  children: "Security analysis powered by miniKanren reasoning engine. All findings logged to VeriSimDB for compliance audit. Auto-fix applies verified security patches with formal verification proofs.",
+                  style: {
+                    color: "#b0b8c4",
+                    fontSize: "13px",
+                    lineHeight: "1.8"
                   }
                 })
               ],
               style: {
-                background: "rgba(76, 175, 80, 0.1)",
-                border: "2px solid #4caf50",
+                background: "rgba(255, 152, 0, 0.1)",
+                border: "2px solid #ff9800",
                 borderRadius: "12px",
-                padding: "40px",
-                textAlign: "center"
+                marginTop: "32px",
+                padding: "20px"
               }
             })
-        ],
-        style: {
-          marginBottom: "32px"
-        }
-      }),
-      JsxRuntime.jsxs("div", {
-        children: [
-          JsxRuntime.jsx("h3", {
-            children: "🔌 Exposed Ports Analysis",
-            style: {
-              color: "#e0e6ed",
-              fontSize: "20px",
-              fontWeight: "700",
-              marginBottom: "16px"
-            }
-          }),
-          Belt_Array.map(state.exposedPorts, viewExposedPort)
-        ]
-      }),
-      JsxRuntime.jsxs("div", {
-        children: [
-          JsxRuntime.jsx("h4", {
-            children: "⚠️ Security Intelligence",
-            style: {
-              color: "#ff9800",
-              fontSize: "16px",
-              fontWeight: "700",
-              marginBottom: "12px"
-            }
-          }),
-          JsxRuntime.jsx("p", {
-            children: "Security analysis powered by miniKanren reasoning engine. All findings logged to VeriSimDB for compliance audit. Auto-fix applies verified security patches with formal verification proofs.",
-            style: {
-              color: "#b0b8c4",
-              fontSize: "13px",
-              lineHeight: "1.8"
-            }
-          })
-        ],
-        style: {
-          background: "rgba(255, 152, 0, 0.1)",
-          border: "2px solid #ff9800",
-          borderRadius: "12px",
-          marginTop: "32px",
-          padding: "20px"
-        }
-      })
+          ]
+        })
     ],
     className: "security-inspector",
     style: {
