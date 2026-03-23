@@ -1,6 +1,6 @@
 # stapeln Status (Source of Truth)
 
-**Date:** 2026-03-10
+**Date:** 2026-03-23
 
 ## Product Goal
 
@@ -8,26 +8,32 @@ A reasonably IT-capable 12-year-old can help their parents build a secure contai
 
 ## What Works Today
 
-- **UI Prototype (frontend):** 8 views implemented as ReScript modules in `frontend/src/`.
-- **TEA Architecture:** State, Msg, Update, View pattern in place via AppIntegrated.res.
-- **Security UX Components:** Port config, security inspector, gap analysis, simulation mode modules exist.
-- **Import/Export Hooks:** Buttons exist (not wired to durable storage).
+- **UI Prototype (frontend):** 9 views (51 ReScript modules) in `frontend/src/`, all compiling with 0 errors/warnings.
+- **TEA Architecture:** State, Msg, Update, View pattern in App.res. AppIntegrated.res exists as legacy alternative.
+- **Pipeline Designer (new):** Full 3-panel node-graph editor (PipelineDesigner, PipelineCanvas, PipelinePalette, PipelineOutput) with SVG canvas, bezier connections, minimap, context menus, drag-drop, 6 pre-built templates, code generation preview.
+- **URL-based routing:** AppRouter.res syncs tabs with browser URLs; back/forward navigation works.
+- **Undo/redo system:** Snapshot-based with 50-depth cap, Ctrl+Z/Ctrl+Y, visible buttons with disabled state.
+- **Auto-save:** 30-second interval with dirty tracking and visual "Saved"/"Unsaved" indicator.
+- **Dark mode:** System detection (prefers-color-scheme), localStorage persistence, HTML class sync for Tailwind.
+- **Conversational errors:** UX Manifesto Rule 4 pattern (title + reason + [Fix It] buttons) on all API error paths.
+- **Import/Export:** Working file picker → TEA dispatch cycle. Import errors show conversational fix suggestions.
+- **Security UX Components:** Port config (1,165 lines), security inspector (832 lines), gap analysis (951 lines), simulation mode (1,622 lines) — all fully implemented views, not stubs.
 - **Backend API (MVP):** Phoenix REST endpoints for stacks and validation are defined.
 - **GraphQL API (MVP):** Absinthe schema at `/api/graphql` is defined.
 - **Shared API Boundary:** REST/GraphQL route through `backend/lib/stapeln/native_bridge.ex`.
-- **ABI/FFI Contract:** Idris2 ABI (`src/abi/*`) has 8 genuine proofs (no believe_me). Zig FFI (`ffi/zig/src/main.zig`) provides CRUD + validate + dispatch.
+- **ABI/FFI Contract:** Idris2 ABI (`src/abi/*`) has 8 genuine proofs (no believe_me). Zig FFI (`ffi/zig/src/main.zig`) provides CRUD + validate + dispatch. Real SHA-256 + Ed25519 in `crypto.zig`.
 - **VeriSimDB Integration:** Remote client with JSONL local fallback, configurable timeouts.
 - **Runtime Boundary:** `stapeln/backend` is the design/control plane. Container lifecycle orchestration is delegated to `container-stack/svalinn` and `container-stack/vordr`.
 
 ## What Is Partial or Scaffolded
 
-- **Dark mode:** Hardcoded to `false` in StackView.res; AppIntegrated passes `isDark` but StackView ignores it.
+- **Security views display sample data:** SecurityInspector and GapAnalysis render hardcoded demo data, not live validation results from the backend.
 - **WebSocket integration:** Socket.res exists but no live channel push/receive logic.
 - **Auth:** JWT + Plug module present but no token refresh, revocation, or session management.
 - **Firewall:** Schema exists but no nftables integration.
 - **Database:** Ecto schemas and conditional Repo present but no migrations.
 - **Post-Quantum Crypto:** Module scaffolded; no real XMSS implementation.
-- **Simulation:** Packet flow UI renders but no real backend simulation engine.
+- **Simulation:** Packet flow UI fully renders with animation and stats but no real backend simulation engine.
 
 ## Preserved Future Work
 

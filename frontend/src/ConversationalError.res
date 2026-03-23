@@ -1,0 +1,230 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// ConversationalError.res - User-friendly error messages with [Fix It] buttons
+//
+// Implements UX Manifesto Rule 4 ("One-Click Fix Rule") and the Error Message
+// Formula: Icon + What went wrong + Why + What you can do (3 options max).
+//
+// Usage:
+//   <ConversationalError
+//     title="Port 8080 is already taken"
+//     reason="Another service is using this port"
+//     fixes=[
+//       ("Use port 8081 instead", () => dispatch(ChangePort(8081))),
+//       ("Choose a different port", () => dispatch(ShowPortPicker)),
+//       ("Stop the other service", () => dispatch(StopConflicting)),
+//     ]
+//   />
+
+// A single fix option: label + callback
+type fix = {
+  label: string,
+  action: unit => unit,
+  isPrimary: bool,
+}
+
+// Severity controls the icon and border colour
+type severity =
+  | Critical // red — something is broken
+  | Warning // amber — something might break
+  | Info // blue — something to know
+
+// Helper: make a primary fix (highlighted)
+let primaryFix = (label: string, action: unit => unit): fix => {
+  label,
+  action,
+  isPrimary: true,
+}
+
+// Helper: make a secondary fix
+let secondaryFix = (label: string, action: unit => unit): fix => {
+  label,
+  action,
+  isPrimary: false,
+}
+
+// ---------------------------------------------------------------------------
+// Severity styling
+// ---------------------------------------------------------------------------
+
+let severityIcon = (s: severity): string =>
+  switch s {
+  | Critical => "!"
+  | Warning => "~"
+  | Info => "i"
+  }
+
+let severityColor = (s: severity): string =>
+  switch s {
+  | Critical => "#ef5350"
+  | Warning => "#ffa726"
+  | Info => "#42a5f5"
+  }
+
+let severityBg = (s: severity): string =>
+  switch s {
+  | Critical => "rgba(239, 83, 80, 0.08)"
+  | Warning => "rgba(255, 167, 38, 0.08)"
+  | Info => "rgba(66, 165, 245, 0.08)"
+  }
+
+// ---------------------------------------------------------------------------
+// Inline error component (displayed inside a view, not a toast)
+// ---------------------------------------------------------------------------
+
+@react.component
+let make = (
+  ~title: string,
+  ~reason: option<string>=?,
+  ~fixes: array<fix>=[],
+  ~severity: severity=Warning,
+  ~onDismiss: option<unit => unit>=?,
+) => {
+  let color = severityColor(severity)
+
+  <div
+    role="alert"
+    ariaLive=#assertive
+    style={Sx.make(
+      ~padding="20px",
+      ~background=severityBg(severity),
+      ~border="2px solid " ++ color,
+      ~borderRadius="12px",
+      ~marginBottom="16px",
+      (),
+    )}
+  >
+    // Header: icon + title + optional dismiss
+    <div
+      style={Sx.make(
+        ~display="flex",
+        ~alignItems="flex-start",
+        ~gap="12px",
+        ~marginBottom=switch reason {
+        | Some(_) => "12px"
+        | None =>
+          if Array.length(fixes) > 0 {
+            "16px"
+          } else {
+            "0"
+          }
+        },
+        (),
+      )}
+    >
+      // Severity icon badge
+      <div
+        style={Sx.make(
+          ~width="28px",
+          ~height="28px",
+          ~borderRadius="50%",
+          ~background=color,
+          ~color="white",
+          ~display="flex",
+          ~justifyContent="center",
+          ~fontWeight="700",
+          ~fontSize="16px",
+          ~lineHeight="28px",
+          ~textAlign="center",
+          (),
+        )}
+      >
+        {severityIcon(severity)->React.string}
+      </div>
+
+      // Title text
+      <div style={Sx.make(~flex="1", ())}>
+        <div
+          style={Sx.make(
+            ~fontSize="15px",
+            ~fontWeight="600",
+            ~color="#e0e6ed",
+            ~lineHeight="1.4",
+            (),
+          )}
+        >
+          {title->React.string}
+        </div>
+      </div>
+
+      // Dismiss button (if provided)
+      {switch onDismiss {
+      | Some(dismiss) =>
+        <button
+          onClick={_ => dismiss()}
+          ariaLabel="Dismiss error"
+          style={Sx.make(
+            ~background="transparent",
+            ~border="none",
+            ~color="#8892a6",
+            ~fontSize="18px",
+            ~cursor="pointer",
+            ~padding="0",
+            ~lineHeight="1",
+            (),
+          )}
+        >
+          {"x"->React.string}
+        </button>
+      | None => React.null
+      }}
+    </div>
+
+    // Reason (why it happened)
+    {switch reason {
+    | Some(text) =>
+      <p
+        style={Sx.make(
+          ~fontSize="13px",
+          ~color="#8892a6",
+          ~lineHeight="1.5",
+          ~margin="0",
+          ~marginBottom=Array.length(fixes) > 0 ? "16px" : "0",
+          ~paddingLeft="40px",
+          (),
+        )}
+      >
+        {text->React.string}
+      </p>
+    | None => React.null
+    }}
+
+    // Fix buttons (max 3 per UX Manifesto)
+    {Array.length(fixes) > 0
+      ? <div
+          style={Sx.make(
+            ~display="flex",
+            ~gap="8px",
+            ~flexWrap="wrap",
+            ~paddingLeft="40px",
+            (),
+          )}
+        >
+          {fixes
+          ->Array.slice(~offset=0, ~len=3)
+          ->Array.mapWithIndex((idx, fix) => {
+            <button
+              key={Int.toString(idx)}
+              onClick={_ => fix.action()}
+              style={Sx.make(
+                ~padding="8px 16px",
+                ~borderRadius="8px",
+                ~fontSize="13px",
+                ~fontWeight="600",
+                ~cursor="pointer",
+                ~transition="all 0.2s",
+                ~border=fix.isPrimary ? "none" : "1px solid " ++ color,
+                ~background=fix.isPrimary ? color : "transparent",
+                ~color=fix.isPrimary ? "white" : color,
+                (),
+              )}
+              ariaLabel={fix.label}
+            >
+              {fix.label->React.string}
+            </button>
+          })
+          ->React.array}
+        </div>
+      : React.null}
+  </div>
+}
+

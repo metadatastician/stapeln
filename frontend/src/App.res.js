@@ -24,6 +24,7 @@ import * as PortConfigPanel from "./PortConfigPanel.res.js";
 import * as PipelineDesigner from "./PipelineDesigner.res.js";
 import * as SecurityInspector from "./SecurityInspector.res.js";
 import * as JsxRuntime from "react/jsx-runtime";
+import * as ConversationalError from "./ConversationalError.res.js";
 import * as LagoGreyImageDesigner from "./LagoGreyImageDesigner.res.js";
 
 function systemPrefersDark() {
@@ -90,14 +91,6 @@ function App(props) {
     }));
     if (typeof msg !== "object") {
       switch (msg) {
-        case "TriggerImportDesign" :
-          return Import.triggerImport(importedModel => dispatch({
-            TAG: "ImportDesignSuccess",
-            _0: importedModel
-          }), error => dispatch({
-            TAG: "ImportDesignError",
-            _0: error
-          }));
         case "SaveStack" :
           let body = serializeStack(newModel);
           ApiClient.saveStack(body).then(result => {
@@ -274,6 +267,9 @@ function App(props) {
           }
           console.warn("WebSocket not connected, cannot gap analysis via WS");
           return;
+        case "TriggerImportDesign" :
+        case "RetryImport" :
+          break;
         case "AutoSaveTick" :
           if (!state.model.isDirty) {
             return;
@@ -304,6 +300,13 @@ function App(props) {
         };
       });
     }
+    Import.triggerImport(importedModel => dispatch({
+      TAG: "ImportDesignSuccess",
+      _0: importedModel
+    }), error => dispatch({
+      TAG: "ImportDesignError",
+      _0: error
+    }));
   };
   let switchPage = page => {
     AppRouter.navigateTo(page);
@@ -406,7 +409,8 @@ function App(props) {
               undoStack: init.undoStack,
               redoStack: init.redoStack,
               isDirty: init.isDirty,
-              lastSavedAt: init.lastSavedAt
+              lastSavedAt: init.lastSavedAt,
+              activeErrors: init.activeErrors
             },
             pipelineDesigner: prev.pipelineDesigner,
             isDark: newSettings.theme === "dark"
@@ -550,6 +554,44 @@ function App(props) {
           ],
           className: "nav-tabs"
         }),
+        state.model.activeErrors.length !== 0 ? JsxRuntime.jsx("div", {
+            children: Belt_Array.map(state.model.activeErrors, err => {
+              let label = err.fixLabel;
+              let fixes;
+              if (label !== undefined) {
+                let t = err.title;
+                let action = t.includes("import") ? () => dispatch("RetryImport") : (
+                    t.includes("save") ? () => dispatch("SaveStack") : (
+                        t.includes("Security") ? () => dispatch("RunSecurityScan") : (
+                            t.includes("Gap") ? () => dispatch("RunGapAnalysis") : () => dispatch({
+                                TAG: "DismissError",
+                                _0: err.id
+                              })
+                          )
+                      )
+                  );
+                fixes = [ConversationalError.primaryFix(label, action)];
+              } else {
+                fixes = [];
+              }
+              return JsxRuntime.jsx(ConversationalError.make, {
+                title: err.title,
+                reason: err.reason,
+                fixes: fixes,
+                severity: err.severity,
+                onDismiss: () => dispatch({
+                  TAG: "DismissError",
+                  _0: err.id
+                })
+              }, err.id);
+            }),
+            "aria-live": "polite",
+            role: "alert",
+            style: {
+              background: "#0d1117",
+              padding: "12px 16px"
+            }
+          }) : null,
         JsxRuntime.jsx("div", {
           children: tmp,
           className: "content"

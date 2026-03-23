@@ -84,6 +84,18 @@ type rec model = {
   // Dirty tracking for auto-save
   isDirty: bool,
   lastSavedAt: option<float>, // Date.now() timestamp
+  // Active user-facing errors (conversational style, UX Manifesto Rule 4)
+  activeErrors: array<userError>,
+}
+
+// A user-facing error with optional fix action
+and userError = {
+  id: string,
+  title: string,
+  reason: option<string>,
+  severity: ConversationalError.severity,
+  fixLabel: option<string>,
+  // Fix actions are dispatched as messages, not stored in model
 }
 
 and validationResult = {
@@ -111,6 +123,7 @@ let initialModel = {
   redoStack: [],
   isDirty: false,
   lastSavedAt: None,
+  activeErrors: [],
 }
 
 // Helper functions

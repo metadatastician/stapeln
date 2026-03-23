@@ -451,7 +451,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "ZoomIn" :
         let newZoom = Math.min(model.zoomLevel * 1.2, 3.0);
@@ -473,7 +474,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "ZoomOut" :
         let newZoom$1 = Math.max(model.zoomLevel / 1.2, 0.5);
@@ -495,7 +497,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "ResetZoom" :
         return {
@@ -519,7 +522,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "ValidateStack" :
         let result_valid = model.components.length !== 0;
@@ -548,7 +552,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "ExportToSelurCompose" :
         Export.exportToSelurCompose(model);
@@ -588,7 +593,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "SecurityScanLoading" :
         return {
@@ -609,7 +615,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "RunGapAnalysis" :
         console.log("Running gap analysis...");
@@ -631,7 +638,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "GapAnalysisLoading" :
         return {
@@ -652,7 +660,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "SaveSettings" :
         console.log("Saving settings to backend...");
@@ -683,7 +692,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "WsValidate" :
         console.log("WebSocket validate requested");
@@ -708,7 +718,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "WsGapAnalysis" :
         console.log("WebSocket gap analysis requested");
@@ -730,7 +741,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "Undo" :
         let stackLen = model.undoStack.length;
@@ -764,7 +776,8 @@ function update(model, msg) {
           undoStack: newUndoStack,
           redoStack: newRedoStack,
           isDirty: true,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "Redo" :
         let stackLen$1 = model.redoStack.length;
@@ -798,7 +811,8 @@ function update(model, msg) {
           undoStack: newUndoStack$1,
           redoStack: newRedoStack$1,
           isDirty: true,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "MarkClean" :
         return {
@@ -819,7 +833,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: false,
-          lastSavedAt: (Date.now())
+          lastSavedAt: (Date.now()),
+          activeErrors: model.activeErrors
         };
       default:
         return model;
@@ -856,7 +871,8 @@ function update(model, msg) {
           undoStack: m.undoStack,
           redoStack: m.redoStack,
           isDirty: m.isDirty,
-          lastSavedAt: m.lastSavedAt
+          lastSavedAt: m.lastSavedAt,
+          activeErrors: m.activeErrors
         };
       case "RemoveComponent" :
         let id = msg._0;
@@ -887,7 +903,8 @@ function update(model, msg) {
           undoStack: m$1.undoStack,
           redoStack: m$1.redoStack,
           isDirty: m$1.isDirty,
-          lastSavedAt: m$1.lastSavedAt
+          lastSavedAt: m$1.lastSavedAt,
+          activeErrors: m$1.activeErrors
         };
       case "UpdateComponentPosition" :
         let position = msg._1;
@@ -922,7 +939,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "UpdateComponentConfig" :
         let config = msg._1;
@@ -958,7 +976,8 @@ function update(model, msg) {
           undoStack: m$2.undoStack,
           redoStack: m$2.redoStack,
           isDirty: m$2.isDirty,
-          lastSavedAt: m$2.lastSavedAt
+          lastSavedAt: m$2.lastSavedAt,
+          activeErrors: m$2.activeErrors
         };
       case "SelectComponent" :
         return {
@@ -979,7 +998,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "AddConnection" :
         let toId = msg._1;
@@ -1014,7 +1034,8 @@ function update(model, msg) {
           undoStack: m$3.undoStack,
           redoStack: m$3.redoStack,
           isDirty: m$3.isDirty,
-          lastSavedAt: m$3.lastSavedAt
+          lastSavedAt: m$3.lastSavedAt,
+          activeErrors: m$3.activeErrors
         };
       case "RemoveConnection" :
         let id$3 = msg._0;
@@ -1038,7 +1059,8 @@ function update(model, msg) {
           undoStack: m$4.undoStack,
           redoStack: m$4.redoStack,
           isDirty: m$4.isDirty,
-          lastSavedAt: m$4.lastSavedAt
+          lastSavedAt: m$4.lastSavedAt,
+          activeErrors: m$4.activeErrors
         };
       case "StartDragComponent" :
         return {
@@ -1062,7 +1084,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "StartDragCanvas" :
         return {
@@ -1086,7 +1109,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "DragMove" :
         let mousePos = msg._0;
@@ -1134,7 +1158,8 @@ function update(model, msg) {
             undoStack: model.undoStack,
             redoStack: model.redoStack,
             isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt
+            lastSavedAt: model.lastSavedAt,
+            activeErrors: model.activeErrors
           };
         }
         let startPos = component._0;
@@ -1167,7 +1192,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "PanCanvas" :
         return {
@@ -1188,7 +1214,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "ValidationResult" :
         return {
@@ -1209,7 +1236,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "ExportDesignToJson" :
         Export.exportDesignToJson(model, msg._0);
@@ -1218,8 +1246,37 @@ function update(model, msg) {
         console.log("Design imported successfully");
         return msg._0;
       case "ImportDesignError" :
-        console.error("Import failed:", msg._0);
-        return model;
+        let err_id = Model.generateId();
+        let err_reason = msg._0;
+        let err_fixLabel = "Try a different file";
+        let err = {
+          id: err_id,
+          title: "Couldn't import the design file",
+          reason: err_reason,
+          severity: "Critical",
+          fixLabel: err_fixLabel
+        };
+        return {
+          components: model.components,
+          connections: model.connections,
+          selectedComponent: model.selectedComponent,
+          dragState: model.dragState,
+          canvasOffset: model.canvasOffset,
+          zoomLevel: model.zoomLevel,
+          validationResult: model.validationResult,
+          securityState: model.securityState,
+          gapState: model.gapState,
+          securityLoading: model.securityLoading,
+          gapLoading: model.gapLoading,
+          currentStackId: model.currentStackId,
+          settings: model.settings,
+          wsState: model.wsState,
+          undoStack: model.undoStack,
+          redoStack: model.redoStack,
+          isDirty: model.isDirty,
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: Belt_Array.concat(model.activeErrors, [err])
+        };
       case "LoadStack" :
         console.log("Loading stack:", msg._0);
         return model;
@@ -1227,10 +1284,59 @@ function update(model, msg) {
         let result$1 = msg._0;
         if (result$1.TAG === "Ok") {
           console.log("Stack saved with ID:", result$1._0);
-          return model;
+          return {
+            components: model.components,
+            connections: model.connections,
+            selectedComponent: model.selectedComponent,
+            dragState: model.dragState,
+            canvasOffset: model.canvasOffset,
+            zoomLevel: model.zoomLevel,
+            validationResult: model.validationResult,
+            securityState: model.securityState,
+            gapState: model.gapState,
+            securityLoading: model.securityLoading,
+            gapLoading: model.gapLoading,
+            currentStackId: model.currentStackId,
+            settings: model.settings,
+            wsState: model.wsState,
+            undoStack: model.undoStack,
+            redoStack: model.redoStack,
+            isDirty: false,
+            lastSavedAt: (Date.now()),
+            activeErrors: model.activeErrors
+          };
         }
-        console.error("Failed to save stack:", result$1._0);
-        return model;
+        let error_id = Model.generateId();
+        let error_reason = result$1._0;
+        let error_fixLabel = "Try again";
+        let error = {
+          id: error_id,
+          title: "Couldn't save your stack",
+          reason: error_reason,
+          severity: "Warning",
+          fixLabel: error_fixLabel
+        };
+        return {
+          components: model.components,
+          connections: model.connections,
+          selectedComponent: model.selectedComponent,
+          dragState: model.dragState,
+          canvasOffset: model.canvasOffset,
+          zoomLevel: model.zoomLevel,
+          validationResult: model.validationResult,
+          securityState: model.securityState,
+          gapState: model.gapState,
+          securityLoading: model.securityLoading,
+          gapLoading: model.gapLoading,
+          currentStackId: model.currentStackId,
+          settings: model.settings,
+          wsState: model.wsState,
+          undoStack: model.undoStack,
+          redoStack: model.redoStack,
+          isDirty: model.isDirty,
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: Belt_Array.concat(model.activeErrors, [error])
+        };
       case "StackLoaded" :
         let result$2 = msg._0;
         if (result$2.TAG === "Ok") {
@@ -1262,10 +1368,20 @@ function update(model, msg) {
             undoStack: model.undoStack,
             redoStack: model.redoStack,
             isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt
+            lastSavedAt: model.lastSavedAt,
+            activeErrors: model.activeErrors
           };
         }
-        console.error("Security scan failed:", result$3._0);
+        let error_id$1 = Model.generateId();
+        let error_reason$1 = result$3._0;
+        let error_fixLabel$1 = "Run again";
+        let error$1 = {
+          id: error_id$1,
+          title: "Security scan couldn't complete",
+          reason: error_reason$1,
+          severity: "Warning",
+          fixLabel: error_fixLabel$1
+        };
         return {
           components: model.components,
           connections: model.connections,
@@ -1284,7 +1400,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: Belt_Array.concat(model.activeErrors, [error$1])
         };
       case "GapAnalysisResult" :
         let result$4 = msg._0;
@@ -1309,10 +1426,20 @@ function update(model, msg) {
             undoStack: model.undoStack,
             redoStack: model.redoStack,
             isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt
+            lastSavedAt: model.lastSavedAt,
+            activeErrors: model.activeErrors
           };
         }
-        console.error("Gap analysis failed:", result$4._0);
+        let error_id$2 = Model.generateId();
+        let error_reason$2 = result$4._0;
+        let error_fixLabel$2 = "Run again";
+        let error$2 = {
+          id: error_id$2,
+          title: "Gap analysis couldn't complete",
+          reason: error_reason$2,
+          severity: "Warning",
+          fixLabel: error_fixLabel$2
+        };
         return {
           components: model.components,
           connections: model.connections,
@@ -1331,7 +1458,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: Belt_Array.concat(model.activeErrors, [error$2])
         };
       case "SettingsSaved" :
         let result$5 = msg._0;
@@ -1382,7 +1510,8 @@ function update(model, msg) {
             undoStack: model.undoStack,
             redoStack: model.redoStack,
             isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt
+            lastSavedAt: model.lastSavedAt,
+            activeErrors: model.activeErrors
           };
         }
         console.error("Failed to load settings:", result$6._0);
@@ -1406,7 +1535,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "WsValidationResult" :
         let d = jsonDict(msg._0);
@@ -1450,7 +1580,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "WsSecurityResult" :
         let d$1 = jsonDict(msg._0);
@@ -1473,7 +1604,8 @@ function update(model, msg) {
             undoStack: model.undoStack,
             redoStack: model.redoStack,
             isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt
+            lastSavedAt: model.lastSavedAt,
+            activeErrors: model.activeErrors
           };
         }
         let data$1 = d$1["data"];
@@ -1496,7 +1628,8 @@ function update(model, msg) {
             undoStack: model.undoStack,
             redoStack: model.redoStack,
             isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt
+            lastSavedAt: model.lastSavedAt,
+            activeErrors: model.activeErrors
           };
         }
         let parsed$2 = parseSecurityScanJson(data$1);
@@ -1518,7 +1651,8 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
         };
       case "WsGapResult" :
         let d$2 = jsonDict(msg._0);
@@ -1541,7 +1675,8 @@ function update(model, msg) {
             undoStack: model.undoStack,
             redoStack: model.redoStack,
             isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt
+            lastSavedAt: model.lastSavedAt,
+            activeErrors: model.activeErrors
           };
         }
         let data$2 = d$2["data"];
@@ -1564,7 +1699,8 @@ function update(model, msg) {
             undoStack: model.undoStack,
             redoStack: model.redoStack,
             isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt
+            lastSavedAt: model.lastSavedAt,
+            activeErrors: model.activeErrors
           };
         }
         let parsed$3 = parseGapAnalysisJson(data$2);
@@ -1586,7 +1722,31 @@ function update(model, msg) {
           undoStack: model.undoStack,
           redoStack: model.redoStack,
           isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: model.activeErrors
+        };
+      case "DismissError" :
+        let errorId = msg._0;
+        return {
+          components: model.components,
+          connections: model.connections,
+          selectedComponent: model.selectedComponent,
+          dragState: model.dragState,
+          canvasOffset: model.canvasOffset,
+          zoomLevel: model.zoomLevel,
+          validationResult: model.validationResult,
+          securityState: model.securityState,
+          gapState: model.gapState,
+          securityLoading: model.securityLoading,
+          gapLoading: model.gapLoading,
+          currentStackId: model.currentStackId,
+          settings: model.settings,
+          wsState: model.wsState,
+          undoStack: model.undoStack,
+          redoStack: model.redoStack,
+          isDirty: model.isDirty,
+          lastSavedAt: model.lastSavedAt,
+          activeErrors: Belt_Array.keep(model.activeErrors, e => e.id !== errorId)
         };
       default:
         return model;

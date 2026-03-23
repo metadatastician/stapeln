@@ -256,7 +256,7 @@ let make = () => {
         })
       }
 
-    | TriggerImportDesign => {
+    | TriggerImportDesign | RetryImport => {
         // Side effect: open file picker, dispatch result back through TEA
         Import.triggerImport(
           importedModel => dispatch(ImportDesignSuccess(importedModel)),
@@ -454,6 +454,41 @@ let make = () => {
           </button>
         </div>
       </nav>
+
+      // Active errors (UX Manifesto Rule 4: conversational with [Fix It] buttons)
+      {Array.length(state.model.activeErrors) > 0
+        ? <div
+            style={Sx.make(~padding="12px 16px", ~background="#0d1117", ())}
+            role="alert"
+            ariaLive=#polite
+          >
+            {state.model.activeErrors
+            ->Array.map(err => {
+              let fixes = switch err.fixLabel {
+              | Some(label) => {
+                  let action = switch err.title {
+                  | t if String.includes(t, "import") => () => dispatch(RetryImport)
+                  | t if String.includes(t, "save") => () => dispatch(SaveStack)
+                  | t if String.includes(t, "Security") => () => dispatch(RunSecurityScan)
+                  | t if String.includes(t, "Gap") => () => dispatch(RunGapAnalysis)
+                  | _ => () => dispatch(DismissError(err.id))
+                  }
+                  [ConversationalError.primaryFix(label, action)]
+                }
+              | None => []
+              }
+              <ConversationalError
+                key={err.id}
+                title={err.title}
+                reason=?{err.reason}
+                severity={err.severity}
+                fixes
+                onDismiss={() => dispatch(DismissError(err.id))}
+              />
+            })
+            ->React.array}
+          </div>
+        : React.null}
 
       <div className="content">
         {switch state.currentPage {

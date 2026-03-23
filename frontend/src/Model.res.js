@@ -22,6 +22,8 @@ let initialModel_undoStack = [];
 
 let initialModel_redoStack = [];
 
+let initialModel_activeErrors = [];
+
 let initialModel = {
   components: initialModel_components,
   connections: initialModel_connections,
@@ -40,7 +42,8 @@ let initialModel = {
   undoStack: initialModel_undoStack,
   redoStack: initialModel_redoStack,
   isDirty: false,
-  lastSavedAt: undefined
+  lastSavedAt: undefined,
+  activeErrors: initialModel_activeErrors
 };
 
 function generateId() {
@@ -89,7 +92,8 @@ function pushUndo(model) {
     undoStack: trimmed,
     redoStack: [],
     isDirty: true,
-    lastSavedAt: model.lastSavedAt
+    lastSavedAt: model.lastSavedAt,
+    activeErrors: model.activeErrors
   };
 }
 

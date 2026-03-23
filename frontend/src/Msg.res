@@ -64,6 +64,9 @@ type msg =
   | WsSecurityResult(JSON.t)
   | WsGapAnalysis
   | WsGapResult(JSON.t)
+  // Error management (UX Manifesto Rule 4)
+  | DismissError(string) // error id
+  | RetryImport
   // Undo/redo
   | Undo
   | Redo

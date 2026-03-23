@@ -692,11 +692,21 @@ let update = (model: model, msg: msg): model => {
     }
 
   | ImportDesignError(error) => {
-      Console.error2("Import failed:", error)
-
-      // TODO: Show error message to user
-      model
+      let err: userError = {
+        id: generateId(),
+        title: "Couldn't import the design file",
+        reason: Some(error),
+        severity: Critical,
+        fixLabel: Some("Try a different file"),
+      }
+      {...model, activeErrors: Array.concat(model.activeErrors, [err])}
     }
+
+  | DismissError(errorId) => {
+      {...model, activeErrors: Array.keep(model.activeErrors, e => e.id !== errorId)}
+    }
+
+  | RetryImport => model // Side effect handled in App.res
 
   // API communication
   | SaveStack => {
@@ -712,11 +722,17 @@ let update = (model: model, msg: msg): model => {
   | StackSaved(result) => switch result {
     | Ok(stackId) => {
         Console.log2("Stack saved with ID:", stackId)
-        model
+        {...model, isDirty: false, lastSavedAt: Some(%raw(`Date.now()`))}
       }
     | Error(err) => {
-        Console.error2("Failed to save stack:", err)
-        model
+        let error: userError = {
+          id: generateId(),
+          title: "Couldn't save your stack",
+          reason: Some(err),
+          severity: Warning,
+          fixLabel: Some("Try again"),
+        }
+        {...model, activeErrors: Array.concat(model.activeErrors, [error])}
       }
     }
 
@@ -748,8 +764,18 @@ let update = (model: model, msg: msg): model => {
         {...model, securityState: Some(parsed), securityLoading: false}
       }
     | Error(err) => {
-        Console.error2("Security scan failed:", err)
-        {...model, securityLoading: false}
+        let error: userError = {
+          id: generateId(),
+          title: "Security scan couldn't complete",
+          reason: Some(err),
+          severity: Warning,
+          fixLabel: Some("Run again"),
+        }
+        {
+          ...model,
+          securityLoading: false,
+          activeErrors: Array.concat(model.activeErrors, [error]),
+        }
       }
     }
 
@@ -769,8 +795,18 @@ let update = (model: model, msg: msg): model => {
         {...model, gapState: Some(parsed), gapLoading: false}
       }
     | Error(err) => {
-        Console.error2("Gap analysis failed:", err)
-        {...model, gapLoading: false}
+        let error: userError = {
+          id: generateId(),
+          title: "Gap analysis couldn't complete",
+          reason: Some(err),
+          severity: Warning,
+          fixLabel: Some("Run again"),
+        }
+        {
+          ...model,
+          gapLoading: false,
+          activeErrors: Array.concat(model.activeErrors, [error]),
+        }
       }
     }
 
