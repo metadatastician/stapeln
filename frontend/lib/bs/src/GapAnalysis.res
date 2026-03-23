@@ -96,8 +96,20 @@ type msg =
   | RunGapAnalysis
   | ApplyAllAutoFixes
 
-// Initialize with sample gaps
+// Empty initial state (live data loaded from backend via API)
 let init: state = {
+  gaps: [],
+  appliedFixes: Belt.Map.String.empty,
+  selectedGap: None,
+  filterCategory: None,
+  filterSeverity: None,
+  showOnlyFixable: false,
+  sortBy: BySeverity,
+}
+
+// Legacy sample data preserved below for reference during development.
+// Delete when backend integration is verified end-to-end.
+let _sampleInit: state = {
   gaps: [
     {
       id: "gap-1",
@@ -762,6 +774,65 @@ let make = (~initialState: option<state>=?, ~onStateChange: option<state => unit
       </p>
     </div>
 
+    // Empty state: no analysis has been run
+    {Array.length(state.gaps) === 0
+      ? <div
+          style={Sx.make(
+            ~padding="60px 40px",
+            ~background="linear-gradient(135deg, #1e2431 0%, #252d3d 100%)",
+            ~border="2px dashed #2a3f5f",
+            ~borderRadius="16px",
+            ~textAlign="center",
+            (),
+          )}
+        >
+          <div style={Sx.make(~fontSize="48px", ~marginBottom="16px", ())}>
+            {"📊"->React.string}
+          </div>
+          <h2
+            style={Sx.make(
+              ~fontSize="20px",
+              ~fontWeight="700",
+              ~color="#e0e6ed",
+              ~marginBottom="12px",
+              (),
+            )}
+          >
+            {"No gap analysis results yet"->React.string}
+          </h2>
+          <p
+            style={Sx.make(
+              ~fontSize="14px",
+              ~color="#8892a6",
+              ~marginBottom="24px",
+              ~lineHeight="1.6",
+              (),
+            )}
+          >
+            {"Run a gap analysis to detect security, compliance, performance, and reliability gaps in your stack configuration."->React.string}
+          </p>
+          <button
+            onClick={_ => dispatch(RunGapAnalysis)}
+            style={Sx.make(
+              ~padding="12px 28px",
+              ~background="linear-gradient(135deg, #4a9eff, #7b6cff)",
+              ~color="white",
+              ~border="none",
+              ~borderRadius="8px",
+              ~fontSize="16px",
+              ~fontWeight="600",
+              ~cursor="pointer",
+              (),
+            )}
+          >
+            {"Run Gap Analysis"->React.string}
+          </button>
+        </div>
+      : React.null}
+
+    {Array.length(state.gaps) === 0
+      ? React.null
+      : <>
     <div
       style={Sx.make(
         ~display="grid",
@@ -947,5 +1018,6 @@ let make = (~initialState: option<state>=?, ~onStateChange: option<state => unit
         {"Gap detection powered by miniKanren reasoning engine, Hypatia neurosymbolic agent, and VeriSimDB historical analysis. Fixes verified with formal proofs before application. All changes logged to compliance audit trail."->React.string}
       </p>
     </div>
+    </>}
   </div>
 }

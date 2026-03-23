@@ -322,9 +322,8 @@ let renderParagonStack = (model: model, isDark: bool) => {
 }
 
 // Main view function
-let view = (model: model) => {
-  // Detect system dark mode preference
-  let isDarkMode = false // TODO: Detect from window.matchMedia('(prefers-color-scheme: dark)')
-
-  renderParagonStack(model, isDarkMode)
+// Accepts isDark from the parent (AppIntegrated) which tracks it in state.
+// No default — callers MUST provide isDark to prevent silent light-mode fallback.
+let view = (model: model, ~isDark: bool) => {
+  renderParagonStack(model, isDark)
 }

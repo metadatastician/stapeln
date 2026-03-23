@@ -277,7 +277,12 @@ let make = () => {
           {switch state.currentRoute {
           | NetworkView =>
             TopologyView.view(state.model, state.isDark, stackMsg => dispatch(StackMsg(stackMsg)))
-          | StackView => StackView.view(state.model)
+          | StackView => StackView.view(state.model, ~isDark=state.isDark)
+          | PipelineView =>
+            <PipelineDesigner
+              state={PipelineModel.initialState()}
+              dispatch={_pMsg => ()}
+            />
           | LagoGreyView => <LagoGreyImageDesigner />
           | PortConfigView =>
             <PortConfigPanel

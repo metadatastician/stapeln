@@ -64,3 +64,14 @@ type msg =
   | WsSecurityResult(JSON.t)
   | WsGapAnalysis
   | WsGapResult(JSON.t)
+  // Error management (UX Manifesto Rule 4)
+  | DismissError(string) // error id
+  | RetryImport
+  // Undo/redo
+  | Undo
+  | Redo
+  // Auto-save
+  | AutoSaveTick
+  | MarkClean // called after successful save
+  // Pipeline designer
+  | Pipeline(PipelineModel.pipelineMsg)

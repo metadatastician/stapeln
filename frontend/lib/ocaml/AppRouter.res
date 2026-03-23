@@ -5,6 +5,7 @@
 type route =
   | NetworkView
   | StackView
+  | PipelineView
   | LagoGreyView
   | PortConfigView
   | SecurityView
@@ -18,6 +19,7 @@ let routeToPath = (route: route): string => {
   switch route {
   | NetworkView => "/"
   | StackView => "/stack"
+  | PipelineView => "/pipeline"
   | LagoGreyView => "/lago-grey"
   | PortConfigView => "/ports"
   | SecurityView => "/security"
@@ -33,6 +35,7 @@ let pathToRoute = (path: string): route => {
   switch path {
   | "/" => NetworkView
   | "/stack" => StackView
+  | "/pipeline" => PipelineView
   | "/lago-grey" => LagoGreyView
   | "/ports" => PortConfigView
   | "/security" => SecurityView
@@ -100,6 +103,12 @@ let navigationItems: array<routeMeta> = [
     label: "Stack",
     icon: "📦",
     description: "Vertical stack view",
+  },
+  {
+    route: PipelineView,
+    label: "Pipeline",
+    icon: "🔧",
+    description: "Assembly pipeline designer",
   },
   {
     route: LagoGreyView,

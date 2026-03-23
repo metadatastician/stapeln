@@ -398,9 +398,7 @@ function renderParagonStack(model, isDark) {
   });
 }
 
-function view(model) {
-  return renderParagonStack(model, false);
-}
+let view = renderParagonStack;
 
 export {
   Colors,

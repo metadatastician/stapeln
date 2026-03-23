@@ -8,26 +8,39 @@ open Update
 // Direct JS binding for Array.join (avoids deprecated Js.Array2.joinWith)
 @send external joinWith: (array<string>, string) => string = "join"
 
-type page =
-  | NetworkView // Cisco-style topology (TopologyView.res)
-  | StackView // Paragon-style vertical (View.res)
-  | LagoGreyView // Lago Grey image designer
-  | PortConfigView // Port configuration with ephemeral pinholes
-  | SecurityView // Security inspector with attack surface analysis
-  | GapAnalysisView // Gap analysis with automated remediation
-  | SimulationView // Packet animation simulation
-  | SettingsView // Settings and preferences
+// Page type delegated to AppRouter for URL synchronisation
+type page = AppRouter.route
 
 type appState = {
   currentPage: page,
   model: model, // TEA model for stack designer
+  pipelineDesigner: PipelineModel.pipelineDesignerState,
   isDark: bool,
 }
 
+// Detect OS-level dark mode preference via matchMedia.
+let systemPrefersDark = (): bool => {
+  %raw(`window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches`)
+}
+
+// Helpers to toggle the "dark" class on <html> for Tailwind dark mode.
+let addDarkClass: unit => unit = %raw(`function() { document.documentElement.classList.add("dark") }`)
+let removeDarkClass: unit => unit = %raw(`function() { document.documentElement.classList.remove("dark") }`)
+
+// Resolve the initial isDark value: localStorage override > system preference.
+let resolveInitialDark = (): bool => {
+  switch WebAPI.getItem("stapeln_theme")->Nullable.toOption {
+  | Some("light") => false
+  | Some("dark") => true
+  | Some(_) | None => systemPrefersDark()
+  }
+}
+
 let initialAppState = {
-  currentPage: NetworkView,
+  currentPage: AppRouter.getCurrentRoute(),
   model: initialModel,
-  isDark: true,
+  pipelineDesigner: PipelineModel.initialState(),
+  isDark: resolveInitialDark(),
 }
 
 // Serialise the current stack model to a JSON string suitable for the API.
@@ -235,13 +248,110 @@ let make = () => {
         }
       }
 
+    | Pipeline(pipelineMsg) => {
+        // Update pipeline designer state directly in appState
+        setState(prev => {
+          let newPState = PipelineUpdate.update(prev.pipelineDesigner, pipelineMsg)
+          {...prev, pipelineDesigner: newPState}
+        })
+      }
+
+    | TriggerImportDesign | RetryImport => {
+        // Side effect: open file picker, dispatch result back through TEA
+        Import.triggerImport(
+          importedModel => dispatch(ImportDesignSuccess(importedModel)),
+          error => dispatch(ImportDesignError(error)),
+        )
+      }
+
+    | AutoSaveTick => {
+        // Only save if model is dirty
+        if state.model.isDirty {
+          let body = serializeStack(state.model)
+          ignore(
+            ApiClient.saveStack(body)
+            ->Promise.then(result => {
+              switch result {
+              | Ok(_) => dispatch(MarkClean)
+              | Error(_) => () // Silent fail — will retry next tick
+              }
+              Promise.resolve()
+            }),
+          )
+        }
+      }
+
     | _ => ()
     }
   }
 
   let switchPage = page => {
+    AppRouter.navigateTo(page)
     setState(prev => {...prev, currentPage: page})
+    // Auto-trigger scans when navigating to security/gap views
+    // (only if we have a stack and no results yet)
+    switch page {
+    | SecurityView =>
+      if state.model.securityState === None && !state.model.securityLoading {
+        dispatch(RunSecurityScan)
+      }
+    | GapAnalysisView =>
+      if state.model.gapState === None && !state.model.gapLoading {
+        dispatch(RunGapAnalysis)
+      }
+    | _ => ()
+    }
   }
+
+  // Listen for browser back/forward navigation
+  React.useEffect0(() => {
+    AppRouter.onRouteChange(route => {
+      setState(prev => {...prev, currentPage: route})
+    })
+    None
+  })
+
+  // Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Y / Ctrl+Shift+Z (redo)
+  React.useEffect0(() => {
+    let _keyHandler = (e: {..}) => {
+      let key: string = e["key"]
+      let ctrlKey: bool = e["ctrlKey"]
+      let metaKey: bool = e["metaKey"]
+      let shiftKey: bool = e["shiftKey"]
+      let mod_ = ctrlKey || metaKey
+      if mod_ && !shiftKey && key === "z" {
+        e["preventDefault"](.)
+        dispatch(Undo)
+      } else if mod_ && (key === "y" || (shiftKey && (key === "z" || key === "Z"))) {
+        e["preventDefault"](.)
+        dispatch(Redo)
+      }
+    }
+    let _: unit = %raw(`document.addEventListener("keydown", _keyHandler)`)
+    Some(() => {
+      let _: unit = %raw(`document.removeEventListener("keydown", _keyHandler)`)
+    })
+  })
+
+  // Auto-save timer: check every 30 seconds if model is dirty
+  React.useEffect0(() => {
+    let _intervalId = %raw(`setInterval(() => { dispatch(Msg.AutoSaveTick) }, 30000)`)
+    Some(() => {
+      let _: unit = %raw(`clearInterval(_intervalId)`)
+    })
+  })
+
+  // Persist theme to localStorage and sync "dark" class on <html> for Tailwind.
+  React.useEffect1(() => {
+    WebAPI.setItem("stapeln_theme", state.isDark ? "dark" : "light")
+    // Sync document.documentElement.classList for Tailwind dark: variants
+    if state.isDark {
+      addDarkClass()
+    } else {
+      removeDarkClass()
+    }
+    None
+  }, [state.isDark])
 
   <ErrorBoundary>
     <div className="app">
@@ -257,6 +367,12 @@ let make = () => {
           onClick={_ => switchPage(StackView)}
         >
           {"📚 Stack"->React.string}
+        </button>
+        <button
+          className={state.currentPage == PipelineView ? "tab active" : "tab"}
+          onClick={_ => switchPage(PipelineView)}
+        >
+          {"🔧 Pipeline"->React.string}
         </button>
         <button
           className={state.currentPage == LagoGreyView ? "tab active" : "tab"}
@@ -296,6 +412,45 @@ let make = () => {
         </button>
 
         <div className="nav-actions">
+          // Undo/Redo buttons
+          <button
+            className="action-btn"
+            onClick={_ => dispatch(Undo)}
+            disabled={!Model.canUndo(state.model)}
+            title="Undo (Ctrl+Z)"
+            style={Sx.make(
+              ~opacity=Model.canUndo(state.model) ? "1" : "0.4",
+              ~cursor=Model.canUndo(state.model) ? "pointer" : "default",
+              (),
+            )}
+          >
+            {"Undo"->React.string}
+          </button>
+          <button
+            className="action-btn"
+            onClick={_ => dispatch(Redo)}
+            disabled={!Model.canRedo(state.model)}
+            title="Redo (Ctrl+Y)"
+            style={Sx.make(
+              ~opacity=Model.canRedo(state.model) ? "1" : "0.4",
+              ~cursor=Model.canRedo(state.model) ? "pointer" : "default",
+              (),
+            )}
+          >
+            {"Redo"->React.string}
+          </button>
+          // Save status indicator
+          <span
+            style={Sx.make(
+              ~fontSize="0.8rem",
+              ~color=state.model.isDirty ? "#fbc02d" : "#66bb6a",
+              ~padding="0.5rem",
+              (),
+            )}
+            ariaLive=#polite
+          >
+            {(state.model.isDirty ? "Unsaved" : "Saved")->React.string}
+          </span>
           <button
             className="action-btn"
             onClick={_ => dispatch(TriggerImportDesign)}
@@ -313,10 +468,50 @@ let make = () => {
         </div>
       </nav>
 
+      // Active errors (UX Manifesto Rule 4: conversational with [Fix It] buttons)
+      {Array.length(state.model.activeErrors) > 0
+        ? <div
+            style={Sx.make(~padding="12px 16px", ~background="#0d1117", ())}
+            role="alert"
+            ariaLive=#polite
+          >
+            {state.model.activeErrors
+            ->Array.map(err => {
+              let fixes = switch err.fixLabel {
+              | Some(label) => {
+                  let action = switch err.title {
+                  | t if String.includes(t, "import") => () => dispatch(RetryImport)
+                  | t if String.includes(t, "save") => () => dispatch(SaveStack)
+                  | t if String.includes(t, "Security") => () => dispatch(RunSecurityScan)
+                  | t if String.includes(t, "Gap") => () => dispatch(RunGapAnalysis)
+                  | _ => () => dispatch(DismissError(err.id))
+                  }
+                  [ConversationalError.primaryFix(label, action)]
+                }
+              | None => []
+              }
+              <ConversationalError
+                key={err.id}
+                title={err.title}
+                reason=?{err.reason}
+                severity={err.severity}
+                fixes
+                onDismiss={() => dispatch(DismissError(err.id))}
+              />
+            })
+            ->React.array}
+          </div>
+        : React.null}
+
       <div className="content">
         {switch state.currentPage {
         | NetworkView => TopologyView.view(state.model, state.isDark, dispatch)
-        | StackView => StackView.view(state.model)
+        | StackView => StackView.view(state.model, ~isDark=state.isDark)
+        | PipelineView =>
+          <PipelineDesigner
+            state={state.pipelineDesigner}
+            dispatch={pMsg => dispatch(Pipeline(pMsg))}
+          />
         | LagoGreyView => <LagoGreyImageDesigner />
         | PortConfigView => <PortConfigPanel />
         | SecurityView =>
@@ -337,6 +532,21 @@ let make = () => {
               })
             }
           />
+        | NotFound =>
+          <div className="page" style={Sx.make(~textAlign="center", ~paddingTop="4rem", ())}>
+            <h1 style={Sx.make(~fontSize="3rem", ~color="#64b5f6", ~marginBottom="1rem", ())}>
+              {"404"->React.string}
+            </h1>
+            <p style={Sx.make(~color="#8892a6", ~marginBottom="2rem", ())}>
+              {"Page not found"->React.string}
+            </p>
+            <button
+              className="action-btn"
+              onClick={_ => switchPage(NetworkView)}
+            >
+              {"Go to Network View"->React.string}
+            </button>
+          </div>
         }}
       </div>
 

@@ -5,7 +5,19 @@ import * as Belt_Array from "@rescript/runtime/lib/es6/Belt_Array.js";
 import * as Belt_MapString from "@rescript/runtime/lib/es6/Belt_MapString.js";
 import * as JsxRuntime from "react/jsx-runtime";
 
-let init_gaps = [
+let init_gaps = [];
+
+let init = {
+  gaps: init_gaps,
+  appliedFixes: undefined,
+  selectedGap: undefined,
+  filterCategory: undefined,
+  filterSeverity: undefined,
+  showOnlyFixable: false,
+  sortBy: "BySeverity"
+};
+
+let _sampleInit_gaps = [
   {
     id: "gap-1",
     title: "Missing health check endpoints",
@@ -181,8 +193,8 @@ let init_gaps = [
   }
 ];
 
-let init = {
-  gaps: init_gaps,
+let _sampleInit = {
+  gaps: _sampleInit_gaps,
   appliedFixes: undefined,
   selectedGap: undefined,
   filterCategory: undefined,
@@ -871,209 +883,263 @@ function GapAnalysis(props) {
           marginBottom: "32px"
         }
       }),
-      JsxRuntime.jsx("div", {
-        children: Belt_Array.map([
-          [
-            "Total Gaps",
-            String(state.gaps.length),
-            "#4a9eff"
-          ],
-          [
-            "Critical",
-            String(Belt_Array.reduce(state.gaps, 0, (acc, g) => {
-              if (g.severity === "Critical") {
-                return acc + 1 | 0;
-              } else {
-                return acc;
+      state.gaps.length === 0 ? JsxRuntime.jsxs("div", {
+          children: [
+            JsxRuntime.jsx("div", {
+              children: "📊",
+              style: {
+                fontSize: "48px",
+                marginBottom: "16px"
               }
-            })),
-            "#f44336"
-          ],
-          [
-            "Auto-Fixable",
-            String(Belt_Array.reduce(state.gaps, 0, (acc, g) => {
-              if (g.fixAvailable) {
-                return acc + 1 | 0;
-              } else {
-                return acc;
+            }),
+            JsxRuntime.jsx("h2", {
+              children: "No gap analysis results yet",
+              style: {
+                color: "#e0e6ed",
+                fontSize: "20px",
+                fontWeight: "700",
+                marginBottom: "12px"
               }
-            })),
-            "#4caf50"
+            }),
+            JsxRuntime.jsx("p", {
+              children: "Run a gap analysis to detect security, compliance, performance, and reliability gaps in your stack configuration.",
+              style: {
+                color: "#8892a6",
+                fontSize: "14px",
+                lineHeight: "1.6",
+                marginBottom: "24px"
+              }
+            }),
+            JsxRuntime.jsx("button", {
+              children: "Run Gap Analysis",
+              style: {
+                background: "linear-gradient(135deg, #4a9eff, #7b6cff)",
+                border: "none",
+                borderRadius: "8px",
+                color: "white",
+                cursor: "pointer",
+                fontSize: "16px",
+                fontWeight: "600",
+                padding: "12px 28px"
+              },
+              onClick: param => dispatch("RunGapAnalysis")
+            })
           ],
-          [
-            "Applied",
-            String(Belt_MapString.size(state.appliedFixes)),
-            "#ff9800"
+          style: {
+            background: "linear-gradient(135deg, #1e2431 0%, #252d3d 100%)",
+            border: "2px dashed #2a3f5f",
+            borderRadius: "16px",
+            padding: "60px 40px",
+            textAlign: "center"
+          }
+        }) : null,
+      state.gaps.length === 0 ? null : JsxRuntime.jsxs(JsxRuntime.Fragment, {
+          children: [
+            JsxRuntime.jsx("div", {
+              children: Belt_Array.map([
+                [
+                  "Total Gaps",
+                  String(state.gaps.length),
+                  "#4a9eff"
+                ],
+                [
+                  "Critical",
+                  String(Belt_Array.reduce(state.gaps, 0, (acc, g) => {
+                    if (g.severity === "Critical") {
+                      return acc + 1 | 0;
+                    } else {
+                      return acc;
+                    }
+                  })),
+                  "#f44336"
+                ],
+                [
+                  "Auto-Fixable",
+                  String(Belt_Array.reduce(state.gaps, 0, (acc, g) => {
+                    if (g.fixAvailable) {
+                      return acc + 1 | 0;
+                    } else {
+                      return acc;
+                    }
+                  })),
+                  "#4caf50"
+                ],
+                [
+                  "Applied",
+                  String(Belt_MapString.size(state.appliedFixes)),
+                  "#ff9800"
+                ]
+              ], param => {
+                let label = param[0];
+                return JsxRuntime.jsxs("div", {
+                  children: [
+                    JsxRuntime.jsx("div", {
+                      children: param[1],
+                      style: {
+                        color: param[2],
+                        fontSize: "36px",
+                        fontWeight: "700",
+                        marginBottom: "8px"
+                      }
+                    }),
+                    JsxRuntime.jsx("div", {
+                      children: label,
+                      style: {
+                        color: "#8892a6",
+                        fontSize: "13px"
+                      }
+                    })
+                  ],
+                  style: {
+                    background: "linear-gradient(135deg, #1e2431 0%, #252d3d 100%)",
+                    border: "2px solid #2a3142",
+                    borderRadius: "12px",
+                    padding: "20px",
+                    textAlign: "center"
+                  }
+                }, label);
+              }),
+              style: {
+                display: "grid",
+                gap: "16px",
+                gridTemplateColumns: "repeat(4, 1fr)",
+                marginBottom: "32px"
+              }
+            }),
+            JsxRuntime.jsxs("div", {
+              children: [
+                JsxRuntime.jsxs("div", {
+                  children: [
+                    JsxRuntime.jsx("button", {
+                      children: "🔍 Run Analysis",
+                      style: {
+                        background: "linear-gradient(135deg, #4a9eff, #7b6cff)",
+                        border: "none",
+                        borderRadius: "8px",
+                        color: "white",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        padding: "10px 20px"
+                      },
+                      onClick: param => dispatch("RunGapAnalysis")
+                    }),
+                    JsxRuntime.jsx("button", {
+                      children: "⚡ Apply All Auto-Fixes",
+                      style: {
+                        background: "linear-gradient(135deg, #4caf50, #66bb6a)",
+                        border: "none",
+                        borderRadius: "8px",
+                        color: "white",
+                        cursor: "pointer",
+                        fontSize: "14px",
+                        fontWeight: "600",
+                        padding: "10px 20px"
+                      },
+                      onClick: param => dispatch("ApplyAllAutoFixes")
+                    })
+                  ],
+                  style: {
+                    display: "flex",
+                    gap: "12px"
+                  }
+                }),
+                JsxRuntime.jsxs("label", {
+                  children: [
+                    JsxRuntime.jsx("input", {
+                      checked: state.showOnlyFixable,
+                      type: "checkbox",
+                      onChange: param => dispatch("ToggleShowOnlyFixable")
+                    }),
+                    "Show only fixable"
+                  ],
+                  style: {
+                    alignItems: "center",
+                    color: "#8892a6",
+                    cursor: "pointer",
+                    display: "flex",
+                    fontSize: "13px",
+                    gap: "8px"
+                  }
+                })
+              ],
+              style: {
+                alignItems: "center",
+                background: "linear-gradient(135deg, #1e2431 0%, #252d3d 100%)",
+                border: "2px solid #2a3142",
+                borderRadius: "12px",
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "24px",
+                padding: "16px"
+              }
+            }),
+            JsxRuntime.jsx("div", {
+              children: filteredGaps.length !== 0 ? Belt_Array.map(filteredGaps, gap => viewGap(gap, Belt_MapString.get(state.appliedFixes, gap.id), dispatch)) : JsxRuntime.jsxs("div", {
+                  children: [
+                    JsxRuntime.jsx("div", {
+                      children: "✅",
+                      style: {
+                        fontSize: "64px",
+                        marginBottom: "16px"
+                      }
+                    }),
+                    JsxRuntime.jsx("div", {
+                      children: "No Gaps Detected",
+                      style: {
+                        color: "#4caf50",
+                        fontSize: "24px",
+                        fontWeight: "700",
+                        marginBottom: "12px"
+                      }
+                    }),
+                    JsxRuntime.jsx("div", {
+                      children: "Your stack meets all security, compliance, and best practice requirements",
+                      style: {
+                        color: "#8892a6",
+                        fontSize: "16px"
+                      }
+                    })
+                  ],
+                  style: {
+                    background: "rgba(76, 175, 80, 0.1)",
+                    border: "2px solid #4caf50",
+                    borderRadius: "16px",
+                    padding: "60px",
+                    textAlign: "center"
+                  }
+                })
+            }),
+            JsxRuntime.jsxs("div", {
+              children: [
+                JsxRuntime.jsx("h4", {
+                  children: "🤖 AI-Powered Gap Analysis",
+                  style: {
+                    color: "#4a9eff",
+                    fontSize: "16px",
+                    fontWeight: "700",
+                    marginBottom: "12px"
+                  }
+                }),
+                JsxRuntime.jsx("p", {
+                  children: "Gap detection powered by miniKanren reasoning engine, Hypatia neurosymbolic agent, and VeriSimDB historical analysis. Fixes verified with formal proofs before application. All changes logged to compliance audit trail.",
+                  style: {
+                    color: "#b0b8c4",
+                    fontSize: "13px",
+                    lineHeight: "1.8"
+                  }
+                })
+              ],
+              style: {
+                background: "rgba(74, 158, 255, 0.1)",
+                border: "2px solid #4a9eff",
+                borderRadius: "12px",
+                marginTop: "32px",
+                padding: "20px"
+              }
+            })
           ]
-        ], param => {
-          let label = param[0];
-          return JsxRuntime.jsxs("div", {
-            children: [
-              JsxRuntime.jsx("div", {
-                children: param[1],
-                style: {
-                  color: param[2],
-                  fontSize: "36px",
-                  fontWeight: "700",
-                  marginBottom: "8px"
-                }
-              }),
-              JsxRuntime.jsx("div", {
-                children: label,
-                style: {
-                  color: "#8892a6",
-                  fontSize: "13px"
-                }
-              })
-            ],
-            style: {
-              background: "linear-gradient(135deg, #1e2431 0%, #252d3d 100%)",
-              border: "2px solid #2a3142",
-              borderRadius: "12px",
-              padding: "20px",
-              textAlign: "center"
-            }
-          }, label);
-        }),
-        style: {
-          display: "grid",
-          gap: "16px",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          marginBottom: "32px"
-        }
-      }),
-      JsxRuntime.jsxs("div", {
-        children: [
-          JsxRuntime.jsxs("div", {
-            children: [
-              JsxRuntime.jsx("button", {
-                children: "🔍 Run Analysis",
-                style: {
-                  background: "linear-gradient(135deg, #4a9eff, #7b6cff)",
-                  border: "none",
-                  borderRadius: "8px",
-                  color: "white",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  padding: "10px 20px"
-                },
-                onClick: param => dispatch("RunGapAnalysis")
-              }),
-              JsxRuntime.jsx("button", {
-                children: "⚡ Apply All Auto-Fixes",
-                style: {
-                  background: "linear-gradient(135deg, #4caf50, #66bb6a)",
-                  border: "none",
-                  borderRadius: "8px",
-                  color: "white",
-                  cursor: "pointer",
-                  fontSize: "14px",
-                  fontWeight: "600",
-                  padding: "10px 20px"
-                },
-                onClick: param => dispatch("ApplyAllAutoFixes")
-              })
-            ],
-            style: {
-              display: "flex",
-              gap: "12px"
-            }
-          }),
-          JsxRuntime.jsxs("label", {
-            children: [
-              JsxRuntime.jsx("input", {
-                checked: state.showOnlyFixable,
-                type: "checkbox",
-                onChange: param => dispatch("ToggleShowOnlyFixable")
-              }),
-              "Show only fixable"
-            ],
-            style: {
-              alignItems: "center",
-              color: "#8892a6",
-              cursor: "pointer",
-              display: "flex",
-              fontSize: "13px",
-              gap: "8px"
-            }
-          })
-        ],
-        style: {
-          alignItems: "center",
-          background: "linear-gradient(135deg, #1e2431 0%, #252d3d 100%)",
-          border: "2px solid #2a3142",
-          borderRadius: "12px",
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: "24px",
-          padding: "16px"
-        }
-      }),
-      JsxRuntime.jsx("div", {
-        children: filteredGaps.length !== 0 ? Belt_Array.map(filteredGaps, gap => viewGap(gap, Belt_MapString.get(state.appliedFixes, gap.id), dispatch)) : JsxRuntime.jsxs("div", {
-            children: [
-              JsxRuntime.jsx("div", {
-                children: "✅",
-                style: {
-                  fontSize: "64px",
-                  marginBottom: "16px"
-                }
-              }),
-              JsxRuntime.jsx("div", {
-                children: "No Gaps Detected",
-                style: {
-                  color: "#4caf50",
-                  fontSize: "24px",
-                  fontWeight: "700",
-                  marginBottom: "12px"
-                }
-              }),
-              JsxRuntime.jsx("div", {
-                children: "Your stack meets all security, compliance, and best practice requirements",
-                style: {
-                  color: "#8892a6",
-                  fontSize: "16px"
-                }
-              })
-            ],
-            style: {
-              background: "rgba(76, 175, 80, 0.1)",
-              border: "2px solid #4caf50",
-              borderRadius: "16px",
-              padding: "60px",
-              textAlign: "center"
-            }
-          })
-      }),
-      JsxRuntime.jsxs("div", {
-        children: [
-          JsxRuntime.jsx("h4", {
-            children: "🤖 AI-Powered Gap Analysis",
-            style: {
-              color: "#4a9eff",
-              fontSize: "16px",
-              fontWeight: "700",
-              marginBottom: "12px"
-            }
-          }),
-          JsxRuntime.jsx("p", {
-            children: "Gap detection powered by miniKanren reasoning engine, Hypatia neurosymbolic agent, and VeriSimDB historical analysis. Fixes verified with formal proofs before application. All changes logged to compliance audit trail.",
-            style: {
-              color: "#b0b8c4",
-              fontSize: "13px",
-              lineHeight: "1.8"
-            }
-          })
-        ],
-        style: {
-          background: "rgba(74, 158, 255, 0.1)",
-          border: "2px solid #4a9eff",
-          borderRadius: "12px",
-          marginTop: "32px",
-          padding: "20px"
-        }
-      })
+        })
     ],
     className: "gap-analysis",
     style: {
@@ -1088,6 +1154,7 @@ let make = GapAnalysis;
 
 export {
   init,
+  _sampleInit,
   update,
   categoryColor,
   categoryLabel,
