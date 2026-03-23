@@ -51,6 +51,15 @@ let defaultSettingsConfig: settingsConfig = {
   backendUrl: "/api",
 }
 
+// Snapshot of undoable state (components + connections only)
+type snapshot = {
+  components: array<component>,
+  connections: array<connection>,
+}
+
+// Maximum undo history depth
+let maxUndoDepth = 50
+
 type rec model = {
   components: array<component>,
   connections: array<connection>,
@@ -69,6 +78,12 @@ type rec model = {
   settings: settingsConfig,
   // WebSocket state (optional — None means REST-only mode)
   wsState: Socket.connectionState,
+  // Undo/redo history
+  undoStack: array<snapshot>,
+  redoStack: array<snapshot>,
+  // Dirty tracking for auto-save
+  isDirty: bool,
+  lastSavedAt: option<float>, // Date.now() timestamp
 }
 
 and validationResult = {
@@ -92,6 +107,10 @@ let initialModel = {
   currentStackId: None,
   settings: defaultSettingsConfig,
   wsState: Disconnected,
+  undoStack: [],
+  redoStack: [],
+  isDirty: false,
+  lastSavedAt: None,
 }
 
 // Helper functions
@@ -114,6 +133,29 @@ let generateId = () => {
 let findComponent = (model: model, id: string): option<component> => {
   Array.getBy(model.components, c => c.id == id)
 }
+
+// Take a snapshot of the current undoable state
+let takeSnapshot = (model: model): snapshot => {
+  components: model.components,
+  connections: model.connections,
+}
+
+// Push a snapshot onto the undo stack (call BEFORE making the change)
+let pushUndo = (model: model): model => {
+  let snap = takeSnapshot(model)
+  let stack = Array.concat(model.undoStack, [snap])
+  // Trim to max depth
+  let trimmed = if Array.length(stack) > maxUndoDepth {
+    Array.slice(stack, ~offset=Array.length(stack) - maxUndoDepth, ~len=maxUndoDepth)
+  } else {
+    stack
+  }
+  {...model, undoStack: trimmed, redoStack: [], isDirty: true}
+}
+
+// Check if undo/redo are available
+let canUndo = (model: model): bool => Array.length(model.undoStack) > 0
+let canRedo = (model: model): bool => Array.length(model.redoStack) > 0
 
 let componentTypeToString = (ct: componentType): string => {
   switch ct {

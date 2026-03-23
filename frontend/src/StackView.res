@@ -323,6 +323,7 @@ let renderParagonStack = (model: model, isDark: bool) => {
 
 // Main view function
 // Accepts isDark from the parent (AppIntegrated) which tracks it in state.
-let view = (model: model, ~isDark: bool=false) => {
+// No default — callers MUST provide isDark to prevent silent light-mode fallback.
+let view = (model: model, ~isDark: bool) => {
   renderParagonStack(model, isDark)
 }

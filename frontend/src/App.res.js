@@ -26,15 +26,40 @@ import * as SecurityInspector from "./SecurityInspector.res.js";
 import * as JsxRuntime from "react/jsx-runtime";
 import * as LagoGreyImageDesigner from "./LagoGreyImageDesigner.res.js";
 
+function systemPrefersDark() {
+  return (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+}
+
+let addDarkClass = (function() { document.documentElement.classList.add("dark") });
+
+let removeDarkClass = (function() { document.documentElement.classList.remove("dark") });
+
+function resolveInitialDark() {
+  let match = window.localStorage.getItem("stapeln_theme");
+  if (match == null) {
+    return systemPrefersDark();
+  }
+  switch (match) {
+    case "dark" :
+      return true;
+    case "light" :
+      return false;
+    default:
+      return systemPrefersDark();
+  }
+}
+
 let initialAppState_currentPage = AppRouter.getCurrentRoute();
 
 let initialAppState_pipelineDesigner = PipelineModel.initialState();
+
+let initialAppState_isDark = resolveInitialDark();
 
 let initialAppState = {
   currentPage: initialAppState_currentPage,
   model: Model.initialModel,
   pipelineDesigner: initialAppState_pipelineDesigner,
-  isDark: true
+  isDark: initialAppState_isDark
 };
 
 function serializeStack(model) {
@@ -249,6 +274,18 @@ function App(props) {
           }
           console.warn("WebSocket not connected, cannot gap analysis via WS");
           return;
+        case "AutoSaveTick" :
+          if (!state.model.isDirty) {
+            return;
+          }
+          let body$3 = serializeStack(state.model);
+          ApiClient.saveStack(body$3).then(result => {
+            if (result.TAG === "Ok") {
+              dispatch("MarkClean");
+            }
+            return Promise.resolve();
+          });
+          return;
         default:
           return;
       }
@@ -285,6 +322,26 @@ function App(props) {
       isDark: prev.isDark
     })));
   }, []);
+  React.useEffect(() => {
+    ((document.addEventListener("keydown", _keyHandler)));
+    return () => {
+      ((document.removeEventListener("keydown", _keyHandler)));
+    };
+  }, []);
+  React.useEffect(() => {
+    ((setInterval(() => { dispatch(Msg.AutoSaveTick) }, 30000)));
+    return () => {
+      ((clearInterval(_intervalId)));
+    };
+  }, []);
+  React.useEffect(() => {
+    window.localStorage.setItem("stapeln_theme", state.isDark ? "dark" : "light");
+    if (state.isDark) {
+      addDarkClass();
+    } else {
+      removeDarkClass();
+    }
+  }, [state.isDark]);
   let match$1 = state.currentPage;
   let tmp;
   switch (match$1) {
@@ -345,7 +402,11 @@ function App(props) {
               gapLoading: init.gapLoading,
               currentStackId: init.currentStackId,
               settings: newSettings,
-              wsState: init.wsState
+              wsState: init.wsState,
+              undoStack: init.undoStack,
+              redoStack: init.redoStack,
+              isDirty: init.isDirty,
+              lastSavedAt: init.lastSavedAt
             },
             pipelineDesigner: prev.pipelineDesigner,
             isDark: newSettings.theme === "dark"
@@ -438,6 +499,37 @@ function App(props) {
             JsxRuntime.jsxs("div", {
               children: [
                 JsxRuntime.jsx("button", {
+                  children: "Undo",
+                  className: "action-btn",
+                  style: {
+                    cursor: Model.canUndo(state.model) ? "pointer" : "default",
+                    opacity: Model.canUndo(state.model) ? "1" : "0.4"
+                  },
+                  title: "Undo (Ctrl+Z)",
+                  disabled: !Model.canUndo(state.model),
+                  onClick: param => dispatch("Undo")
+                }),
+                JsxRuntime.jsx("button", {
+                  children: "Redo",
+                  className: "action-btn",
+                  style: {
+                    cursor: Model.canRedo(state.model) ? "pointer" : "default",
+                    opacity: Model.canRedo(state.model) ? "1" : "0.4"
+                  },
+                  title: "Redo (Ctrl+Y)",
+                  disabled: !Model.canRedo(state.model),
+                  onClick: param => dispatch("Redo")
+                }),
+                JsxRuntime.jsx("span", {
+                  children: state.model.isDirty ? "Unsaved" : "Saved",
+                  "aria-live": "polite",
+                  style: {
+                    color: state.model.isDirty ? "#fbc02d" : "#66bb6a",
+                    fontSize: "0.8rem",
+                    padding: "0.5rem"
+                  }
+                }),
+                JsxRuntime.jsx("button", {
                   children: "📂 Import",
                   className: "action-btn",
                   title: "Import design from JSON file",
@@ -482,6 +574,10 @@ function App(props) {
 let make = App;
 
 export {
+  systemPrefersDark,
+  addDarkClass,
+  removeDarkClass,
+  resolveInitialDark,
   initialAppState,
   serializeStack,
   socketConn,

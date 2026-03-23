@@ -18,6 +18,10 @@ let initialModel_canvasOffset = {
   y: 0.0
 };
 
+let initialModel_undoStack = [];
+
+let initialModel_redoStack = [];
+
 let initialModel = {
   components: initialModel_components,
   connections: initialModel_connections,
@@ -32,7 +36,11 @@ let initialModel = {
   gapLoading: false,
   currentStackId: undefined,
   settings: defaultSettingsConfig,
-  wsState: "Disconnected"
+  wsState: "Disconnected",
+  undoStack: initialModel_undoStack,
+  redoStack: initialModel_redoStack,
+  isDirty: false,
+  lastSavedAt: undefined
 };
 
 function generateId() {
@@ -50,6 +58,47 @@ function generateId() {
 
 function findComponent(model, id) {
   return Belt_Array.getBy(model.components, c => c.id === id);
+}
+
+function takeSnapshot(model) {
+  return {
+    components: model.components,
+    connections: model.connections
+  };
+}
+
+function pushUndo(model) {
+  let snap = takeSnapshot(model);
+  let stack = Belt_Array.concat(model.undoStack, [snap]);
+  let trimmed = stack.length > 50 ? Belt_Array.slice(stack, stack.length - 50 | 0, 50) : stack;
+  return {
+    components: model.components,
+    connections: model.connections,
+    selectedComponent: model.selectedComponent,
+    dragState: model.dragState,
+    canvasOffset: model.canvasOffset,
+    zoomLevel: model.zoomLevel,
+    validationResult: model.validationResult,
+    securityState: model.securityState,
+    gapState: model.gapState,
+    securityLoading: model.securityLoading,
+    gapLoading: model.gapLoading,
+    currentStackId: model.currentStackId,
+    settings: model.settings,
+    wsState: model.wsState,
+    undoStack: trimmed,
+    redoStack: [],
+    isDirty: true,
+    lastSavedAt: model.lastSavedAt
+  };
+}
+
+function canUndo(model) {
+  return model.undoStack.length !== 0;
+}
+
+function canRedo(model) {
+  return model.redoStack.length !== 0;
 }
 
 function componentTypeToString(ct) {
@@ -77,11 +126,18 @@ function componentTypeToString(ct) {
   }
 }
 
+let maxUndoDepth = 50;
+
 export {
   defaultSettingsConfig,
+  maxUndoDepth,
   initialModel,
   generateId,
   findComponent,
+  takeSnapshot,
+  pushUndo,
+  canUndo,
+  canRedo,
   componentTypeToString,
 }
 /* No side effect */

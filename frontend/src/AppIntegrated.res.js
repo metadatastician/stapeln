@@ -323,7 +323,7 @@ function AppIntegrated(props) {
       }));
       break;
     case "StackView" :
-      tmp = StackView.view(state.model, undefined);
+      tmp = StackView.view(state.model, state.isDark);
       break;
     case "PipelineView" :
       tmp = JsxRuntime.jsx(PipelineDesigner.make, {

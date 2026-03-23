@@ -440,31 +440,76 @@ let parseGapAnalysisJson = (json: JSON.t): GapAnalysis.state =>
 // No effects - pure state updates only
 let update = (model: model, msg: msg): model => {
   switch msg {
-  // Component management
+  // Undo/redo
+  | Undo => {
+      let stackLen = Array.length(model.undoStack)
+      if stackLen > 0 {
+        let snap = Array.getUnsafe(model.undoStack, stackLen - 1)
+        let newUndoStack = Array.slice(model.undoStack, ~offset=0, ~len=stackLen - 1)
+        let currentSnap: snapshot = {components: model.components, connections: model.connections}
+        let newRedoStack = Array.concat(model.redoStack, [currentSnap])
+        {
+          ...model,
+          components: snap.components,
+          connections: snap.connections,
+          undoStack: newUndoStack,
+          redoStack: newRedoStack,
+          isDirty: true,
+        }
+      } else {
+        model
+      }
+    }
+
+  | Redo => {
+      let stackLen = Array.length(model.redoStack)
+      if stackLen > 0 {
+        let snap = Array.getUnsafe(model.redoStack, stackLen - 1)
+        let newRedoStack = Array.slice(model.redoStack, ~offset=0, ~len=stackLen - 1)
+        let currentSnap: snapshot = {components: model.components, connections: model.connections}
+        let newUndoStack = Array.concat(model.undoStack, [currentSnap])
+        {
+          ...model,
+          components: snap.components,
+          connections: snap.connections,
+          undoStack: newUndoStack,
+          redoStack: newRedoStack,
+          isDirty: true,
+        }
+      } else {
+        model
+      }
+    }
+
+  // Auto-save
+  | AutoSaveTick => model // Side effect handled in App.res
+  | MarkClean => {...model, isDirty: false, lastSavedAt: Some(%raw(`Date.now()`))}
+
+  // Component management (all push undo snapshots)
   | AddComponent(componentType, position) => {
+      let m = pushUndo(model)
       let newComponent: component = {
         id: generateId(),
         componentType,
         position,
         config: Dict.make(),
       }
-      let newModel = {
-        ...model,
-        components: Array.concat(model.components, [newComponent]),
+      {
+        ...m,
+        components: Array.concat(m.components, [newComponent]),
       }
-      newModel
     }
 
   | RemoveComponent(id) => {
-      let newComponents = Array.keep(model.components, c => c.id !== id)
-      let newConnections = Array.keep(model.connections, conn => conn.from !== id && conn.to !== id)
-      let newModel = {
-        ...model,
+      let m = pushUndo(model)
+      let newComponents = Array.keep(m.components, c => c.id !== id)
+      let newConnections = Array.keep(m.connections, conn => conn.from !== id && conn.to !== id)
+      {
+        ...m,
         components: newComponents,
         connections: newConnections,
-        selectedComponent: model.selectedComponent === Some(id) ? None : model.selectedComponent,
+        selectedComponent: m.selectedComponent === Some(id) ? None : m.selectedComponent,
       }
-      newModel
     }
 
   | UpdateComponentPosition(id, position) => {
@@ -476,11 +521,11 @@ let update = (model: model, msg: msg): model => {
     }
 
   | UpdateComponentConfig(id, config) => {
-      let newComponents = Array.map(model.components, comp =>
+      let m = pushUndo(model)
+      let newComponents = Array.map(m.components, comp =>
         comp.id === id ? {...comp, config} : comp
       )
-      let newModel = {...model, components: newComponents}
-      newModel
+      {...m, components: newComponents}
     }
 
   | SelectComponent(componentId) => {
@@ -490,31 +535,29 @@ let update = (model: model, msg: msg): model => {
 
   // Connection management
   | AddConnection(fromId, toId) => {
-      // Validate connection: check if components exist
       let fromExists = Array.some(model.components, c => c.id === fromId)
       let toExists = Array.some(model.components, c => c.id === toId)
 
       if fromExists && toExists {
+        let m = pushUndo(model)
         let newConnection: connection = {
           id: generateId(),
           from: fromId,
           to: toId,
         }
-        let newModel = {
-          ...model,
-          connections: Array.concat(model.connections, [newConnection]),
+        {
+          ...m,
+          connections: Array.concat(m.connections, [newConnection]),
         }
-        newModel
       } else {
-        // Invalid connection, don't add
         model
       }
     }
 
   | RemoveConnection(id) => {
-      let newConnections = Array.keep(model.connections, conn => conn.id !== id)
-      let newModel = {...model, connections: newConnections}
-      newModel
+      let m = pushUndo(model)
+      let newConnections = Array.keep(m.connections, conn => conn.id !== id)
+      {...m, connections: newConnections}
     }
 
   // Drag and drop

@@ -18,11 +18,29 @@ type appState = {
   isDark: bool,
 }
 
+// Detect OS-level dark mode preference via matchMedia.
+let systemPrefersDark = (): bool => {
+  %raw(`window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches`)
+}
+
+// Helpers to toggle the "dark" class on <html> for Tailwind dark mode.
+let addDarkClass: unit => unit = %raw(`function() { document.documentElement.classList.add("dark") }`)
+let removeDarkClass: unit => unit = %raw(`function() { document.documentElement.classList.remove("dark") }`)
+
+// Resolve the initial isDark value: localStorage override > system preference.
+let resolveInitialDark = (): bool => {
+  switch WebAPI.getItem("stapeln_theme")->Nullable.toOption {
+  | Some("light") => false
+  | Some("dark") => true
+  | Some(_) | None => systemPrefersDark()
+  }
+}
+
 let initialAppState = {
   currentPage: AppRouter.getCurrentRoute(),
   model: initialModel,
   pipelineDesigner: PipelineModel.initialState(),
-  isDark: true,
+  isDark: resolveInitialDark(),
 }
 
 // Serialise the current stack model to a JSON string suitable for the API.
@@ -246,6 +264,23 @@ let make = () => {
         )
       }
 
+    | AutoSaveTick => {
+        // Only save if model is dirty
+        if state.model.isDirty {
+          let body = serializeStack(state.model)
+          ignore(
+            ApiClient.saveStack(body)
+            ->Promise.then(result => {
+              switch result {
+              | Ok(_) => dispatch(MarkClean)
+              | Error(_) => () // Silent fail — will retry next tick
+              }
+              Promise.resolve()
+            }),
+          )
+        }
+      }
+
     | _ => ()
     }
   }
@@ -262,6 +297,48 @@ let make = () => {
     })
     None
   })
+
+  // Keyboard shortcuts: Ctrl+Z (undo), Ctrl+Y / Ctrl+Shift+Z (redo)
+  React.useEffect0(() => {
+    let _keyHandler = (e: {..}) => {
+      let key: string = e["key"]
+      let ctrlKey: bool = e["ctrlKey"]
+      let metaKey: bool = e["metaKey"]
+      let shiftKey: bool = e["shiftKey"]
+      let mod_ = ctrlKey || metaKey
+      if mod_ && !shiftKey && key === "z" {
+        e["preventDefault"](.)
+        dispatch(Undo)
+      } else if mod_ && (key === "y" || (shiftKey && (key === "z" || key === "Z"))) {
+        e["preventDefault"](.)
+        dispatch(Redo)
+      }
+    }
+    let _: unit = %raw(`document.addEventListener("keydown", _keyHandler)`)
+    Some(() => {
+      let _: unit = %raw(`document.removeEventListener("keydown", _keyHandler)`)
+    })
+  })
+
+  // Auto-save timer: check every 30 seconds if model is dirty
+  React.useEffect0(() => {
+    let _intervalId = %raw(`setInterval(() => { dispatch(Msg.AutoSaveTick) }, 30000)`)
+    Some(() => {
+      let _: unit = %raw(`clearInterval(_intervalId)`)
+    })
+  })
+
+  // Persist theme to localStorage and sync "dark" class on <html> for Tailwind.
+  React.useEffect1(() => {
+    WebAPI.setItem("stapeln_theme", state.isDark ? "dark" : "light")
+    // Sync document.documentElement.classList for Tailwind dark: variants
+    if state.isDark {
+      addDarkClass()
+    } else {
+      removeDarkClass()
+    }
+    None
+  }, [state.isDark])
 
   <ErrorBoundary>
     <div className="app">
@@ -322,6 +399,45 @@ let make = () => {
         </button>
 
         <div className="nav-actions">
+          // Undo/Redo buttons
+          <button
+            className="action-btn"
+            onClick={_ => dispatch(Undo)}
+            disabled={!Model.canUndo(state.model)}
+            title="Undo (Ctrl+Z)"
+            style={Sx.make(
+              ~opacity=Model.canUndo(state.model) ? "1" : "0.4",
+              ~cursor=Model.canUndo(state.model) ? "pointer" : "default",
+              (),
+            )}
+          >
+            {"Undo"->React.string}
+          </button>
+          <button
+            className="action-btn"
+            onClick={_ => dispatch(Redo)}
+            disabled={!Model.canRedo(state.model)}
+            title="Redo (Ctrl+Y)"
+            style={Sx.make(
+              ~opacity=Model.canRedo(state.model) ? "1" : "0.4",
+              ~cursor=Model.canRedo(state.model) ? "pointer" : "default",
+              (),
+            )}
+          >
+            {"Redo"->React.string}
+          </button>
+          // Save status indicator
+          <span
+            style={Sx.make(
+              ~fontSize="0.8rem",
+              ~color=state.model.isDirty ? "#fbc02d" : "#66bb6a",
+              ~padding="0.5rem",
+              (),
+            )}
+            ariaLive=#polite
+          >
+            {(state.model.isDirty ? "Unsaved" : "Saved")->React.string}
+          </span>
           <button
             className="action-btn"
             onClick={_ => dispatch(TriggerImportDesign)}
