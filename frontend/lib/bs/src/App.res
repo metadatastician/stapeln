@@ -346,6 +346,10 @@ let make = () => {
       if state.model.securityState === None && !state.model.securityLoading {
         dispatch(RunSecurityScan)
       }
+    | AttackSurfaceView =>
+      if state.model.securityState === None && !state.model.securityLoading {
+        dispatch(RunSecurityScan)
+      }
     | GapAnalysisView =>
       if state.model.gapState === None && !state.model.gapLoading {
         dispatch(RunGapAnalysis)
@@ -461,6 +465,12 @@ let make = () => {
           onClick={_ => switchPage(SecurityView)}
         >
           {"🛡️ Security"->React.string}
+        </button>
+        <button
+          className={state.currentPage == AttackSurfaceView ? "tab active" : "tab"}
+          onClick={_ => switchPage(AttackSurfaceView)}
+        >
+          {"🎯 Surface"->React.string}
         </button>
         <button
           className={state.currentPage == GapAnalysisView ? "tab active" : "tab"}
@@ -593,6 +603,8 @@ let make = () => {
         | PortConfigView => <PortConfigPanel />
         | SecurityView =>
           <SecurityInspector initialState=?{state.model.securityState} />
+        | AttackSurfaceView =>
+          <AttackSurfacePage securityState=?{state.model.securityState} />
         | GapAnalysisView =>
           <GapAnalysis initialState=?{state.model.gapState} />
         | SimulationView => <SimulationMode />

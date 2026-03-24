@@ -11,6 +11,7 @@ type route =
   | LagoGreyView
   | PortConfigView
   | SecurityView
+  | AttackSurfaceView
   | GapAnalysisView
   | SimulationView
   | SettingsView
@@ -27,6 +28,7 @@ let routeToPath = (route: route): string => {
   | LagoGreyView => "/lago-grey"
   | PortConfigView => "/ports"
   | SecurityView => "/security"
+  | AttackSurfaceView => "/attack-surface"
   | GapAnalysisView => "/gaps"
   | SimulationView => "/simulation"
   | SettingsView => "/settings"
@@ -45,6 +47,7 @@ let pathToRoute = (path: string): route => {
   | "/lago-grey" => LagoGreyView
   | "/ports" => PortConfigView
   | "/security" => SecurityView
+  | "/attack-surface" => AttackSurfaceView
   | "/gaps" => GapAnalysisView
   | "/simulation" => SimulationView
   | "/settings" => SettingsView
@@ -133,6 +136,12 @@ let navigationItems: array<routeMeta> = [
     label: "Security",
     icon: "🔐",
     description: "Security inspector",
+  },
+  {
+    route: AttackSurfaceView,
+    label: "Attack Surface",
+    icon: "🎯",
+    description: "Attack surface analyzer",
   },
   {
     route: GapAnalysisView,

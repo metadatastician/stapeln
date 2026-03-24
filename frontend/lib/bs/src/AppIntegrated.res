@@ -295,6 +295,8 @@ let make = () => {
               onStateChange={newState =>
                 dispatch(SecurityInspectorMsg(SecurityInspector.UpdateMetrics(newState.metrics)))}
             />
+          | AttackSurfaceView =>
+            <AttackSurfacePage securityState={state.securityInspector} />
           | GapAnalysisView =>
             <GapAnalysis
               initialState={state.gapAnalysis}

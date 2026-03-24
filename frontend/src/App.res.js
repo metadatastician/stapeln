@@ -24,6 +24,7 @@ import * as SimulationMode from "./SimulationMode.res.js";
 import * as Stdlib_Promise from "@rescript/runtime/lib/es6/Stdlib_Promise.js";
 import * as PortConfigPanel from "./PortConfigPanel.res.js";
 import * as PipelineDesigner from "./PipelineDesigner.res.js";
+import * as AttackSurfacePage from "./AttackSurfacePage.res.js";
 import * as SecurityInspector from "./SecurityInspector.res.js";
 import * as JsxRuntime from "react/jsx-runtime";
 import * as ConversationalError from "./ConversationalError.res.js";
@@ -396,11 +397,8 @@ function App(props) {
     }));
     switch (page) {
       case "SecurityView" :
-        if (state.model.securityState === undefined && !state.model.securityLoading) {
-          return dispatch("RunSecurityScan");
-        } else {
-          return;
-        }
+      case "AttackSurfaceView" :
+        break;
       case "GapAnalysisView" :
         if (state.model.gapState === undefined && !state.model.gapLoading) {
           return dispatch("RunGapAnalysis");
@@ -409,6 +407,9 @@ function App(props) {
         }
       default:
         return;
+    }
+    if (state.model.securityState === undefined && !state.model.securityLoading) {
+      return dispatch("RunSecurityScan");
     }
   };
   React.useEffect(() => {
@@ -470,6 +471,11 @@ function App(props) {
       case "SecurityView" :
         tmp$1 = JsxRuntime.jsx(SecurityInspector.make, {
           initialState: state.model.securityState
+        });
+        break;
+      case "AttackSurfaceView" :
+        tmp$1 = JsxRuntime.jsx(AttackSurfacePage.make, {
+          securityState: state.model.securityState
         });
         break;
       case "GapAnalysisView" :
@@ -561,6 +567,11 @@ function App(props) {
               children: "🛡️ Security",
               className: state.currentPage === "SecurityView" ? "tab active" : "tab",
               onClick: param => switchPage("SecurityView")
+            }),
+            JsxRuntime.jsx("button", {
+              children: "🎯 Surface",
+              className: state.currentPage === "AttackSurfaceView" ? "tab active" : "tab",
+              onClick: param => switchPage("AttackSurfaceView")
             }),
             JsxRuntime.jsx("button", {
               children: "🔍 Gaps",

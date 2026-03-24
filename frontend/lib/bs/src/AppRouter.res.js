@@ -20,6 +20,8 @@ function routeToPath(route) {
       return "/ports";
     case "SecurityView" :
       return "/security";
+    case "AttackSurfaceView" :
+      return "/attack-surface";
     case "GapAnalysisView" :
       return "/gaps";
     case "SimulationView" :
@@ -35,6 +37,8 @@ function pathToRoute(path) {
   switch (path) {
     case "/" :
       return "NetworkView";
+    case "/attack-surface" :
+      return "AttackSurfaceView";
     case "/gaps" :
       return "GapAnalysisView";
     case "/lago-grey" :
@@ -123,6 +127,12 @@ let navigationItems = [
     label: "Security",
     icon: "🔐",
     description: "Security inspector"
+  },
+  {
+    route: "AttackSurfaceView",
+    label: "Attack Surface",
+    icon: "🎯",
+    description: "Attack surface analyzer"
   },
   {
     route: "GapAnalysisView",

@@ -19,6 +19,7 @@ import * as SimulationMode from "./SimulationMode.res.js";
 import * as HealthIndicator from "./HealthIndicator.res.js";
 import * as PortConfigPanel from "./PortConfigPanel.res.js";
 import * as PipelineDesigner from "./PipelineDesigner.res.js";
+import * as AttackSurfacePage from "./AttackSurfacePage.res.js";
 import * as SecurityInspector from "./SecurityInspector.res.js";
 import * as JsxRuntime from "react/jsx-runtime";
 import * as LagoGreyImageDesigner from "./LagoGreyImageDesigner.res.js";
@@ -361,6 +362,11 @@ function AppIntegrated(props) {
             _0: newState.metrics
           }
         })
+      });
+      break;
+    case "AttackSurfaceView" :
+      tmp = JsxRuntime.jsx(AttackSurfacePage.make, {
+        securityState: state.securityInspector
       });
       break;
     case "GapAnalysisView" :
