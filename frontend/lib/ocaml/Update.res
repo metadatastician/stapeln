@@ -921,6 +921,88 @@ let update = (model: model, msg: msg): model => {
       }
     }
 
+  // Authentication
+  | LoginRequested => {
+      {...model, auth: {...model.auth, authLoading: true, authError: None}}
+    }
+
+  | LoginSuccess(token) => {
+      ApiClient.setToken(token)
+      {
+        ...model,
+        auth: {
+          ...model.auth,
+          isAuthenticated: true,
+          currentEmail: Some(model.auth.loginForm.email),
+          authLoading: false,
+          authError: None,
+          loginForm: defaultLoginForm,
+        },
+      }
+    }
+
+  | LoginError(msg) => {
+      {...model, auth: {...model.auth, authLoading: false, authError: Some(msg)}}
+    }
+
+  | RegisterRequested => {
+      // Validate passwords match before dispatching API call
+      let form = model.auth.registerForm
+      if form.password !== form.confirmPassword {
+        {...model, auth: {...model.auth, authError: Some("Passwords do not match")}}
+      } else if String.length(form.password) < 6 {
+        {...model, auth: {...model.auth, authError: Some("Password must be at least 6 characters")}}
+      } else if !String.includes(form.email, "@") || !String.includes(form.email, ".") {
+        {...model, auth: {...model.auth, authError: Some("Please enter a valid email address")}}
+      } else {
+        {...model, auth: {...model.auth, authLoading: true, authError: None}}
+      }
+    }
+
+  | RegisterSuccess(token) => {
+      ApiClient.setToken(token)
+      {
+        ...model,
+        auth: {
+          ...model.auth,
+          isAuthenticated: true,
+          currentEmail: Some(model.auth.registerForm.email),
+          authLoading: false,
+          authError: None,
+          registerForm: defaultRegisterForm,
+        },
+      }
+    }
+
+  | RegisterError(msg) => {
+      {...model, auth: {...model.auth, authLoading: false, authError: Some(msg)}}
+    }
+
+  | UpdateLoginEmail(email) => {
+      {...model, auth: {...model.auth, loginForm: {...model.auth.loginForm, email}}}
+    }
+
+  | UpdateLoginPassword(password) => {
+      {...model, auth: {...model.auth, loginForm: {...model.auth.loginForm, password}}}
+    }
+
+  | UpdateRegisterEmail(email) => {
+      {...model, auth: {...model.auth, registerForm: {...model.auth.registerForm, email}}}
+    }
+
+  | UpdateRegisterPassword(password) => {
+      {...model, auth: {...model.auth, registerForm: {...model.auth.registerForm, password}}}
+    }
+
+  | UpdateRegisterConfirm(confirmPassword) => {
+      {...model, auth: {...model.auth, registerForm: {...model.auth.registerForm, confirmPassword}}}
+    }
+
+  | Logout => {
+      ApiClient.clearToken()
+      {...model, auth: defaultAuthState}
+    }
+
   // Pipeline designer messages are handled in App.res (not in Model)
   | Pipeline(_) => model
 

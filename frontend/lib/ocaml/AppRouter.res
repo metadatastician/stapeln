@@ -3,6 +3,8 @@
 
 // Route definitions matching App.res pages
 type route =
+  | LoginView
+  | RegisterView
   | NetworkView
   | StackView
   | PipelineView
@@ -17,6 +19,8 @@ type route =
 // Route to path string
 let routeToPath = (route: route): string => {
   switch route {
+  | LoginView => "/login"
+  | RegisterView => "/register"
   | NetworkView => "/"
   | StackView => "/stack"
   | PipelineView => "/pipeline"
@@ -33,6 +37,8 @@ let routeToPath = (route: route): string => {
 // Path to route
 let pathToRoute = (path: string): route => {
   switch path {
+  | "/login" => LoginView
+  | "/register" => RegisterView
   | "/" => NetworkView
   | "/stack" => StackView
   | "/pipeline" => PipelineView

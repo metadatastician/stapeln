@@ -8,11 +8,13 @@ import * as Update from "./Update.res.js";
 import * as Belt_Int from "@rescript/runtime/lib/es6/Belt_Int.js";
 import * as ApiClient from "./ApiClient.res.js";
 import * as AppRouter from "./AppRouter.res.js";
+import * as LoginPage from "./LoginPage.res.js";
 import * as StackView from "./StackView.res.js";
 import * as Belt_Array from "@rescript/runtime/lib/es6/Belt_Array.js";
 import * as IdrisBadge from "./IdrisBadge.res.js";
 import * as Belt_Option from "@rescript/runtime/lib/es6/Belt_Option.js";
 import * as GapAnalysis from "./GapAnalysis.res.js";
+import * as RegisterPage from "./RegisterPage.res.js";
 import * as SettingsPage from "./SettingsPage.res.js";
 import * as TopologyView from "./TopologyView.res.js";
 import * as ErrorBoundary from "./ErrorBoundary.res.js";
@@ -89,6 +91,7 @@ function App(props) {
       pipelineDesigner: prev.pipelineDesigner,
       isDark: prev.isDark
     }));
+    let exit = 0;
     if (typeof msg !== "object") {
       switch (msg) {
         case "SaveStack" :
@@ -269,6 +272,7 @@ function App(props) {
           return;
         case "TriggerImportDesign" :
         case "RetryImport" :
+          exit = 2;
           break;
         case "AutoSaveTick" :
           if (!state.model.isDirty) {
@@ -282,31 +286,105 @@ function App(props) {
             return Promise.resolve();
           });
           return;
+        case "LoginRequested" :
+          let form = newModel.auth.loginForm;
+          Stdlib_Promise.$$catch(ApiClient.login(form.email, form.password).then(result => {
+            if (result.TAG === "Ok") {
+              dispatch({
+                TAG: "LoginSuccess",
+                _0: result._0
+              });
+            } else {
+              dispatch({
+                TAG: "LoginError",
+                _0: result._0
+              });
+            }
+            return Promise.resolve();
+          }), param => {
+            dispatch({
+              TAG: "LoginError",
+              _0: "Network error"
+            });
+            return Promise.resolve();
+          });
+          return;
+        case "RegisterRequested" :
+          if (!newModel.auth.authLoading) {
+            return;
+          }
+          let form$1 = newModel.auth.registerForm;
+          Stdlib_Promise.$$catch(ApiClient.register(form$1.email, form$1.password).then(result => {
+            if (result.TAG === "Ok") {
+              dispatch({
+                TAG: "RegisterSuccess",
+                _0: result._0
+              });
+            } else {
+              dispatch({
+                TAG: "RegisterError",
+                _0: result._0
+              });
+            }
+            return Promise.resolve();
+          }), param => {
+            dispatch({
+              TAG: "RegisterError",
+              _0: "Network error"
+            });
+            return Promise.resolve();
+          });
+          return;
+        case "Logout" :
+          AppRouter.navigateTo("LoginView");
+          return setState(prev => ({
+            currentPage: "LoginView",
+            model: prev.model,
+            pipelineDesigner: prev.pipelineDesigner,
+            isDark: prev.isDark
+          }));
         default:
           return;
       }
     } else {
-      if (msg.TAG !== "Pipeline") {
-        return;
+      switch (msg.TAG) {
+        case "LoginSuccess" :
+        case "RegisterSuccess" :
+          exit = 1;
+          break;
+        case "Pipeline" :
+          let pipelineMsg = msg._0;
+          return setState(prev => {
+            let newPState = PipelineUpdate.update(prev.pipelineDesigner, pipelineMsg);
+            return {
+              currentPage: prev.currentPage,
+              model: prev.model,
+              pipelineDesigner: newPState,
+              isDark: prev.isDark
+            };
+          });
+        default:
+          return;
       }
-      let pipelineMsg = msg._0;
-      return setState(prev => {
-        let newPState = PipelineUpdate.update(prev.pipelineDesigner, pipelineMsg);
-        return {
-          currentPage: prev.currentPage,
-          model: prev.model,
-          pipelineDesigner: newPState,
-          isDark: prev.isDark
-        };
-      });
     }
-    Import.triggerImport(importedModel => dispatch({
-      TAG: "ImportDesignSuccess",
-      _0: importedModel
-    }), error => dispatch({
-      TAG: "ImportDesignError",
-      _0: error
-    }));
+    switch (exit) {
+      case 1 :
+        AppRouter.navigateTo("NetworkView");
+        return setState(prev => ({
+          currentPage: "NetworkView",
+          model: prev.model,
+          pipelineDesigner: prev.pipelineDesigner,
+          isDark: prev.isDark
+        }));
+      case 2 :
+        return Import.triggerImport(importedModel => dispatch({
+          TAG: "ImportDesignSuccess",
+          _0: importedModel
+        }), error => dispatch({
+          TAG: "ImportDesignError",
+          _0: error
+        }));
+    }
   };
   let switchPage = page => {
     AppRouter.navigateTo(page);
@@ -361,113 +439,96 @@ function App(props) {
       removeDarkClass();
     }
   }, [state.isDark]);
-  let match$1 = state.currentPage;
   let tmp;
-  switch (match$1) {
-    case "NetworkView" :
-      tmp = TopologyView.view(state.model, state.isDark, dispatch);
-      break;
-    case "StackView" :
-      tmp = StackView.view(state.model, state.isDark);
-      break;
-    case "PipelineView" :
-      tmp = JsxRuntime.jsx(PipelineDesigner.make, {
-        state: state.pipelineDesigner,
-        dispatch: pMsg => dispatch({
-          TAG: "Pipeline",
-          _0: pMsg
-        })
-      });
-      break;
-    case "LagoGreyView" :
-      tmp = JsxRuntime.jsx(LagoGreyImageDesigner.make, {});
-      break;
-    case "PortConfigView" :
-      tmp = JsxRuntime.jsx(PortConfigPanel.make, {});
-      break;
-    case "SecurityView" :
-      tmp = JsxRuntime.jsx(SecurityInspector.make, {
-        initialState: state.model.securityState
-      });
-      break;
-    case "GapAnalysisView" :
-      tmp = JsxRuntime.jsx(GapAnalysis.make, {
-        initialState: state.model.gapState
-      });
-      break;
-    case "SimulationView" :
-      tmp = JsxRuntime.jsx(SimulationMode.make, {});
-      break;
-    case "SettingsView" :
-      tmp = JsxRuntime.jsx(SettingsPage.make, {
-        settings: state.model.settings,
-        isDark: state.isDark,
-        onSave: () => dispatch("SaveSettings"),
-        onSettingsChange: newSettings => setState(prev => {
-          let init = prev.model;
-          return {
-            currentPage: prev.currentPage,
-            model: {
-              components: init.components,
-              connections: init.connections,
-              selectedComponent: init.selectedComponent,
-              dragState: init.dragState,
-              canvasOffset: init.canvasOffset,
-              zoomLevel: init.zoomLevel,
-              validationResult: init.validationResult,
-              securityState: init.securityState,
-              gapState: init.gapState,
-              securityLoading: init.securityLoading,
-              gapLoading: init.gapLoading,
-              currentStackId: init.currentStackId,
-              settings: newSettings,
-              wsState: init.wsState,
-              undoStack: init.undoStack,
-              redoStack: init.redoStack,
-              isDirty: init.isDirty,
-              lastSavedAt: init.lastSavedAt,
-              activeErrors: init.activeErrors
-            },
-            pipelineDesigner: prev.pipelineDesigner,
-            isDark: newSettings.theme === "dark"
-          };
-        })
-      });
-      break;
-    case "NotFound" :
-      tmp = JsxRuntime.jsxs("div", {
-        children: [
-          JsxRuntime.jsx("h1", {
-            children: "404",
-            style: {
-              color: "#64b5f6",
-              fontSize: "3rem",
-              marginBottom: "1rem"
-            }
-          }),
-          JsxRuntime.jsx("p", {
-            children: "Page not found",
-            style: {
-              color: "#8892a6",
-              marginBottom: "2rem"
-            }
-          }),
-          JsxRuntime.jsx("button", {
-            children: "Go to Network View",
-            className: "action-btn",
-            onClick: param => switchPage("NetworkView")
+  if (state.model.auth.isAuthenticated) {
+    let match$1 = state.currentPage;
+    let tmp$1;
+    switch (match$1) {
+      case "LoginView" :
+      case "RegisterView" :
+      case "NetworkView" :
+        tmp$1 = TopologyView.view(state.model, state.isDark, dispatch);
+        break;
+      case "StackView" :
+        tmp$1 = StackView.view(state.model, state.isDark);
+        break;
+      case "PipelineView" :
+        tmp$1 = JsxRuntime.jsx(PipelineDesigner.make, {
+          state: state.pipelineDesigner,
+          dispatch: pMsg => dispatch({
+            TAG: "Pipeline",
+            _0: pMsg
           })
-        ],
-        className: "page",
-        style: {
-          paddingTop: "4rem",
-          textAlign: "center"
-        }
-      });
-      break;
-  }
-  return JsxRuntime.jsx(ErrorBoundary.make, {
-    children: JsxRuntime.jsxs("div", {
+        });
+        break;
+      case "LagoGreyView" :
+        tmp$1 = JsxRuntime.jsx(LagoGreyImageDesigner.make, {});
+        break;
+      case "PortConfigView" :
+        tmp$1 = JsxRuntime.jsx(PortConfigPanel.make, {});
+        break;
+      case "SecurityView" :
+        tmp$1 = JsxRuntime.jsx(SecurityInspector.make, {
+          initialState: state.model.securityState
+        });
+        break;
+      case "GapAnalysisView" :
+        tmp$1 = JsxRuntime.jsx(GapAnalysis.make, {
+          initialState: state.model.gapState
+        });
+        break;
+      case "SimulationView" :
+        tmp$1 = JsxRuntime.jsx(SimulationMode.make, {});
+        break;
+      case "SettingsView" :
+        tmp$1 = JsxRuntime.jsx(SettingsPage.make, {
+          settings: state.model.settings,
+          isDark: state.isDark,
+          onSave: () => dispatch("SaveSettings"),
+          onSettingsChange: newSettings => setState(prev => {
+            let newrecord = {...prev.model};
+            return {
+              currentPage: prev.currentPage,
+              model: (newrecord.settings = newSettings, newrecord),
+              pipelineDesigner: prev.pipelineDesigner,
+              isDark: newSettings.theme === "dark"
+            };
+          })
+        });
+        break;
+      case "NotFound" :
+        tmp$1 = JsxRuntime.jsxs("div", {
+          children: [
+            JsxRuntime.jsx("h1", {
+              children: "404",
+              style: {
+                color: "#64b5f6",
+                fontSize: "3rem",
+                marginBottom: "1rem"
+              }
+            }),
+            JsxRuntime.jsx("p", {
+              children: "Page not found",
+              style: {
+                color: "#8892a6",
+                marginBottom: "2rem"
+              }
+            }),
+            JsxRuntime.jsx("button", {
+              children: "Go to Network View",
+              className: "action-btn",
+              onClick: param => switchPage("NetworkView")
+            })
+          ],
+          className: "page",
+          style: {
+            paddingTop: "4rem",
+            textAlign: "center"
+          }
+        });
+        break;
+    }
+    tmp = JsxRuntime.jsxs("div", {
       children: [
         JsxRuntime.jsxs("nav", {
           children: [
@@ -563,6 +624,12 @@ function App(props) {
                     TAG: "ExportDesignToJson",
                     _0: "Stack design"
                   })
+                }),
+                JsxRuntime.jsx("button", {
+                  children: "Sign out",
+                  className: "action-btn",
+                  title: "Sign out",
+                  onClick: param => dispatch("Logout")
                 })
               ],
               className: "nav-actions"
@@ -609,7 +676,7 @@ function App(props) {
             }
           }) : null,
         JsxRuntime.jsx("div", {
-          children: tmp,
+          children: tmp$1,
           className: "content"
         }),
         JsxRuntime.jsx("div", {
@@ -625,7 +692,23 @@ function App(props) {
         })
       ],
       className: "app"
-    })
+    });
+  } else {
+    let match$2 = state.currentPage;
+    tmp = match$2 === "RegisterView" ? JsxRuntime.jsx(RegisterPage.make, {
+        auth: state.model.auth,
+        isDark: state.isDark,
+        dispatch: dispatch,
+        onSwitchToLogin: () => switchPage("LoginView")
+      }) : JsxRuntime.jsx(LoginPage.make, {
+        auth: state.model.auth,
+        isDark: state.isDark,
+        dispatch: dispatch,
+        onSwitchToRegister: () => switchPage("RegisterView")
+      });
+  }
+  return JsxRuntime.jsx(ErrorBoundary.make, {
+    children: tmp
   });
 }
 

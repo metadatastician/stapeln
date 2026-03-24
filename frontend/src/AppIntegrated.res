@@ -306,6 +306,9 @@ let make = () => {
               onStateChange={_newState => dispatch(SimulationModeMsg(SimulationMode.ToggleStats))}
             />
           | SettingsView => Settings.view(Settings.defaultSettings, state.isDark)
+          // Auth routes fall through to network view in integrated mode
+          | LoginView | RegisterView =>
+            TopologyView.view(state.model, state.isDark, stackMsg => dispatch(StackMsg(stackMsg)))
           | NotFound =>
             <div
               style={Sx.make(

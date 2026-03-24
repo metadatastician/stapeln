@@ -36,6 +36,55 @@ type dragState =
   | DraggingComponent(component)
   | DraggingCanvas(position)
 
+// Authentication state for login/register flow
+type loginForm = {
+  email: string,
+  password: string,
+}
+
+type registerForm = {
+  email: string,
+  password: string,
+  confirmPassword: string,
+}
+
+type authState = {
+  isAuthenticated: bool,
+  currentEmail: option<string>,
+  authError: option<string>,
+  authLoading: bool,
+  loginForm: loginForm,
+  registerForm: registerForm,
+}
+
+let defaultLoginForm: loginForm = {
+  email: "",
+  password: "",
+}
+
+let defaultRegisterForm: registerForm = {
+  email: "",
+  password: "",
+  confirmPassword: "",
+}
+
+let defaultAuthState: authState = {
+  isAuthenticated: false,
+  currentEmail: None,
+  authError: None,
+  authLoading: false,
+  loginForm: defaultLoginForm,
+  registerForm: defaultRegisterForm,
+}
+
+// Check localStorage for an existing auth token on startup
+let initAuthState = (): authState => {
+  switch ApiClient.getToken() {
+  | Some(_) => {...defaultAuthState, isAuthenticated: true}
+  | None => defaultAuthState
+  }
+}
+
 // Settings stored in the model for backend persistence
 type settingsConfig = {
   theme: string, // "dark" or "light"
@@ -86,6 +135,8 @@ type rec model = {
   lastSavedAt: option<float>, // Date.now() timestamp
   // Active user-facing errors (conversational style, UX Manifesto Rule 4)
   activeErrors: array<userError>,
+  // Authentication
+  auth: authState,
 }
 
 // A user-facing error with optional fix action
@@ -124,6 +175,7 @@ let initialModel = {
   isDirty: false,
   lastSavedAt: None,
   activeErrors: [],
+  auth: initAuthState(),
 }
 
 // Helper functions

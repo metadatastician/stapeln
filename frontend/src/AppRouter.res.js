@@ -4,6 +4,10 @@ import * as Belt_Array from "@rescript/runtime/lib/es6/Belt_Array.js";
 
 function routeToPath(route) {
   switch (route) {
+    case "LoginView" :
+      return "/login";
+    case "RegisterView" :
+      return "/register";
     case "NetworkView" :
       return "/";
     case "StackView" :
@@ -35,10 +39,14 @@ function pathToRoute(path) {
       return "GapAnalysisView";
     case "/lago-grey" :
       return "LagoGreyView";
+    case "/login" :
+      return "LoginView";
     case "/pipeline" :
       return "PipelineView";
     case "/ports" :
       return "PortConfigView";
+    case "/register" :
+      return "RegisterView";
     case "/security" :
       return "SecurityView";
     case "/settings" :

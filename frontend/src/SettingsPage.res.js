@@ -323,4 +323,4 @@ let make = SettingsPage;
 export {
   make,
 }
-/* react Not a pure module */
+/* Model Not a pure module */

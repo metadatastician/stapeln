@@ -73,5 +73,18 @@ type msg =
   // Auto-save
   | AutoSaveTick
   | MarkClean // called after successful save
+  // Authentication
+  | LoginRequested
+  | LoginSuccess(string) // token
+  | LoginError(string)
+  | RegisterRequested
+  | RegisterSuccess(string) // token
+  | RegisterError(string)
+  | UpdateLoginEmail(string)
+  | UpdateLoginPassword(string)
+  | UpdateRegisterEmail(string)
+  | UpdateRegisterPassword(string)
+  | UpdateRegisterConfirm(string)
+  | Logout
   // Pipeline designer
   | Pipeline(PipelineModel.pipelineMsg)

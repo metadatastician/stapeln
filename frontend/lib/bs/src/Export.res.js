@@ -185,4 +185,4 @@ export {
   exportToKubernetesYaml,
   exportToHelmChart,
 }
-/* DesignFormat Not a pure module */
+/* Model Not a pure module */

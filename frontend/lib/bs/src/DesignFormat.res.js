@@ -183,29 +183,14 @@ function modelFromJson(json) {
       return Belt_Array.keepMap(Belt_Array.map(arr, connectionFromJson), x => x);
     }
   });
-  if (components !== undefined && connections !== undefined) {
-    return {
-      components: components,
-      connections: connections,
-      selectedComponent: Model.initialModel.selectedComponent,
-      dragState: Model.initialModel.dragState,
-      canvasOffset: Model.initialModel.canvasOffset,
-      zoomLevel: Model.initialModel.zoomLevel,
-      validationResult: Model.initialModel.validationResult,
-      securityState: Model.initialModel.securityState,
-      gapState: Model.initialModel.gapState,
-      securityLoading: Model.initialModel.securityLoading,
-      gapLoading: Model.initialModel.gapLoading,
-      currentStackId: Model.initialModel.currentStackId,
-      settings: Model.initialModel.settings,
-      wsState: Model.initialModel.wsState,
-      undoStack: Model.initialModel.undoStack,
-      redoStack: Model.initialModel.redoStack,
-      isDirty: Model.initialModel.isDirty,
-      lastSavedAt: Model.initialModel.lastSavedAt,
-      activeErrors: Model.initialModel.activeErrors
-    };
+  if (components === undefined) {
+    return;
   }
+  if (connections === undefined) {
+    return;
+  }
+  let newrecord = {...Model.initialModel};
+  return newrecord.connections = connections, newrecord.components = components, newrecord;
 }
 
 function serializeDesign(model, metadata) {
@@ -305,4 +290,4 @@ export {
   serializeDesign,
   deserializeDesign,
 }
-/* Stdlib_JsExn Not a pure module */
+/* Model Not a pure module */

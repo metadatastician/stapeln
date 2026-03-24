@@ -248,6 +248,57 @@ let make = () => {
         }
       }
 
+    | LoginRequested => {
+        let form = newModel.auth.loginForm
+        ignore(
+          ApiClient.login(form.email, form.password)
+          ->Promise.then(result => {
+            switch result {
+            | Ok(token) => dispatch(LoginSuccess(token))
+            | Error(err) => dispatch(LoginError(err))
+            }
+            Promise.resolve()
+          })
+          ->Promise.catch(_ => {
+            dispatch(LoginError("Network error"))
+            Promise.resolve()
+          }),
+        )
+      }
+
+    | RegisterRequested => {
+        // Only fire API call if validation passed (authLoading will be true)
+        if newModel.auth.authLoading {
+          let form = newModel.auth.registerForm
+          ignore(
+            ApiClient.register(form.email, form.password)
+            ->Promise.then(result => {
+              switch result {
+              | Ok(token) => dispatch(RegisterSuccess(token))
+              | Error(err) => dispatch(RegisterError(err))
+              }
+              Promise.resolve()
+            })
+            ->Promise.catch(_ => {
+              dispatch(RegisterError("Network error"))
+              Promise.resolve()
+            }),
+          )
+        }
+      }
+
+    | LoginSuccess(_) | RegisterSuccess(_) => {
+        // Redirect to main view after successful auth
+        AppRouter.navigateTo(NetworkView)
+        setState(prev => {...prev, currentPage: NetworkView})
+      }
+
+    | Logout => {
+        // Redirect to login page after logout
+        AppRouter.navigateTo(LoginView)
+        setState(prev => {...prev, currentPage: LoginView})
+      }
+
     | Pipeline(pipelineMsg) => {
         // Update pipeline designer state directly in appState
         setState(prev => {
@@ -354,6 +405,25 @@ let make = () => {
   }, [state.isDark])
 
   <ErrorBoundary>
+    {if !state.model.auth.isAuthenticated {
+      // Auth gate: show login or register page when not authenticated
+      switch state.currentPage {
+      | RegisterView =>
+        <RegisterPage
+          auth={state.model.auth}
+          isDark={state.isDark}
+          dispatch
+          onSwitchToLogin={() => switchPage(LoginView)}
+        />
+      | _ =>
+        <LoginPage
+          auth={state.model.auth}
+          isDark={state.isDark}
+          dispatch
+          onSwitchToRegister={() => switchPage(RegisterView)}
+        />
+      }
+    } else {
     <div className="app">
       <nav className="nav-tabs">
         <button
@@ -465,6 +535,13 @@ let make = () => {
           >
             {"💾 Export"->React.string}
           </button>
+          <button
+            className="action-btn"
+            onClick={_ => dispatch(Logout)}
+            title="Sign out"
+          >
+            {"Sign out"->React.string}
+          </button>
         </div>
       </nav>
 
@@ -532,6 +609,9 @@ let make = () => {
               })
             }
           />
+        // Auth routes redirect to main view when authenticated
+        | LoginView | RegisterView =>
+          TopologyView.view(state.model, state.isDark, dispatch)
         | NotFound =>
           <div className="page" style={Sx.make(~textAlign="center", ~paddingTop="4rem", ())}>
             <h1 style={Sx.make(~fontSize="3rem", ~color="#64b5f6", ~marginBottom="1rem", ())}>
@@ -562,5 +642,6 @@ let make = () => {
         <IdrisBadge style=Compact />
       </div>
     </div>
+    }} // closes the else branch of the auth gate
   </ErrorBoundary>
 }

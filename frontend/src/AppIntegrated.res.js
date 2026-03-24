@@ -315,7 +315,12 @@ function AppIntegrated(props) {
   }, []);
   let match$1 = state.currentRoute;
   let tmp;
+  let exit = 0;
   switch (match$1) {
+    case "LoginView" :
+    case "RegisterView" :
+      exit = 1;
+      break;
     case "NetworkView" :
       tmp = TopologyView.view(state.model, state.isDark, stackMsg => dispatch({
         TAG: "StackMsg",
@@ -414,6 +419,12 @@ function AppIntegrated(props) {
       });
       break;
   }
+  if (exit === 1) {
+    tmp = TopologyView.view(state.model, state.isDark, stackMsg => dispatch({
+      TAG: "StackMsg",
+      _0: stackMsg
+    }));
+  }
   return JsxRuntime.jsx(ErrorBoundary.make, {
     children: JsxRuntime.jsxs("div", {
       children: [
@@ -481,4 +492,4 @@ export {
   update,
   make,
 }
-/* Toast Not a pure module */
+/* Model Not a pure module */

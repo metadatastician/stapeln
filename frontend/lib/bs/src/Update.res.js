@@ -2,6 +2,7 @@
 
 import * as Model from "./Model.res.js";
 import * as Export from "./Export.res.js";
+import * as ApiClient from "./ApiClient.res.js";
 import * as Belt_Array from "@rescript/runtime/lib/es6/Belt_Array.js";
 import * as GapAnalysis from "./GapAnalysis.res.js";
 import * as Primitive_option from "@rescript/runtime/lib/es6/Primitive_option.js";
@@ -433,98 +434,27 @@ function update(model, msg) {
   if (typeof msg !== "object") {
     switch (msg) {
       case "DragEnd" :
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: "NotDragging",
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord = {...model};
+        newrecord.dragState = "NotDragging";
+        return newrecord;
       case "ZoomIn" :
         let newZoom = Math.min(model.zoomLevel * 1.2, 3.0);
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: newZoom,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$1 = {...model};
+        newrecord$1.zoomLevel = newZoom;
+        return newrecord$1;
       case "ZoomOut" :
         let newZoom$1 = Math.max(model.zoomLevel / 1.2, 0.5);
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: newZoom$1,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$2 = {...model};
+        newrecord$2.zoomLevel = newZoom$1;
+        return newrecord$2;
       case "ResetZoom" :
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: {
-            x: 0.0,
-            y: 0.0
-          },
-          zoomLevel: 1.0,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
+        let newrecord$3 = {...model};
+        newrecord$3.zoomLevel = 1.0;
+        newrecord$3.canvasOffset = {
+          x: 0.0,
+          y: 0.0
         };
+        return newrecord$3;
       case "ValidateStack" :
         let result_valid = model.components.length !== 0;
         let result_errors = [];
@@ -534,27 +464,9 @@ function update(model, msg) {
           errors: result_errors,
           warnings: result_warnings
         };
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: result,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$4 = {...model};
+        newrecord$4.validationResult = result;
+        return newrecord$4;
       case "ExportToSelurCompose" :
         Export.exportToSelurCompose(model);
         return model;
@@ -575,94 +487,22 @@ function update(model, msg) {
         return model;
       case "RunSecurityScan" :
         console.log("Running security scan...");
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: true,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$5 = {...model};
+        newrecord$5.securityLoading = true;
+        return newrecord$5;
       case "SecurityScanLoading" :
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: true,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$6 = {...model};
+        newrecord$6.securityLoading = true;
+        return newrecord$6;
       case "RunGapAnalysis" :
         console.log("Running gap analysis...");
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: true,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$7 = {...model};
+        newrecord$7.gapLoading = true;
+        return newrecord$7;
       case "GapAnalysisLoading" :
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: true,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$8 = {...model};
+        newrecord$8.gapLoading = true;
+        return newrecord$8;
       case "SaveSettings" :
         console.log("Saving settings to backend...");
         return model;
@@ -674,76 +514,22 @@ function update(model, msg) {
         return model;
       case "WsDisconnect" :
         console.log("WebSocket disconnect requested");
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: "Disconnected",
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$9 = {...model};
+        newrecord$9.wsState = "Disconnected";
+        return newrecord$9;
       case "WsValidate" :
         console.log("WebSocket validate requested");
         return model;
       case "WsSecurityScan" :
         console.log("WebSocket security scan requested");
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: true,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$10 = {...model};
+        newrecord$10.securityLoading = true;
+        return newrecord$10;
       case "WsGapAnalysis" :
         console.log("WebSocket gap analysis requested");
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: true,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$11 = {...model};
+        newrecord$11.gapLoading = true;
+        return newrecord$11;
       case "Undo" :
         let stackLen = model.undoStack.length;
         if (stackLen <= 0) {
@@ -758,27 +544,13 @@ function update(model, msg) {
           connections: currentSnap_connections
         };
         let newRedoStack = Belt_Array.concat(model.redoStack, [currentSnap]);
-        return {
-          components: snap.components,
-          connections: snap.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: newUndoStack,
-          redoStack: newRedoStack,
-          isDirty: true,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$12 = {...model};
+        newrecord$12.isDirty = true;
+        newrecord$12.redoStack = newRedoStack;
+        newrecord$12.undoStack = newUndoStack;
+        newrecord$12.connections = snap.connections;
+        newrecord$12.components = snap.components;
+        return newrecord$12;
       case "Redo" :
         let stackLen$1 = model.redoStack.length;
         if (stackLen$1 <= 0) {
@@ -793,49 +565,87 @@ function update(model, msg) {
           connections: currentSnap_connections$1
         };
         let newUndoStack$1 = Belt_Array.concat(model.undoStack, [currentSnap$1]);
-        return {
-          components: snap$1.components,
-          connections: snap$1.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: newUndoStack$1,
-          redoStack: newRedoStack$1,
-          isDirty: true,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$13 = {...model};
+        newrecord$13.isDirty = true;
+        newrecord$13.redoStack = newRedoStack$1;
+        newrecord$13.undoStack = newUndoStack$1;
+        newrecord$13.connections = snap$1.connections;
+        newrecord$13.components = snap$1.components;
+        return newrecord$13;
       case "MarkClean" :
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: false,
-          lastSavedAt: (Date.now()),
-          activeErrors: model.activeErrors
+        let newrecord$14 = {...model};
+        newrecord$14.lastSavedAt = (Date.now());
+        newrecord$14.isDirty = false;
+        return newrecord$14;
+      case "LoginRequested" :
+        let newrecord$15 = {...model};
+        let init = model.auth;
+        newrecord$15.auth = {
+          isAuthenticated: init.isAuthenticated,
+          currentEmail: init.currentEmail,
+          authError: undefined,
+          authLoading: true,
+          loginForm: init.loginForm,
+          registerForm: init.registerForm
         };
+        return newrecord$15;
+      case "RegisterRequested" :
+        let form = model.auth.registerForm;
+        if (form.password !== form.confirmPassword) {
+          let newrecord$16 = {...model};
+          let init$1 = model.auth;
+          newrecord$16.auth = {
+            isAuthenticated: init$1.isAuthenticated,
+            currentEmail: init$1.currentEmail,
+            authError: "Passwords do not match",
+            authLoading: init$1.authLoading,
+            loginForm: init$1.loginForm,
+            registerForm: init$1.registerForm
+          };
+          return newrecord$16;
+        }
+        if (form.password.length < 6) {
+          let newrecord$17 = {...model};
+          let init$2 = model.auth;
+          newrecord$17.auth = {
+            isAuthenticated: init$2.isAuthenticated,
+            currentEmail: init$2.currentEmail,
+            authError: "Password must be at least 6 characters",
+            authLoading: init$2.authLoading,
+            loginForm: init$2.loginForm,
+            registerForm: init$2.registerForm
+          };
+          return newrecord$17;
+        }
+        if (!form.email.includes("@") || !form.email.includes(".")) {
+          let newrecord$18 = {...model};
+          let init$3 = model.auth;
+          newrecord$18.auth = {
+            isAuthenticated: init$3.isAuthenticated,
+            currentEmail: init$3.currentEmail,
+            authError: "Please enter a valid email address",
+            authLoading: init$3.authLoading,
+            loginForm: init$3.loginForm,
+            registerForm: init$3.registerForm
+          };
+          return newrecord$18;
+        }
+        let newrecord$19 = {...model};
+        let init$4 = model.auth;
+        newrecord$19.auth = {
+          isAuthenticated: init$4.isAuthenticated,
+          currentEmail: init$4.currentEmail,
+          authError: undefined,
+          authLoading: true,
+          loginForm: init$4.loginForm,
+          registerForm: init$4.registerForm
+        };
+        return newrecord$19;
+      case "Logout" :
+        ApiClient.clearToken();
+        let newrecord$20 = {...model};
+        newrecord$20.auth = Model.defaultAuthState;
+        return newrecord$20;
       default:
         return model;
     }
@@ -853,27 +663,9 @@ function update(model, msg) {
           position: newComponent_position,
           config: newComponent_config
         };
-        return {
-          components: Belt_Array.concat(m.components, [newComponent]),
-          connections: m.connections,
-          selectedComponent: m.selectedComponent,
-          dragState: m.dragState,
-          canvasOffset: m.canvasOffset,
-          zoomLevel: m.zoomLevel,
-          validationResult: m.validationResult,
-          securityState: m.securityState,
-          gapState: m.gapState,
-          securityLoading: m.securityLoading,
-          gapLoading: m.gapLoading,
-          currentStackId: m.currentStackId,
-          settings: m.settings,
-          wsState: m.wsState,
-          undoStack: m.undoStack,
-          redoStack: m.redoStack,
-          isDirty: m.isDirty,
-          lastSavedAt: m.lastSavedAt,
-          activeErrors: m.activeErrors
-        };
+        let newrecord$21 = {...m};
+        newrecord$21.components = Belt_Array.concat(m.components, [newComponent]);
+        return newrecord$21;
       case "RemoveComponent" :
         let id = msg._0;
         let m$1 = Model.pushUndo(model);
@@ -885,27 +677,11 @@ function update(model, msg) {
             return false;
           }
         });
-        return {
-          components: newComponents,
-          connections: newConnections,
-          selectedComponent: m$1.selectedComponent === id ? undefined : m$1.selectedComponent,
-          dragState: m$1.dragState,
-          canvasOffset: m$1.canvasOffset,
-          zoomLevel: m$1.zoomLevel,
-          validationResult: m$1.validationResult,
-          securityState: m$1.securityState,
-          gapState: m$1.gapState,
-          securityLoading: m$1.securityLoading,
-          gapLoading: m$1.gapLoading,
-          currentStackId: m$1.currentStackId,
-          settings: m$1.settings,
-          wsState: m$1.wsState,
-          undoStack: m$1.undoStack,
-          redoStack: m$1.redoStack,
-          isDirty: m$1.isDirty,
-          lastSavedAt: m$1.lastSavedAt,
-          activeErrors: m$1.activeErrors
-        };
+        let newrecord$22 = {...m$1};
+        newrecord$22.selectedComponent = m$1.selectedComponent === id ? undefined : m$1.selectedComponent;
+        newrecord$22.connections = newConnections;
+        newrecord$22.components = newComponents;
+        return newrecord$22;
       case "UpdateComponentPosition" :
         let position = msg._1;
         let id$1 = msg._0;
@@ -921,27 +697,9 @@ function update(model, msg) {
             return comp;
           }
         });
-        return {
-          components: newComponents$1,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$23 = {...model};
+        newrecord$23.components = newComponents$1;
+        return newrecord$23;
       case "UpdateComponentConfig" :
         let config = msg._1;
         let id$2 = msg._0;
@@ -958,49 +716,13 @@ function update(model, msg) {
             return comp;
           }
         });
-        return {
-          components: newComponents$2,
-          connections: m$2.connections,
-          selectedComponent: m$2.selectedComponent,
-          dragState: m$2.dragState,
-          canvasOffset: m$2.canvasOffset,
-          zoomLevel: m$2.zoomLevel,
-          validationResult: m$2.validationResult,
-          securityState: m$2.securityState,
-          gapState: m$2.gapState,
-          securityLoading: m$2.securityLoading,
-          gapLoading: m$2.gapLoading,
-          currentStackId: m$2.currentStackId,
-          settings: m$2.settings,
-          wsState: m$2.wsState,
-          undoStack: m$2.undoStack,
-          redoStack: m$2.redoStack,
-          isDirty: m$2.isDirty,
-          lastSavedAt: m$2.lastSavedAt,
-          activeErrors: m$2.activeErrors
-        };
+        let newrecord$24 = {...m$2};
+        newrecord$24.components = newComponents$2;
+        return newrecord$24;
       case "SelectComponent" :
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: msg._0,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$25 = {...model};
+        newrecord$25.selectedComponent = msg._0;
+        return newrecord$25;
       case "AddConnection" :
         let toId = msg._1;
         let fromId = msg._0;
@@ -1016,102 +738,30 @@ function update(model, msg) {
           from: fromId,
           to: toId
         };
-        return {
-          components: m$3.components,
-          connections: Belt_Array.concat(m$3.connections, [newConnection]),
-          selectedComponent: m$3.selectedComponent,
-          dragState: m$3.dragState,
-          canvasOffset: m$3.canvasOffset,
-          zoomLevel: m$3.zoomLevel,
-          validationResult: m$3.validationResult,
-          securityState: m$3.securityState,
-          gapState: m$3.gapState,
-          securityLoading: m$3.securityLoading,
-          gapLoading: m$3.gapLoading,
-          currentStackId: m$3.currentStackId,
-          settings: m$3.settings,
-          wsState: m$3.wsState,
-          undoStack: m$3.undoStack,
-          redoStack: m$3.redoStack,
-          isDirty: m$3.isDirty,
-          lastSavedAt: m$3.lastSavedAt,
-          activeErrors: m$3.activeErrors
-        };
+        let newrecord$26 = {...m$3};
+        newrecord$26.connections = Belt_Array.concat(m$3.connections, [newConnection]);
+        return newrecord$26;
       case "RemoveConnection" :
         let id$3 = msg._0;
         let m$4 = Model.pushUndo(model);
         let newConnections$1 = Belt_Array.keep(m$4.connections, conn => conn.id !== id$3);
-        return {
-          components: m$4.components,
-          connections: newConnections$1,
-          selectedComponent: m$4.selectedComponent,
-          dragState: m$4.dragState,
-          canvasOffset: m$4.canvasOffset,
-          zoomLevel: m$4.zoomLevel,
-          validationResult: m$4.validationResult,
-          securityState: m$4.securityState,
-          gapState: m$4.gapState,
-          securityLoading: m$4.securityLoading,
-          gapLoading: m$4.gapLoading,
-          currentStackId: m$4.currentStackId,
-          settings: m$4.settings,
-          wsState: m$4.wsState,
-          undoStack: m$4.undoStack,
-          redoStack: m$4.redoStack,
-          isDirty: m$4.isDirty,
-          lastSavedAt: m$4.lastSavedAt,
-          activeErrors: m$4.activeErrors
-        };
+        let newrecord$27 = {...m$4};
+        newrecord$27.connections = newConnections$1;
+        return newrecord$27;
       case "StartDragComponent" :
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: {
-            TAG: "DraggingComponent",
-            _0: msg._0
-          },
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
+        let newrecord$28 = {...model};
+        newrecord$28.dragState = {
+          TAG: "DraggingComponent",
+          _0: msg._0
         };
+        return newrecord$28;
       case "StartDragCanvas" :
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: {
-            TAG: "DraggingCanvas",
-            _0: msg._0
-          },
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
+        let newrecord$29 = {...model};
+        newrecord$29.dragState = {
+          TAG: "DraggingCanvas",
+          _0: msg._0
         };
+        return newrecord$29;
       case "DragMove" :
         let mousePos = msg._0;
         let component = model.dragState;
@@ -1132,35 +782,18 @@ function update(model, msg) {
               return comp;
             }
           });
-          return {
-            components: newComponents$3,
-            connections: model.connections,
-            selectedComponent: model.selectedComponent,
-            dragState: {
-              TAG: "DraggingComponent",
-              _0: {
-                id: component$1.id,
-                componentType: component$1.componentType,
-                position: mousePos,
-                config: component$1.config
-              }
-            },
-            canvasOffset: model.canvasOffset,
-            zoomLevel: model.zoomLevel,
-            validationResult: model.validationResult,
-            securityState: model.securityState,
-            gapState: model.gapState,
-            securityLoading: model.securityLoading,
-            gapLoading: model.gapLoading,
-            currentStackId: model.currentStackId,
-            settings: model.settings,
-            wsState: model.wsState,
-            undoStack: model.undoStack,
-            redoStack: model.redoStack,
-            isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt,
-            activeErrors: model.activeErrors
+          let newrecord$30 = {...model};
+          newrecord$30.dragState = {
+            TAG: "DraggingComponent",
+            _0: {
+              id: component$1.id,
+              componentType: component$1.componentType,
+              position: mousePos,
+              config: component$1.config
+            }
           };
+          newrecord$30.components = newComponents$3;
+          return newrecord$30;
         }
         let startPos = component._0;
         let deltaX = mousePos.x - startPos.x;
@@ -1171,74 +804,21 @@ function update(model, msg) {
           x: newOffset_x,
           y: newOffset_y
         };
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: {
-            TAG: "DraggingCanvas",
-            _0: mousePos
-          },
-          canvasOffset: newOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
+        let newrecord$31 = {...model};
+        newrecord$31.canvasOffset = newOffset;
+        newrecord$31.dragState = {
+          TAG: "DraggingCanvas",
+          _0: mousePos
         };
+        return newrecord$31;
       case "PanCanvas" :
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: msg._0,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$32 = {...model};
+        newrecord$32.canvasOffset = msg._0;
+        return newrecord$32;
       case "ValidationResult" :
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: msg._0,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$33 = {...model};
+        newrecord$33.validationResult = msg._0;
+        return newrecord$33;
       case "ExportDesignToJson" :
         Export.exportDesignToJson(model, msg._0);
         return model;
@@ -1256,27 +836,9 @@ function update(model, msg) {
           severity: "Critical",
           fixLabel: err_fixLabel
         };
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: Belt_Array.concat(model.activeErrors, [err])
-        };
+        let newrecord$34 = {...model};
+        newrecord$34.activeErrors = Belt_Array.concat(model.activeErrors, [err]);
+        return newrecord$34;
       case "LoadStack" :
         console.log("Loading stack:", msg._0);
         return model;
@@ -1284,27 +846,10 @@ function update(model, msg) {
         let result$1 = msg._0;
         if (result$1.TAG === "Ok") {
           console.log("Stack saved with ID:", result$1._0);
-          return {
-            components: model.components,
-            connections: model.connections,
-            selectedComponent: model.selectedComponent,
-            dragState: model.dragState,
-            canvasOffset: model.canvasOffset,
-            zoomLevel: model.zoomLevel,
-            validationResult: model.validationResult,
-            securityState: model.securityState,
-            gapState: model.gapState,
-            securityLoading: model.securityLoading,
-            gapLoading: model.gapLoading,
-            currentStackId: model.currentStackId,
-            settings: model.settings,
-            wsState: model.wsState,
-            undoStack: model.undoStack,
-            redoStack: model.redoStack,
-            isDirty: false,
-            lastSavedAt: (Date.now()),
-            activeErrors: model.activeErrors
-          };
+          let newrecord$35 = {...model};
+          newrecord$35.lastSavedAt = (Date.now());
+          newrecord$35.isDirty = false;
+          return newrecord$35;
         }
         let error_id = Model.generateId();
         let error_reason = result$1._0;
@@ -1316,27 +861,9 @@ function update(model, msg) {
           severity: "Warning",
           fixLabel: error_fixLabel
         };
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: Belt_Array.concat(model.activeErrors, [error])
-        };
+        let newrecord$36 = {...model};
+        newrecord$36.activeErrors = Belt_Array.concat(model.activeErrors, [error]);
+        return newrecord$36;
       case "StackLoaded" :
         let result$2 = msg._0;
         if (result$2.TAG === "Ok") {
@@ -1350,27 +877,10 @@ function update(model, msg) {
         if (result$3.TAG === "Ok") {
           console.log("Security scan complete");
           let parsed = parseSecurityScanJson(result$3._0);
-          return {
-            components: model.components,
-            connections: model.connections,
-            selectedComponent: model.selectedComponent,
-            dragState: model.dragState,
-            canvasOffset: model.canvasOffset,
-            zoomLevel: model.zoomLevel,
-            validationResult: model.validationResult,
-            securityState: parsed,
-            gapState: model.gapState,
-            securityLoading: false,
-            gapLoading: model.gapLoading,
-            currentStackId: model.currentStackId,
-            settings: model.settings,
-            wsState: model.wsState,
-            undoStack: model.undoStack,
-            redoStack: model.redoStack,
-            isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt,
-            activeErrors: model.activeErrors
-          };
+          let newrecord$37 = {...model};
+          newrecord$37.securityLoading = false;
+          newrecord$37.securityState = parsed;
+          return newrecord$37;
         }
         let error_id$1 = Model.generateId();
         let error_reason$1 = result$3._0;
@@ -1382,53 +892,19 @@ function update(model, msg) {
           severity: "Warning",
           fixLabel: error_fixLabel$1
         };
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: false,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: Belt_Array.concat(model.activeErrors, [error$1])
-        };
+        let newrecord$38 = {...model};
+        newrecord$38.activeErrors = Belt_Array.concat(model.activeErrors, [error$1]);
+        newrecord$38.securityLoading = false;
+        return newrecord$38;
       case "GapAnalysisResult" :
         let result$4 = msg._0;
         if (result$4.TAG === "Ok") {
           console.log("Gap analysis complete");
           let parsed$1 = parseGapAnalysisJson(result$4._0);
-          return {
-            components: model.components,
-            connections: model.connections,
-            selectedComponent: model.selectedComponent,
-            dragState: model.dragState,
-            canvasOffset: model.canvasOffset,
-            zoomLevel: model.zoomLevel,
-            validationResult: model.validationResult,
-            securityState: model.securityState,
-            gapState: parsed$1,
-            securityLoading: model.securityLoading,
-            gapLoading: false,
-            currentStackId: model.currentStackId,
-            settings: model.settings,
-            wsState: model.wsState,
-            undoStack: model.undoStack,
-            redoStack: model.redoStack,
-            isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt,
-            activeErrors: model.activeErrors
-          };
+          let newrecord$39 = {...model};
+          newrecord$39.gapLoading = false;
+          newrecord$39.gapState = parsed$1;
+          return newrecord$39;
         }
         let error_id$2 = Model.generateId();
         let error_reason$2 = result$4._0;
@@ -1440,27 +916,10 @@ function update(model, msg) {
           severity: "Warning",
           fixLabel: error_fixLabel$2
         };
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: false,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: Belt_Array.concat(model.activeErrors, [error$2])
-        };
+        let newrecord$40 = {...model};
+        newrecord$40.activeErrors = Belt_Array.concat(model.activeErrors, [error$2]);
+        newrecord$40.gapLoading = false;
+        return newrecord$40;
       case "SettingsSaved" :
         let result$5 = msg._0;
         if (result$5.TAG === "Ok") {
@@ -1492,52 +951,16 @@ function update(model, msg) {
             autoSave: autoSave,
             backendUrl: backendUrl
           };
-          return {
-            components: model.components,
-            connections: model.connections,
-            selectedComponent: model.selectedComponent,
-            dragState: model.dragState,
-            canvasOffset: model.canvasOffset,
-            zoomLevel: model.zoomLevel,
-            validationResult: model.validationResult,
-            securityState: model.securityState,
-            gapState: model.gapState,
-            securityLoading: model.securityLoading,
-            gapLoading: model.gapLoading,
-            currentStackId: model.currentStackId,
-            settings: newSettings,
-            wsState: model.wsState,
-            undoStack: model.undoStack,
-            redoStack: model.redoStack,
-            isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt,
-            activeErrors: model.activeErrors
-          };
+          let newrecord$41 = {...model};
+          newrecord$41.settings = newSettings;
+          return newrecord$41;
         }
         console.error("Failed to load settings:", result$6._0);
         return model;
       case "WsConnectionStateChanged" :
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: msg._0,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$42 = {...model};
+        newrecord$42.wsState = msg._0;
+        return newrecord$42;
       case "WsValidationResult" :
         let d = jsonDict(msg._0);
         if (d === undefined) {
@@ -1562,196 +985,177 @@ function update(model, msg) {
           errors: errors,
           warnings: warnings
         };
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: result$7,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$43 = {...model};
+        newrecord$43.validationResult = result$7;
+        return newrecord$43;
       case "WsSecurityResult" :
         let d$1 = jsonDict(msg._0);
-        if (d$1 === undefined) {
-          return {
-            components: model.components,
-            connections: model.connections,
-            selectedComponent: model.selectedComponent,
-            dragState: model.dragState,
-            canvasOffset: model.canvasOffset,
-            zoomLevel: model.zoomLevel,
-            validationResult: model.validationResult,
-            securityState: model.securityState,
-            gapState: model.gapState,
-            securityLoading: false,
-            gapLoading: model.gapLoading,
-            currentStackId: model.currentStackId,
-            settings: model.settings,
-            wsState: model.wsState,
-            undoStack: model.undoStack,
-            redoStack: model.redoStack,
-            isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt,
-            activeErrors: model.activeErrors
-          };
+        if (d$1 !== undefined) {
+          let data$1 = d$1["data"];
+          if (data$1 !== undefined) {
+            let parsed$2 = parseSecurityScanJson(data$1);
+            let newrecord$44 = {...model};
+            newrecord$44.securityLoading = false;
+            newrecord$44.securityState = parsed$2;
+            return newrecord$44;
+          }
+          let newrecord$45 = {...model};
+          newrecord$45.securityLoading = false;
+          return newrecord$45;
         }
-        let data$1 = d$1["data"];
-        if (data$1 === undefined) {
-          return {
-            components: model.components,
-            connections: model.connections,
-            selectedComponent: model.selectedComponent,
-            dragState: model.dragState,
-            canvasOffset: model.canvasOffset,
-            zoomLevel: model.zoomLevel,
-            validationResult: model.validationResult,
-            securityState: model.securityState,
-            gapState: model.gapState,
-            securityLoading: false,
-            gapLoading: model.gapLoading,
-            currentStackId: model.currentStackId,
-            settings: model.settings,
-            wsState: model.wsState,
-            undoStack: model.undoStack,
-            redoStack: model.redoStack,
-            isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt,
-            activeErrors: model.activeErrors
-          };
-        }
-        let parsed$2 = parseSecurityScanJson(data$1);
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: parsed$2,
-          gapState: model.gapState,
-          securityLoading: false,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$46 = {...model};
+        newrecord$46.securityLoading = false;
+        return newrecord$46;
       case "WsGapResult" :
         let d$2 = jsonDict(msg._0);
-        if (d$2 === undefined) {
-          return {
-            components: model.components,
-            connections: model.connections,
-            selectedComponent: model.selectedComponent,
-            dragState: model.dragState,
-            canvasOffset: model.canvasOffset,
-            zoomLevel: model.zoomLevel,
-            validationResult: model.validationResult,
-            securityState: model.securityState,
-            gapState: model.gapState,
-            securityLoading: model.securityLoading,
-            gapLoading: false,
-            currentStackId: model.currentStackId,
-            settings: model.settings,
-            wsState: model.wsState,
-            undoStack: model.undoStack,
-            redoStack: model.redoStack,
-            isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt,
-            activeErrors: model.activeErrors
-          };
+        if (d$2 !== undefined) {
+          let data$2 = d$2["data"];
+          if (data$2 !== undefined) {
+            let parsed$3 = parseGapAnalysisJson(data$2);
+            let newrecord$47 = {...model};
+            newrecord$47.gapLoading = false;
+            newrecord$47.gapState = parsed$3;
+            return newrecord$47;
+          }
+          let newrecord$48 = {...model};
+          newrecord$48.gapLoading = false;
+          return newrecord$48;
         }
-        let data$2 = d$2["data"];
-        if (data$2 === undefined) {
-          return {
-            components: model.components,
-            connections: model.connections,
-            selectedComponent: model.selectedComponent,
-            dragState: model.dragState,
-            canvasOffset: model.canvasOffset,
-            zoomLevel: model.zoomLevel,
-            validationResult: model.validationResult,
-            securityState: model.securityState,
-            gapState: model.gapState,
-            securityLoading: model.securityLoading,
-            gapLoading: false,
-            currentStackId: model.currentStackId,
-            settings: model.settings,
-            wsState: model.wsState,
-            undoStack: model.undoStack,
-            redoStack: model.redoStack,
-            isDirty: model.isDirty,
-            lastSavedAt: model.lastSavedAt,
-            activeErrors: model.activeErrors
-          };
-        }
-        let parsed$3 = parseGapAnalysisJson(data$2);
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: parsed$3,
-          securityLoading: model.securityLoading,
-          gapLoading: false,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: model.activeErrors
-        };
+        let newrecord$49 = {...model};
+        newrecord$49.gapLoading = false;
+        return newrecord$49;
       case "DismissError" :
         let errorId = msg._0;
-        return {
-          components: model.components,
-          connections: model.connections,
-          selectedComponent: model.selectedComponent,
-          dragState: model.dragState,
-          canvasOffset: model.canvasOffset,
-          zoomLevel: model.zoomLevel,
-          validationResult: model.validationResult,
-          securityState: model.securityState,
-          gapState: model.gapState,
-          securityLoading: model.securityLoading,
-          gapLoading: model.gapLoading,
-          currentStackId: model.currentStackId,
-          settings: model.settings,
-          wsState: model.wsState,
-          undoStack: model.undoStack,
-          redoStack: model.redoStack,
-          isDirty: model.isDirty,
-          lastSavedAt: model.lastSavedAt,
-          activeErrors: Belt_Array.keep(model.activeErrors, e => e.id !== errorId)
+        let newrecord$50 = {...model};
+        newrecord$50.activeErrors = Belt_Array.keep(model.activeErrors, e => e.id !== errorId);
+        return newrecord$50;
+      case "LoginSuccess" :
+        ApiClient.setToken(msg._0);
+        let newrecord$51 = {...model};
+        let init$5 = model.auth;
+        newrecord$51.auth = {
+          isAuthenticated: true,
+          currentEmail: model.auth.loginForm.email,
+          authError: undefined,
+          authLoading: false,
+          loginForm: Model.defaultLoginForm,
+          registerForm: init$5.registerForm
         };
+        return newrecord$51;
+      case "RegisterSuccess" :
+        ApiClient.setToken(msg._0);
+        let newrecord$52 = {...model};
+        let init$6 = model.auth;
+        newrecord$52.auth = {
+          isAuthenticated: true,
+          currentEmail: model.auth.registerForm.email,
+          authError: undefined,
+          authLoading: false,
+          loginForm: init$6.loginForm,
+          registerForm: Model.defaultRegisterForm
+        };
+        return newrecord$52;
+      case "LoginError" :
+      case "RegisterError" :
+        break;
+      case "UpdateLoginEmail" :
+        let newrecord$53 = {...model};
+        let init$7 = model.auth;
+        let init$8 = model.auth.loginForm;
+        newrecord$53.auth = {
+          isAuthenticated: init$7.isAuthenticated,
+          currentEmail: init$7.currentEmail,
+          authError: init$7.authError,
+          authLoading: init$7.authLoading,
+          loginForm: {
+            email: msg._0,
+            password: init$8.password
+          },
+          registerForm: init$7.registerForm
+        };
+        return newrecord$53;
+      case "UpdateLoginPassword" :
+        let newrecord$54 = {...model};
+        let init$9 = model.auth;
+        let init$10 = model.auth.loginForm;
+        newrecord$54.auth = {
+          isAuthenticated: init$9.isAuthenticated,
+          currentEmail: init$9.currentEmail,
+          authError: init$9.authError,
+          authLoading: init$9.authLoading,
+          loginForm: {
+            email: init$10.email,
+            password: msg._0
+          },
+          registerForm: init$9.registerForm
+        };
+        return newrecord$54;
+      case "UpdateRegisterEmail" :
+        let newrecord$55 = {...model};
+        let init$11 = model.auth;
+        let init$12 = model.auth.registerForm;
+        newrecord$55.auth = {
+          isAuthenticated: init$11.isAuthenticated,
+          currentEmail: init$11.currentEmail,
+          authError: init$11.authError,
+          authLoading: init$11.authLoading,
+          loginForm: init$11.loginForm,
+          registerForm: {
+            email: msg._0,
+            password: init$12.password,
+            confirmPassword: init$12.confirmPassword
+          }
+        };
+        return newrecord$55;
+      case "UpdateRegisterPassword" :
+        let newrecord$56 = {...model};
+        let init$13 = model.auth;
+        let init$14 = model.auth.registerForm;
+        newrecord$56.auth = {
+          isAuthenticated: init$13.isAuthenticated,
+          currentEmail: init$13.currentEmail,
+          authError: init$13.authError,
+          authLoading: init$13.authLoading,
+          loginForm: init$13.loginForm,
+          registerForm: {
+            email: init$14.email,
+            password: msg._0,
+            confirmPassword: init$14.confirmPassword
+          }
+        };
+        return newrecord$56;
+      case "UpdateRegisterConfirm" :
+        let newrecord$57 = {...model};
+        let init$15 = model.auth;
+        let init$16 = model.auth.registerForm;
+        newrecord$57.auth = {
+          isAuthenticated: init$15.isAuthenticated,
+          currentEmail: init$15.currentEmail,
+          authError: init$15.authError,
+          authLoading: init$15.authLoading,
+          loginForm: init$15.loginForm,
+          registerForm: {
+            email: init$16.email,
+            password: init$16.password,
+            confirmPassword: msg._0
+          }
+        };
+        return newrecord$57;
       default:
         return model;
     }
   }
+  let newrecord$58 = {...model};
+  let init$17 = model.auth;
+  newrecord$58.auth = {
+    isAuthenticated: init$17.isAuthenticated,
+    currentEmail: init$17.currentEmail,
+    authError: msg._0,
+    authLoading: false,
+    loginForm: init$17.loginForm,
+    registerForm: init$17.registerForm
+  };
+  return newrecord$58;
 }
 
 export {
@@ -1782,4 +1186,4 @@ export {
   parseGapAnalysisJson,
   update,
 }
-/* Export Not a pure module */
+/* Model Not a pure module */
