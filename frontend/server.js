@@ -5,7 +5,7 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { serveDir } from "https://deno.land/std@0.224.0/http/file_server.ts";
 
 const PORT = 8000;
-const BACKEND_URL = Deno.env.get("STAPELN_BACKEND_URL") || "http://localhost:4000";
+const BACKEND_URL = Deno.env.get("STAPELN_BACKEND_URL") || "http://localhost:4010";
 
 console.log(`🏔️ stapeln development server`);
 console.log(`Frontend: http://localhost:${PORT}`);

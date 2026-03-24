@@ -102,7 +102,7 @@ mix ecto.migrate
 # Start server
 mix phx.server
 
-# API available at http://localhost:4000
+# API available at http://localhost:4010
 ```
 
 ## Validation Engine (Idris2)
@@ -162,13 +162,13 @@ Check `frontend/rescript.json` for correct configuration:
 Create `frontend/.env`:
 ```bash
 # Backend API
-STAPELN_API_URL=http://localhost:4000
+STAPELN_API_URL=http://localhost:4010
 
 # GraphQL endpoint
-STAPELN_GRAPHQL_URL=http://localhost:4000/graphql
+STAPELN_GRAPHQL_URL=http://localhost:4010/graphql
 
 # WebSocket
-STAPELN_WS_URL=ws://localhost:4000/socket
+STAPELN_WS_URL=ws://localhost:4010/socket
 ```
 
 ## Editor Setup

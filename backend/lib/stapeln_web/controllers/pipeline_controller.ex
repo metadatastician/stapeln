@@ -337,7 +337,7 @@ defmodule StapelnWeb.PipelineController do
             %{"id" => "api-workdir", "type" => "workdir", "config" => %{"path" => "/app"}},
             %{"id" => "api-copy", "type" => "copy", "config" => %{"src" => "api/", "dst" => "."}},
             %{"id" => "api-build", "type" => "run", "config" => %{"commands" => ["apk add elixir", "mix deps.get", "mix release"]}},
-            %{"id" => "api-port", "type" => "expose", "config" => %{"port" => 4000}},
+            %{"id" => "api-port", "type" => "expose", "config" => %{"port" => 4010}},
             %{"id" => "db", "type" => "source", "config" => %{"image" => "cgr.dev/chainguard/postgres:latest", "alias" => "db"}},
             %{"id" => "db-env", "type" => "env", "config" => %{"key" => "POSTGRES_DB", "value" => "app_prod"}},
             %{"id" => "db-port", "type" => "expose", "config" => %{"port" => 5432}},

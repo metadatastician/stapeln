@@ -175,7 +175,7 @@ let notifyState = (conn: connection): unit => {
 }
 
 // Connect to the Phoenix socket endpoint.
-// `url` should be the full WebSocket URL, e.g. "ws://localhost:4000/socket/websocket".
+// `url` should be the full WebSocket URL, e.g. "ws://localhost:4010/socket/websocket".
 let connect = (conn: connection, url: string): unit => {
   conn.state = Connecting
   notifyState(conn)

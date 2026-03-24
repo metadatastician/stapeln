@@ -369,7 +369,7 @@ Frontend                Backend                Codegen (Rust)
     ┌────┴────┐
     │         │
 ┌───▼───┐ ┌──▼────┐
-│ Deno  │ │Phoenix│ Ports 8000, 4000
+│ Deno  │ │Phoenix│ Ports 8000, 4010
 │frontend│ │backend│
 └───────┘ └───┬───┘
               │
