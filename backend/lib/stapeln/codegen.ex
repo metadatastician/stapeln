@@ -42,17 +42,12 @@ defmodule Stapeln.Codegen do
   def generate_all(stack) when is_map(stack) do
     results =
       [:containerfile, :docker_compose, :selur_compose, :podman_compose]
-      |> Enum.reduce_while(%{}, fn fmt, acc ->
-        case generate(stack, fmt) do
-          {:ok, content} -> {:cont, Map.put(acc, fmt, content)}
-          {:error, _} = err -> {:halt, err}
-        end
+      |> Enum.reduce(%{}, fn fmt, acc ->
+        {:ok, content} = generate(stack, fmt)
+        Map.put(acc, fmt, content)
       end)
 
-    case results do
-      {:error, _} = err -> err
-      map when is_map(map) -> {:ok, map}
-    end
+    {:ok, results}
   end
 
   # ---------------------------------------------------------------------------

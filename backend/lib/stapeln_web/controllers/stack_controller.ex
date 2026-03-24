@@ -103,9 +103,6 @@ defmodule StapelnWeb.StackController do
             |> Map.new()
 
           json(conn, %{data: %{format: "all", content: formatted}})
-
-        {:error, reason} ->
-          bad_request(conn, "codegen failed: #{reason}")
       end
     else
       {:error, :invalid_id} -> bad_request(conn, "invalid stack id")

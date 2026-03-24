@@ -420,10 +420,12 @@ defmodule Stapeln.PipelineCodegen do
             %{"type" => "mount"}
           ]
         },
-        "annotations" => %{
+        "annotations" => Map.merge(%{
           "com.hyperpolymath.stapeln.generated" => DateTime.utc_now() |> DateTime.to_iso8601(),
           "com.hyperpolymath.stapeln.pipeline" => Map.get(metadata, "name", Map.get(metadata, :name, ""))
-        }
+        }, if(exposed_ports != [], do: %{
+          "com.hyperpolymath.stapeln.ports" => Enum.join(exposed_ports, ",")
+        }, else: %{}))
       }
 
       {:ok, Jason.encode!(config, pretty: true)}

@@ -172,9 +172,10 @@ defmodule Stapeln.PipelineEngine do
     end
   end
 
-  defp get_metadata(pipeline) do
-    Map.get(pipeline, "metadata", Map.get(pipeline, :metadata, %{}))
-  end
+  # Kept for future use — extracts metadata from either string or atom keyed maps.
+  # defp get_metadata(pipeline) do
+  #   Map.get(pipeline, "metadata", Map.get(pipeline, :metadata, %{}))
+  # end
 
   defp node_id(node), do: Map.get(node, "id", Map.get(node, :id, ""))
   defp node_type(node), do: Map.get(node, "type", Map.get(node, :type, ""))
@@ -397,7 +398,7 @@ defmodule Stapeln.PipelineEngine do
   # Security score
   # ---------------------------------------------------------------------------
 
-  defp compute_security_score(nodes, connections, node_index) do
+  defp compute_security_score(nodes, _connections, _node_index) do
     base_score = 50.0
 
     # +15 for having security gate(s)
@@ -642,7 +643,7 @@ defmodule Stapeln.PipelineEngine do
 
   @doc false
   def topological_sort(nodes, connections) do
-    node_ids = MapSet.new(nodes, &node_id/1)
+    _node_ids = MapSet.new(nodes, &node_id/1)
 
     # Build in-degree map
     in_degree = Map.new(nodes, fn n -> {node_id(n), 0} end)
