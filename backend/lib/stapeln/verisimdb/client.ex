@@ -12,8 +12,8 @@ defmodule Stapeln.VeriSimDB.Client do
   local storage.
   """
 
-  @write_path "/api/v1/audit"
-  @query_path "/api/v1/audit"
+  @write_path "/audit"
+  @query_path "/audit"
   @default_connect_timeout 5_000
   @default_receive_timeout 10_000
 
@@ -48,7 +48,7 @@ defmodule Stapeln.VeriSimDB.Client do
   @spec health_check() :: :ok | {:error, term()}
   def health_check do
     with {:ok, base_url} <- verisimdb_url() do
-      case get(base_url <> "/api/v1/health") do
+      case get(base_url <> "/health") do
         {:ok, %{status: status}} when status in 200..299 -> :ok
         {:ok, %{status: status}} -> {:error, {:verisimdb_status, status}}
         {:error, reason} -> {:error, {:verisimdb_request, reason}}
@@ -112,7 +112,7 @@ defmodule Stapeln.VeriSimDB.Client do
   # Generic Octad CRUD (for data storage, not just audit)
   # ---------------------------------------------------------------------------
 
-  @octad_path "/api/v1/octads"
+  @octad_path "/octads"
 
   @doc """
   Create a new octad entity.

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
 defmodule Stapeln.NativeBridge do
   @moduledoc """
   Single API boundary for ABI/FFI interaction.
@@ -7,8 +8,8 @@ defmodule Stapeln.NativeBridge do
   - Zig FFI implementation: `ffi/zig/src/main.zig`
 
   If `STAPELN_NATIVE_FFI_BIN` points to an executable, this module calls it.
-  Otherwise it tries Ecto-backed `Stapeln.DbStore` (PostgreSQL), and finally
-  falls back to in-memory GenServer stores.
+  Otherwise it tries `Stapeln.DbStore` (VeriSimDB), and finally falls back
+  to in-memory GenServer stores.
   """
 
   alias Stapeln.DbStore

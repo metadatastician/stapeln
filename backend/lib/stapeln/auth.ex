@@ -5,8 +5,8 @@ defmodule Stapeln.Auth do
   @moduledoc """
   Authentication context.
 
-  Tries Ecto-backed `Stapeln.DbStore` when PostgreSQL is available, and
-  falls back to in-memory `UserStore` otherwise.
+  Tries `Stapeln.DbStore` (VeriSimDB) when available, and falls back to
+  in-memory `UserStore` otherwise.
 
   Passwords are hashed with :crypto.hash/2 (SHA-256). For production,
   swap to bcrypt/argon2.

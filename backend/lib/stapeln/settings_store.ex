@@ -5,8 +5,8 @@ defmodule Stapeln.SettingsStore do
   @moduledoc """
   In-memory settings store backed by a GenServer.
 
-  Tries Ecto-backed `Stapeln.DbStore` when PostgreSQL is available, and
-  falls back to the GenServer state otherwise.
+  Tries `Stapeln.DbStore` (VeriSimDB) when available, and falls back to
+  the GenServer state otherwise.
 
   Settings persist to /tmp/stapeln-settings.json for dev convenience.
   """
