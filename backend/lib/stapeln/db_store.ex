@@ -1,22 +1,22 @@
 # SPDX-License-Identifier: PMPL-1.0-or-later
-# db_store.ex - Ecto-backed persistence layer for stapeln
+# db_store.ex - VeriSimDB-backed persistence layer for stapeln
+#
+# VeriSimDB octads persistence (port 8093).
+# All data stored as octads in a single VeriSimDB instance (port 8093).
+# Collections distinguished by metadata.collection field.
 
 defmodule Stapeln.DbStore do
   @moduledoc """
-  Ecto-backed persistence layer.
+  VeriSimDB-backed persistence layer.
 
   Provides the same API surface as the GenServer stores (StackStore,
-  UserStore, SettingsStore) but persists to PostgreSQL via `Stapeln.Repo`.
+  UserStore, SettingsStore) but persists to VeriSimDB via the octad API.
 
-  Falls back gracefully when the Repo process is not running (e.g. when
-  PostgreSQL is unavailable or the application is started without the
-  database supervisor tree).
+  Falls back gracefully when VeriSimDB is unreachable (the `VERISIMDB_URL`
+  environment variable must be set, e.g. `http://localhost:8093`).
   """
 
-  alias Stapeln.Repo
-  alias Stapeln.Schemas.{Stack, User, UserSettings}
-
-  import Ecto.Query, only: [from: 2]
+  alias Stapeln.VeriSimDB.Client
 
   require Logger
 
@@ -25,84 +25,78 @@ defmodule Stapeln.DbStore do
   # ---------------------------------------------------------------------------
 
   @doc """
-  Returns true when `Stapeln.Repo` is compiled and its process is alive.
+  Returns true when the VeriSimDB instance is reachable.
 
   This is the guard used by NativeBridge, Auth, and SettingsStore to decide
-  whether to use Ecto or fall back to GenServer stores.
+  whether to use VeriSimDB or fall back to GenServer stores.
   """
   @spec available?() :: boolean()
   def available? do
-    Code.ensure_loaded?(Repo) and GenServer.whereis(Repo) != nil
+    case Client.health_check() do
+      :ok -> true
+      _ -> false
+    end
   end
 
   # ---------------------------------------------------------------------------
   # Stack operations
   # ---------------------------------------------------------------------------
 
-  @doc "List all stacks ordered by ID."
+  @doc "List all stacks."
   @spec list_stacks() :: {:ok, [map()]}
   def list_stacks do
-    stacks =
-      from(s in Stack, order_by: [asc: s.id])
-      |> Repo.all()
-      |> Enum.map(&stack_to_map/1)
+    case Client.list_octads("stacks") do
+      {:ok, octads} ->
+        stacks =
+          octads
+          |> Enum.map(&octad_to_stack/1)
+          |> Enum.sort_by(& &1.id)
 
-    {:ok, stacks}
-  rescue
-    error ->
-      Logger.warning("DbStore.list_stacks failed: #{inspect(error)}")
-      {:error, :db_error}
+        {:ok, stacks}
+
+      {:error, reason} ->
+        Logger.warning("DbStore.list_stacks failed: #{inspect(reason)}")
+        {:error, :db_error}
+    end
   end
 
   @doc "Create a new stack from the given attributes map."
   @spec create_stack(map()) :: {:ok, map()} | {:error, term()}
   def create_stack(attrs) when is_map(attrs) do
-    %Stack{}
-    |> Stack.changeset(normalize_attrs(attrs))
-    |> Repo.insert()
-    |> case do
-      {:ok, stack} -> {:ok, stack_to_map(stack)}
-      {:error, changeset} -> {:error, changeset_errors(changeset)}
+    normalized = normalize_attrs(attrs)
+
+    case Client.create_octad("stacks", normalized) do
+      {:ok, octad} -> {:ok, octad_to_stack(octad)}
+      {:error, reason} ->
+        Logger.warning("DbStore.create_stack failed: #{inspect(reason)}")
+        {:error, :db_error}
     end
-  rescue
-    error ->
-      Logger.warning("DbStore.create_stack failed: #{inspect(error)}")
-      {:error, :db_error}
   end
 
-  @doc "Fetch a single stack by integer ID."
-  @spec get_stack(pos_integer()) :: {:ok, map()} | {:error, :not_found}
-  def get_stack(id) when is_integer(id) and id > 0 do
-    case Repo.get(Stack, id) do
-      nil -> {:error, :not_found}
-      stack -> {:ok, stack_to_map(stack)}
+  @doc "Fetch a single stack by its VeriSimDB octad ID."
+  @spec get_stack(String.t()) :: {:ok, map()} | {:error, :not_found}
+  def get_stack(id) do
+    case Client.get_octad(to_string(id)) do
+      {:ok, octad} -> {:ok, octad_to_stack(octad)}
+      {:error, :not_found} -> {:error, :not_found}
+      {:error, reason} ->
+        Logger.warning("DbStore.get_stack failed: #{inspect(reason)}")
+        {:error, :db_error}
     end
-  rescue
-    error ->
-      Logger.warning("DbStore.get_stack failed: #{inspect(error)}")
-      {:error, :db_error}
   end
 
   @doc "Update an existing stack."
-  @spec update_stack(pos_integer(), map()) :: {:ok, map()} | {:error, :not_found | term()}
-  def update_stack(id, attrs) when is_integer(id) and id > 0 and is_map(attrs) do
-    case Repo.get(Stack, id) do
-      nil ->
-        {:error, :not_found}
+  @spec update_stack(String.t(), map()) :: {:ok, map()} | {:error, :not_found | term()}
+  def update_stack(id, attrs) when is_map(attrs) do
+    normalized = normalize_attrs(attrs)
 
-      stack ->
-        stack
-        |> Stack.changeset(normalize_attrs(attrs))
-        |> Repo.update()
-        |> case do
-          {:ok, updated} -> {:ok, stack_to_map(updated)}
-          {:error, changeset} -> {:error, changeset_errors(changeset)}
-        end
+    case Client.update_octad(to_string(id), Map.put(normalized, :collection, "stacks")) do
+      {:ok, octad} -> {:ok, octad_to_stack(octad)}
+      {:error, :not_found} -> {:error, :not_found}
+      {:error, reason} ->
+        Logger.warning("DbStore.update_stack failed: #{inspect(reason)}")
+        {:error, :db_error}
     end
-  rescue
-    error ->
-      Logger.warning("DbStore.update_stack failed: #{inspect(error)}")
-      {:error, :db_error}
   end
 
   # ---------------------------------------------------------------------------
@@ -113,49 +107,53 @@ defmodule Stapeln.DbStore do
   @spec create_user(String.t(), String.t()) :: {:ok, String.t()} | {:error, term()}
   def create_user(email, password_hash)
       when is_binary(email) and is_binary(password_hash) do
-    %User{}
-    |> User.changeset(%{email: email, password_hash: password_hash})
-    |> Repo.insert()
-    |> case do
-      {:ok, user} -> {:ok, "user_#{user.id}"}
-      {:error, changeset} -> {:error, changeset_errors(changeset)}
+    attrs = %{email: email, password_hash: password_hash}
+
+    case Client.create_octad("users", attrs) do
+      {:ok, octad} ->
+        octad_id = octad["id"] || octad["status"]["id"]
+        {:ok, "user_#{octad_id}"}
+
+      {:error, reason} ->
+        Logger.warning("DbStore.create_user failed: #{inspect(reason)}")
+        {:error, :db_error}
     end
-  rescue
-    error ->
-      Logger.warning("DbStore.create_user failed: #{inspect(error)}")
-      {:error, :db_error}
   end
 
-  @doc "Get a user by their string ID (e.g. `\"user_42\"`)."
+  @doc "Get a user by their string ID (e.g. `\"user_<octad-id>\"`)."
   @spec get_user(String.t()) :: {:ok, map()} | {:error, :not_found}
   def get_user(user_id) when is_binary(user_id) do
     case parse_user_id(user_id) do
-      {:ok, int_id} ->
-        case Repo.get(User, int_id) do
-          nil -> {:error, :not_found}
-          user -> {:ok, user_to_map(user)}
+      {:ok, octad_id} ->
+        case Client.get_octad(octad_id) do
+          {:ok, octad} -> {:ok, octad_to_user(octad)}
+          {:error, :not_found} -> {:error, :not_found}
+          {:error, reason} ->
+            Logger.warning("DbStore.get_user failed: #{inspect(reason)}")
+            {:error, :db_error}
         end
 
       :error ->
         {:error, :not_found}
     end
-  rescue
-    error ->
-      Logger.warning("DbStore.get_user failed: #{inspect(error)}")
-      {:error, :db_error}
   end
 
   @doc "Get a user by email address."
   @spec get_user_by_email(String.t()) :: {:ok, map()} | {:error, :not_found}
   def get_user_by_email(email) when is_binary(email) do
-    case Repo.get_by(User, email: email) do
-      nil -> {:error, :not_found}
-      user -> {:ok, user_to_map(user)}
+    case Client.list_octads("users") do
+      {:ok, octads} ->
+        case Enum.find(octads, fn o ->
+          get_in(o, ["metadata", "email"]) == email
+        end) do
+          nil -> {:error, :not_found}
+          octad -> {:ok, octad_to_user(octad)}
+        end
+
+      {:error, reason} ->
+        Logger.warning("DbStore.get_user_by_email failed: #{inspect(reason)}")
+        {:error, :db_error}
     end
-  rescue
-    error ->
-      Logger.warning("DbStore.get_user_by_email failed: #{inspect(error)}")
-      {:error, :db_error}
   end
 
   # ---------------------------------------------------------------------------
@@ -165,114 +163,141 @@ defmodule Stapeln.DbStore do
   @doc """
   Get settings for a user. Returns the settings map (not wrapped in {:ok, ...}).
 
-  When no user_id is given (global settings), returns the first UserSettings
-  row or the default settings map.
+  When no user_id is given (global settings), returns the first settings
+  octad or the default settings map.
   """
-  @spec get_settings(pos_integer() | nil) :: map()
+  @spec get_settings(String.t() | nil) :: map()
   def get_settings(nil) do
-    case Repo.one(from(s in UserSettings, limit: 1)) do
-      nil -> default_settings()
-      record -> Map.merge(default_settings(), record.settings || %{})
+    case Client.list_octads("settings") do
+      {:ok, [first | _]} ->
+        stored = get_in(first, ["metadata", "settings"]) || %{}
+        Map.merge(default_settings(), stored)
+
+      _ ->
+        default_settings()
     end
-  rescue
-    _error -> default_settings()
   end
 
-  def get_settings(user_id) when is_integer(user_id) do
-    case Repo.get_by(UserSettings, user_id: user_id) do
-      nil -> default_settings()
-      record -> Map.merge(default_settings(), record.settings || %{})
+  def get_settings(user_id) when is_binary(user_id) do
+    case Client.list_octads("settings") do
+      {:ok, octads} ->
+        case Enum.find(octads, fn o ->
+          get_in(o, ["metadata", "user_id"]) == user_id
+        end) do
+          nil -> default_settings()
+          octad ->
+            stored = get_in(octad, ["metadata", "settings"]) || %{}
+            Map.merge(default_settings(), stored)
+        end
+
+      _ ->
+        default_settings()
     end
-  rescue
-    _error -> default_settings()
   end
 
   @doc """
-  Update settings for a user. Upserts the UserSettings row.
+  Update settings for a user. Upserts the settings octad.
 
-  When user_id is nil, operates on the first row (global settings).
+  When user_id is nil, operates on the first settings octad (global settings).
   """
-  @spec update_settings(pos_integer() | nil, map()) :: {:ok, map()}
+  @spec update_settings(String.t() | nil, map()) :: {:ok, map()}
   def update_settings(nil, attrs) when is_map(attrs) do
-    case Repo.one(from(s in UserSettings, limit: 1)) do
-      nil ->
-        # No existing row — cannot insert without a user_id for FK constraint.
-        # Return merged defaults as a best-effort response.
-        {:ok, Map.merge(default_settings(), attrs)}
+    case Client.list_octads("settings") do
+      {:ok, [first | _]} ->
+        octad_id = first["id"] || get_in(first, ["status", "id"])
+        existing = get_in(first, ["metadata", "settings"]) || %{}
+        merged = Map.merge(existing, attrs)
 
-      record ->
-        merged = Map.merge(record.settings || %{}, attrs)
+        case Client.update_octad(octad_id, %{
+          collection: "settings",
+          settings: merged
+        }) do
+          {:ok, _} -> {:ok, Map.merge(default_settings(), merged)}
+          {:error, _} -> {:ok, Map.merge(default_settings(), attrs)}
+        end
 
-        record
-        |> UserSettings.changeset(%{settings: merged})
-        |> Repo.update()
-        |> case do
-          {:ok, updated} -> {:ok, Map.merge(default_settings(), updated.settings)}
+      _ ->
+        # No existing global settings — create one
+        case Client.create_octad("settings", %{settings: attrs}) do
+          {:ok, _} -> {:ok, Map.merge(default_settings(), attrs)}
           {:error, _} -> {:ok, Map.merge(default_settings(), attrs)}
         end
     end
-  rescue
-    _error -> {:ok, Map.merge(default_settings(), attrs)}
   end
 
-  def update_settings(user_id, attrs) when is_integer(user_id) and is_map(attrs) do
-    case Repo.get_by(UserSettings, user_id: user_id) do
-      nil ->
-        %UserSettings{}
-        |> UserSettings.changeset(%{user_id: user_id, settings: attrs})
-        |> Repo.insert()
-        |> case do
-          {:ok, record} -> {:ok, Map.merge(default_settings(), record.settings)}
-          {:error, _} -> {:ok, Map.merge(default_settings(), attrs)}
+  def update_settings(user_id, attrs) when is_binary(user_id) and is_map(attrs) do
+    case Client.list_octads("settings") do
+      {:ok, octads} ->
+        case Enum.find(octads, fn o ->
+          get_in(o, ["metadata", "user_id"]) == user_id
+        end) do
+          nil ->
+            # Create new settings for this user
+            case Client.create_octad("settings", %{
+              user_id: user_id,
+              settings: attrs
+            }) do
+              {:ok, _} -> {:ok, Map.merge(default_settings(), attrs)}
+              {:error, _} -> {:ok, Map.merge(default_settings(), attrs)}
+            end
+
+          octad ->
+            octad_id = octad["id"] || get_in(octad, ["status", "id"])
+            existing = get_in(octad, ["metadata", "settings"]) || %{}
+            merged = Map.merge(existing, attrs)
+
+            case Client.update_octad(octad_id, %{
+              collection: "settings",
+              user_id: user_id,
+              settings: merged
+            }) do
+              {:ok, _} -> {:ok, Map.merge(default_settings(), merged)}
+              {:error, _} -> {:ok, Map.merge(default_settings(), attrs)}
+            end
         end
 
-      record ->
-        merged = Map.merge(record.settings || %{}, attrs)
-
-        record
-        |> UserSettings.changeset(%{settings: merged})
-        |> Repo.update()
-        |> case do
-          {:ok, updated} -> {:ok, Map.merge(default_settings(), updated.settings)}
-          {:error, _} -> {:ok, Map.merge(default_settings(), attrs)}
-        end
+      _ ->
+        {:ok, Map.merge(default_settings(), attrs)}
     end
-  rescue
-    _error -> {:ok, Map.merge(default_settings(), attrs)}
   end
 
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
 
-  defp stack_to_map(%Stack{} = s) do
+  defp octad_to_stack(octad) do
+    meta = octad["metadata"] || %{}
+    status = octad["status"] || %{}
+
     %{
-      id: s.id,
-      name: s.name,
-      description: s.description,
-      services: s.services || [],
-      created_at: s.inserted_at,
-      updated_at: s.updated_at
+      id: octad["id"] || status["id"],
+      name: meta["name"] || get_in(octad, ["document", "title"]) || "",
+      description: meta["description"] || get_in(octad, ["document", "body"]) || "",
+      services: meta["services"] || [],
+      created_at: status["created_at"],
+      updated_at: status["modified_at"]
     }
   end
 
-  defp user_to_map(%User{} = u) do
+  defp octad_to_user(octad) do
+    meta = octad["metadata"] || %{}
+    status = octad["status"] || %{}
+    octad_id = octad["id"] || status["id"]
+
     %{
-      id: "user_#{u.id}",
-      email: u.email,
-      password_hash: u.password_hash,
-      created_at: u.inserted_at && DateTime.to_iso8601(u.inserted_at)
+      id: "user_#{octad_id}",
+      email: meta["email"] || "",
+      password_hash: meta["password_hash"] || "",
+      created_at: status["created_at"]
     }
   end
 
   defp normalize_attrs(attrs) do
-    attrs
-    |> Map.new(fn
+    Map.new(attrs, fn
       {k, v} when is_atom(k) -> {k, v}
-      {k, v} when is_binary(k) -> {String.to_existing_atom(k), v}
+      {k, v} when is_binary(k) -> {safe_to_atom(k), v}
     end)
   rescue
-    # If string keys don't match existing atoms, keep as-is for changeset cast
     _error ->
       Map.new(attrs, fn
         {k, v} when is_atom(k) -> {k, v}
@@ -286,31 +311,8 @@ defmodule Stapeln.DbStore do
     ArgumentError -> String.to_atom(key)
   end
 
-  defp parse_user_id("user_" <> rest) do
-    case Integer.parse(rest) do
-      {int_id, ""} when int_id > 0 -> {:ok, int_id}
-      _ -> :error
-    end
-  end
-
+  defp parse_user_id("user_" <> rest), do: {:ok, rest}
   defp parse_user_id(_), do: :error
-
-  defp changeset_errors(%Ecto.Changeset{} = changeset) do
-    errors =
-      Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
-        Regex.replace(~r"%{(\w+)}", msg, fn _, key ->
-          opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
-        end)
-      end)
-
-    case Map.to_list(errors) do
-      [{_field, [message | _]} | _] when is_binary(message) ->
-        String.to_atom(message)
-
-      _ ->
-        :validation_error
-    end
-  end
 
   defp default_settings do
     %{

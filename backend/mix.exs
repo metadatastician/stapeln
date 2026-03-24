@@ -50,9 +50,7 @@ defmodule Stapeln.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
-      {:req, "~> 0.5"},
-      {:ecto_sql, "~> 3.12"},
-      {:postgrex, "~> 0.19"}
+      {:req, "~> 0.5"}
     ]
   end
 
@@ -64,9 +62,7 @@ defmodule Stapeln.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "ecto.setup"],
-      "ecto.setup": ["ecto.create", "ecto.migrate"],
-      "ecto.reset": ["ecto.drop", "ecto.setup"],
+      setup: ["deps.get"],
       precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"]
     ]
   end

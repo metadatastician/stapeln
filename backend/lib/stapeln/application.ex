@@ -7,23 +7,11 @@ defmodule Stapeln.Application do
 
   @impl true
   def start(_type, _args) do
-    # Optionally start the Ecto Repo when ecto_sql is available and
-    # PostgreSQL is configured. Falls back to GenServer stores otherwise.
-    repo_children =
-      if Code.ensure_loaded?(Stapeln.Repo) do
-        [Stapeln.Repo]
-      else
-        []
-      end
-
     children =
       [
         StapelnWeb.Telemetry,
         {DNSCluster, query: Application.get_env(:stapeln, :dns_cluster_query) || :ignore},
-        {Phoenix.PubSub, name: Stapeln.PubSub}
-      ] ++
-        repo_children ++
-        [
+        {Phoenix.PubSub, name: Stapeln.PubSub},
           Stapeln.StackStore,
           Stapeln.PipelineStore,
           Stapeln.Auth.UserStore,

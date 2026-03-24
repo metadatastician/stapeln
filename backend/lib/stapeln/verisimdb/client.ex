@@ -109,6 +109,154 @@ defmodule Stapeln.VeriSimDB.Client do
   end
 
   # ---------------------------------------------------------------------------
+  # Generic Octad CRUD (for data storage, not just audit)
+  # ---------------------------------------------------------------------------
+
+  @octad_path "/api/v1/octads"
+
+  @doc """
+  Create a new octad entity.
+
+  The `attrs` map is stored in the `metadata` field of the octad. The
+  `collection` string (e.g. "stacks", "users") is recorded in both
+  `metadata.collection` and `types` for filtering.
+
+  Returns `{:ok, octad_map}` on success or `{:error, reason}`.
+  """
+  @spec create_octad(String.t(), map()) :: {:ok, map()} | {:error, term()}
+  def create_octad(collection, attrs) when is_binary(collection) and is_map(attrs) do
+    payload = %{
+      "title" => Map.get(attrs, :name, Map.get(attrs, :email, collection)),
+      "types" => ["stapeln:#{collection}"],
+      "metadata" => Map.put(attrs, :collection, collection),
+      "provenance" => %{
+        "event_type" => "created",
+        "actor" => "stapeln",
+        "source" => "stapeln-backend"
+      }
+    }
+
+    with {:ok, base_url} <- verisimdb_url(),
+         {:ok, body} <- encode(payload) do
+      case post(base_url <> @octad_path, body) do
+        {:ok, %{status: status, body: resp_body}} when status in 200..299 ->
+          decode_octad(resp_body)
+
+        {:ok, %{status: status}} ->
+          {:error, {:verisimdb_status, status}}
+
+        {:error, reason} ->
+          {:error, {:verisimdb_request, reason}}
+      end
+    end
+  end
+
+  @doc """
+  Retrieve a single octad by its ID.
+
+  Returns `{:ok, octad_map}` or `{:error, :not_found}`.
+  """
+  @spec get_octad(String.t()) :: {:ok, map()} | {:error, :not_found | term()}
+  def get_octad(id) when is_binary(id) do
+    with {:ok, base_url} <- verisimdb_url() do
+      case get(base_url <> @octad_path <> "/" <> URI.encode(id)) do
+        {:ok, %{status: 200, body: body}} ->
+          decode_octad(body)
+
+        {:ok, %{status: 404}} ->
+          {:error, :not_found}
+
+        {:ok, %{status: status}} ->
+          {:error, {:verisimdb_status, status}}
+
+        {:error, reason} ->
+          {:error, {:verisimdb_request, reason}}
+      end
+    end
+  end
+
+  @doc """
+  Update an existing octad. Only the provided fields in `attrs` are merged
+  into the existing metadata.
+  """
+  @spec update_octad(String.t(), map()) :: {:ok, map()} | {:error, :not_found | term()}
+  def update_octad(id, attrs) when is_binary(id) and is_map(attrs) do
+    payload = %{
+      "title" => Map.get(attrs, :name, Map.get(attrs, :email, nil)),
+      "metadata" => attrs,
+      "provenance" => %{
+        "event_type" => "modified",
+        "actor" => "stapeln",
+        "source" => "stapeln-backend"
+      }
+    }
+
+    with {:ok, base_url} <- verisimdb_url(),
+         {:ok, body} <- encode(payload) do
+      case put(base_url <> @octad_path <> "/" <> URI.encode(id), body) do
+        {:ok, %{status: status, body: resp_body}} when status in 200..299 ->
+          decode_octad(resp_body)
+
+        {:ok, %{status: 404}} ->
+          {:error, :not_found}
+
+        {:ok, %{status: status}} ->
+          {:error, {:verisimdb_status, status}}
+
+        {:error, reason} ->
+          {:error, {:verisimdb_request, reason}}
+      end
+    end
+  end
+
+  @doc """
+  Delete an octad by ID.
+  """
+  @spec delete_octad(String.t()) :: :ok | {:error, :not_found | term()}
+  def delete_octad(id) when is_binary(id) do
+    with {:ok, base_url} <- verisimdb_url() do
+      case delete(base_url <> @octad_path <> "/" <> URI.encode(id)) do
+        {:ok, %{status: 204}} -> :ok
+        {:ok, %{status: 404}} -> {:error, :not_found}
+        {:ok, %{status: status}} -> {:error, {:verisimdb_status, status}}
+        {:error, reason} -> {:error, {:verisimdb_request, reason}}
+      end
+    end
+  end
+
+  @doc """
+  List all octads, optionally filtered client-side by collection name.
+
+  Returns `{:ok, [map()]}`.
+  """
+  @spec list_octads(String.t() | nil) :: {:ok, [map()]} | {:error, term()}
+  def list_octads(collection \\ nil) do
+    with {:ok, base_url} <- verisimdb_url() do
+      case get(base_url <> @octad_path <> "?limit=10000") do
+        {:ok, %{status: 200, body: body}} ->
+          {:ok, octads} = decode_octad_list(body)
+
+          filtered =
+            if collection do
+              Enum.filter(octads, fn o ->
+                get_in(o, ["metadata", "collection"]) == collection
+              end)
+            else
+              octads
+            end
+
+          {:ok, filtered}
+
+        {:ok, %{status: status}} ->
+          {:error, {:verisimdb_status, status}}
+
+        {:error, reason} ->
+          {:error, {:verisimdb_request, reason}}
+      end
+    end
+  end
+
+  # ---------------------------------------------------------------------------
   # HTTP Helpers (uses Req, already a project dependency)
   # ---------------------------------------------------------------------------
 
@@ -133,6 +281,27 @@ defmodule Stapeln.VeriSimDB.Client do
     error -> {:error, {:http_error, error}}
   end
 
+  defp put(url, body) do
+    Req.put(url,
+      body: body,
+      headers: [{"content-type", "application/json"}, {"accept", "application/json"}],
+      connect_options: [timeout: connect_timeout()],
+      receive_timeout: receive_timeout()
+    )
+  rescue
+    error -> {:error, {:http_error, error}}
+  end
+
+  defp delete(url) do
+    Req.delete(url,
+      headers: [{"accept", "application/json"}],
+      connect_options: [timeout: connect_timeout()],
+      receive_timeout: receive_timeout()
+    )
+  rescue
+    error -> {:error, {:http_error, error}}
+  end
+
   # ---------------------------------------------------------------------------
   # Encoding / Decoding
   # ---------------------------------------------------------------------------
@@ -143,6 +312,30 @@ defmodule Stapeln.VeriSimDB.Client do
       {:error, reason} -> {:error, {:encode_error, reason}}
     end
   end
+
+  defp decode_octad(body) when is_binary(body) do
+    case Jason.decode(body) do
+      {:ok, octad} when is_map(octad) -> {:ok, octad}
+      {:ok, _other} -> {:error, :invalid_response}
+      {:error, reason} -> {:error, {:decode_error, reason}}
+    end
+  end
+
+  defp decode_octad(body) when is_map(body), do: {:ok, body}
+  defp decode_octad(_), do: {:error, :invalid_response}
+
+  defp decode_octad_list(body) when is_binary(body) do
+    case Jason.decode(body) do
+      {:ok, list} when is_list(list) -> {:ok, list}
+      {:ok, %{"data" => list}} when is_list(list) -> {:ok, list}
+      {:ok, _other} -> {:ok, []}
+      {:error, reason} -> {:error, {:decode_error, reason}}
+    end
+  end
+
+  defp decode_octad_list(body) when is_list(body), do: {:ok, body}
+  defp decode_octad_list(body) when is_map(body), do: {:ok, Map.get(body, "data", [])}
+  defp decode_octad_list(_), do: {:ok, []}
 
   defp decode_entries(body) when is_binary(body) do
     case Jason.decode(body) do

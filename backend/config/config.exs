@@ -7,16 +7,10 @@
 # General application configuration
 import Config
 
-config :stapeln,
-  ecto_repos: [Stapeln.Repo],
-  generators: [timestamp_type: :utc_datetime]
+config :stapeln, []
 
-config :stapeln, Stapeln.Repo,
-  database: "stapeln_dev",
-  username: "postgres",
-  password: "postgres",
-  hostname: "localhost",
-  port: 5432
+# VeriSimDB instance for stapeln data (port 8093)
+# Set VERISIMDB_URL=http://localhost:8093 in your environment
 
 config :stapeln, :api_auth,
   enabled: true,
