@@ -85,6 +85,9 @@ htmlcov/
 *.so
 *.dylib
 
+# Backend reports
+backend/reports/
+
 # Crash recovery artifacts
 ai-cli-crash-capture/
 
