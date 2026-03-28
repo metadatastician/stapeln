@@ -95,3 +95,6 @@ ai-cli-crash-capture/
 *.cmt
 *.cmti
 *.cmi
+
+# asdf version manager
+.tool-versions
