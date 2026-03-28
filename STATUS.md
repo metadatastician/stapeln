@@ -36,7 +36,7 @@ A reasonably IT-capable 12-year-old can help their parents build a secure contai
 
 ## Preserved Future Work
 
-- **DOM‑mounter track:** Extracted to `/var/mnt/eclipse/repos/stapeln-dom-mounter`.
+- **DOM‑mounter track:** Extracted to `/var$REPOS_DIR/stapeln-dom-mounter`.
 - This work is not on the critical path for the container‑hater MVP.
 
 ## Architectural Decision: VeriSimDB (2026-03-23)

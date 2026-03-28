@@ -87,7 +87,7 @@ alr get gnatprove
 ### Verification Commands
 
 ```bash
-cd /var/mnt/eclipse/repos/vordr/src/ada
+cd /var$REPOS_DIR/vordr/src/ada
 
 # Check SPARK conformance (syntax + flow analysis)
 gnatprove -P policy.gpr --mode=check

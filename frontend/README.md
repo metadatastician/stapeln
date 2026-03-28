@@ -10,11 +10,11 @@ This is the **stapeln UI application** (not the DOM‑mounter library).
 ## Quick Start
 
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 rescript build
 deno task dev
 ```
 
 ## Notes
 
-- The DOM‑mounter workstream has been extracted to `/var/mnt/eclipse/repos/stapeln-dom-mounter`.
+- The DOM‑mounter workstream has been extracted to `/var$REPOS_DIR/stapeln-dom-mounter`.

@@ -32,13 +32,13 @@ This document catalogs ALL missing security components across the svalinn-projec
 **Fix Required:**
 ```bash
 # Cerro Torre
-cd /var/mnt/eclipse/repos/cerro-torre
+cd /var$REPOS_DIR/cerro-torre
 # Add liboqs Ada bindings
 # Implement Sign_ML_DSA_87 / Verify_ML_DSA_87 functions
 # Link to ct_pqcrypto.adb
 
 # Vörðr
-cd /var/mnt/eclipse/repos/vordr
+cd /var$REPOS_DIR/vordr
 # Add liboqs to Cargo.toml
 # Implement verification matching Cerro Torre
 ```
@@ -101,7 +101,7 @@ cd /var/mnt/eclipse/repos/vordr
 
 **Required Files (NOT FOUND):**
 ```
-/var/mnt/eclipse/repos/svalinn/
+/var$REPOS_DIR/svalinn/
   config/
     firewalld/
       zones/
@@ -137,7 +137,7 @@ cd /var/mnt/eclipse/repos/vordr
 
 **Required Files (NOT FOUND):**
 ```
-/var/mnt/eclipse/repos/svalinn/
+/var$REPOS_DIR/svalinn/
   config/
     modsecurity/
       modsecurity.conf         # Main ModSecurity config
@@ -167,7 +167,7 @@ cd /var/mnt/eclipse/repos/vordr
 
 **Step 1: Add Firewalld Configs**
 ```bash
-cd /var/mnt/eclipse/repos/svalinn
+cd /var$REPOS_DIR/svalinn
 mkdir -p config/firewalld/{zones,services,policies}
 
 # Create svalinn-edge.xml (public zone)
@@ -202,7 +202,7 @@ sudo apt install libapache2-mod-security2 modsecurity-crs  # Debian/Ubuntu
 
 **Step 3: Configure OWASP CRS**
 ```bash
-cd /var/mnt/eclipse/repos/svalinn
+cd /var$REPOS_DIR/svalinn
 mkdir -p config/modsecurity
 
 # Copy OWASP CRS rules
@@ -798,13 +798,13 @@ function Hash_To_Friendly_Name (Hash : SHA256_Digest) return String
 
 1. **Fix command injection bugs** (2-4 hours)
    ```bash
-   cd /var/mnt/eclipse/repos/verified-container-spec
+   cd /var$REPOS_DIR/verified-container-spec
    # Fix CRIT-001 and CRIT-002
    ```
 
 2. **Add OWASP ModSecurity configs** (1 week)
    ```bash
-   cd /var/mnt/eclipse/repos/svalinn
+   cd /var$REPOS_DIR/svalinn
    mkdir -p config/{firewalld,modsecurity}
    # Add configs per above
    ```

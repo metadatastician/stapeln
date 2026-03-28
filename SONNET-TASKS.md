@@ -26,13 +26,13 @@ STATE.scm claims 60%. STATUS.md claims "Phase 2 at 30%, Phase 3 at 0%". The 30% 
 ## TASK 1: Fix SPDX license headers in Idris2 and Zig files
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/src/abi/Types.idr` (line 1)
-- `/var/mnt/eclipse/repos/stapeln/src/abi/Foreign.idr` (line 1)
-- `/var/mnt/eclipse/repos/stapeln/src/abi/Layout.idr` (line 1)
-- `/var/mnt/eclipse/repos/stapeln/ffi/zig/src/main.zig` (line 1)
-- `/var/mnt/eclipse/repos/stapeln/ffi/zig/src/bridge_cli.zig` (line 1)
-- `/var/mnt/eclipse/repos/stapeln/ffi/zig/test/integration_test.zig` (line 1)
-- `/var/mnt/eclipse/repos/stapeln/ffi/zig/build.zig` (line 1)
+- `/var$REPOS_DIR/stapeln/src/abi/Types.idr` (line 1)
+- `/var$REPOS_DIR/stapeln/src/abi/Foreign.idr` (line 1)
+- `/var$REPOS_DIR/stapeln/src/abi/Layout.idr` (line 1)
+- `/var$REPOS_DIR/stapeln/ffi/zig/src/main.zig` (line 1)
+- `/var$REPOS_DIR/stapeln/ffi/zig/src/bridge_cli.zig` (line 1)
+- `/var$REPOS_DIR/stapeln/ffi/zig/test/integration_test.zig` (line 1)
+- `/var$REPOS_DIR/stapeln/ffi/zig/build.zig` (line 1)
 
 **Problem:** All seven files use `PMPL-1.0-or-later` as their SPDX license identifier. Per hyperpolymath standards, all original code must use `PMPL-1.0-or-later`. PMPL-1.0-or-later is the old license and is explicitly banned.
 
@@ -50,9 +50,9 @@ In each file, change the first line from:
 **Verification:**
 ```bash
 # Must return zero matches:
-grep -rn "PMPL-1.0-or-later" /var/mnt/eclipse/repos/stapeln/src/abi/ /var/mnt/eclipse/repos/stapeln/ffi/zig/
+grep -rn "PMPL-1.0-or-later" /var$REPOS_DIR/stapeln/src/abi/ /var$REPOS_DIR/stapeln/ffi/zig/
 # Must return 7 matches:
-grep -rn "PMPL-1.0-or-later" /var/mnt/eclipse/repos/stapeln/src/abi/ /var/mnt/eclipse/repos/stapeln/ffi/zig/
+grep -rn "PMPL-1.0-or-later" /var$REPOS_DIR/stapeln/src/abi/ /var$REPOS_DIR/stapeln/ffi/zig/
 ```
 
 ---
@@ -60,7 +60,7 @@ grep -rn "PMPL-1.0-or-later" /var/mnt/eclipse/repos/stapeln/src/abi/ /var/mnt/ec
 ## TASK 2: Implement SaveStack and LoadStack in Update.res (backend API integration)
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/frontend/src/Update.res` (lines 227-237)
+- `/var$REPOS_DIR/stapeln/frontend/src/Update.res` (lines 227-237)
 
 **Problem:** The `SaveStack` and `LoadStack` message handlers are stubs that only `Console.log`. There is no HTTP call to the backend API. The backend endpoints exist (`POST /api/stacks`, `GET /api/stacks`) and work, but the frontend never calls them.
 
@@ -86,7 +86,7 @@ Lines 227-237:
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 npx rescript build 2>&1 | grep -i error
 # Must compile with no errors.
 
@@ -100,7 +100,7 @@ grep -n "TODO: Send stack to backend API\|TODO: Load stack from backend API" src
 ## TASK 3: Implement RunGapAnalysis in GapAnalysis.res
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/frontend/src/GapAnalysis.res` (line 269)
+- `/var$REPOS_DIR/stapeln/frontend/src/GapAnalysis.res` (line 269)
 
 **Problem:** The `RunGapAnalysis` message handler is a no-op that just returns `state` unchanged. The gap analysis view has a "Run Analysis" button that does nothing.
 
@@ -120,7 +120,7 @@ Implement `RunGapAnalysis` to actually analyze the current component model for s
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 npx rescript build 2>&1 | grep -i error
 # Must compile with no errors.
 
@@ -133,7 +133,7 @@ grep -n "RunGapAnalysis =>" src/GapAnalysis.res
 ## TASK 4: Implement RunSecurityScan in SecurityInspector.res
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/frontend/src/SecurityInspector.res` (line 1409)
+- `/var$REPOS_DIR/stapeln/frontend/src/SecurityInspector.res` (line 1409)
 
 **Problem:** The `RunSecurityScan` message handler is a no-op: `| RunSecurityScan => state`. The Security Inspector view has a scan button that does nothing. This is the core functionality of the security view.
 
@@ -152,7 +152,7 @@ If full backend integration is too complex for a single task, at minimum impleme
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 npx rescript build 2>&1 | grep -i error
 # Must compile with no errors.
 
@@ -165,7 +165,7 @@ grep -n "RunSecurityScan => state" src/SecurityInspector.res
 ## TASK 5: Implement Zig FFI main.zig -- replace stubs with real logic
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/ffi/zig/src/main.zig`
+- `/var$REPOS_DIR/stapeln/ffi/zig/src/main.zig`
 
 **Problem:** Every exported function in `main.zig` returns a hardcoded JSON string. For example:
 ```zig
@@ -187,7 +187,7 @@ You can reference `bridge_cli.zig` (which has a working implementation of all th
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/ffi/zig
+cd /var$REPOS_DIR/stapeln/ffi/zig
 zig build 2>&1
 # Must compile with no errors.
 
@@ -204,7 +204,7 @@ grep -n '"mode":"zig"' src/main.zig
 ## TASK 6: Wire up Settings page persistence
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/frontend/src/Settings.res` (lines 462-510)
+- `/var$REPOS_DIR/stapeln/frontend/src/Settings.res` (lines 462-510)
 
 **Problem:** The Settings page renders a full form with radio buttons, checkboxes, and text inputs, but:
 1. The "Save" button (line 479) has no `onClick` handler -- it does nothing.
@@ -223,7 +223,7 @@ grep -n '"mode":"zig"' src/main.zig
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 npx rescript build 2>&1 | grep -i error
 # Must compile with no errors.
 
@@ -241,7 +241,7 @@ grep -c "localStorage" src/Settings.res
 ## TASK 7: Fix dark mode detection in StackView.res
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/frontend/src/StackView.res` (line 328)
+- `/var$REPOS_DIR/stapeln/frontend/src/StackView.res` (line 328)
 
 **Problem:** Dark mode is hardcoded to `false`:
 ```rescript
@@ -261,7 +261,7 @@ Also fix the old name reference on line 165: `"stackur"` should be `"stapeln"`.
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 npx rescript build 2>&1 | grep -i error
 # Must compile with no errors.
 
@@ -280,7 +280,7 @@ grep -n "matchMedia" src/StackView.res
 ## TASK 8: Show import errors to the user in Update.res
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/frontend/src/Update.res` (line 223)
+- `/var$REPOS_DIR/stapeln/frontend/src/Update.res` (line 223)
 
 **Problem:** The `ImportDesignError` handler only logs to `Console.error` and does not notify the user:
 ```rescript
@@ -300,7 +300,7 @@ If the `state` type in `Update.res` does not have a `toastState` field (it uses 
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 npx rescript build 2>&1 | grep -i error
 # Must compile with no errors.
 
@@ -313,7 +313,7 @@ grep -n "TODO: Show error message to user" src/Update.res
 ## TASK 9: Fix Export.res compose.toml and docker-compose stubs
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/frontend/src/Export.res` (lines 53-110)
+- `/var$REPOS_DIR/stapeln/frontend/src/Export.res` (lines 53-110)
 
 **Problem:**
 1. `exportToSelurCompose` (line 53): outputs a comment `# TODO: Implement compose.toml generation` in the generated file, and the services section only includes `name` and `type` -- no image references, ports, volumes, or environment variables.
@@ -328,7 +328,7 @@ grep -n "TODO: Show error message to user" src/Update.res
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 npx rescript build 2>&1 | grep -i error
 # Must compile with no errors.
 
@@ -344,7 +344,7 @@ grep -n "image: TODO" src/Export.res
 ## TASK 10: Implement crypto signature placeholders in LagoGreyExport.res
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/frontend/src/LagoGreyExport.res` (lines 151-155)
+- `/var$REPOS_DIR/stapeln/frontend/src/LagoGreyExport.res` (lines 151-155)
 
 **Problem:** The `generateManifest` function outputs hardcoded `"TODO"` for all three cryptographic signatures:
 ```json
@@ -363,7 +363,7 @@ Since actual cryptographic signing cannot happen in the browser, replace the TOD
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 npx rescript build 2>&1 | grep -i error
 # Must compile with no errors.
 
@@ -379,7 +379,7 @@ grep -n "UNSIGNED" src/LagoGreyExport.res
 ## TASK 11: Fix appendTraceEvent argument order in SecurityInspector.res
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/frontend/src/SecurityInspector.res` (line 355, approximately)
+- `/var$REPOS_DIR/stapeln/frontend/src/SecurityInspector.res` (line 355, approximately)
 
 **Problem:** The `appendTraceEvent` function uses `Belt.Array.keepWithIndex` with arguments in potentially incorrect order. The `keepWithIndex` callback signature is `('a, int) => bool` but the code may have `(idx, _)` instead of `(_, idx)`. This causes trace event limiting to malfunction.
 
@@ -391,7 +391,7 @@ grep -n "UNSIGNED" src/LagoGreyExport.res
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 npx rescript build 2>&1 | grep -i error
 # Must compile with no errors.
 
@@ -405,7 +405,7 @@ grep -A1 "keepWithIndex" src/SecurityInspector.res
 ## TASK 12: Add frontend tests
 
 **Files:**
-- New file: `/var/mnt/eclipse/repos/stapeln/frontend/test/DesignFormat_test.res` (or equivalent test file)
+- New file: `/var$REPOS_DIR/stapeln/frontend/test/DesignFormat_test.res` (or equivalent test file)
 
 **Problem:** The frontend has zero tests. There are no test files for any ReScript module. The `DesignFormat.res` module has complex serialization/deserialization logic (`serializeDesign`, `deserializeDesign`, `componentToJson`, `componentFromJson`) that could easily break silently.
 
@@ -427,7 +427,7 @@ grep -A1 "keepWithIndex" src/SecurityInspector.res
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 npx rescript build 2>&1 | grep -i error
 # Must compile with no errors.
 
@@ -441,7 +441,7 @@ node lib/es6/test/DesignFormat_test.js 2>&1
 ## TASK 13: Add validation rules to the Elixir ValidationEngine
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/backend/lib/stapeln/validation_engine.ex`
+- `/var$REPOS_DIR/stapeln/backend/lib/stapeln/validation_engine.ex`
 
 **Problem:** The validation engine has only 3 basic rules:
 1. Empty services check
@@ -466,7 +466,7 @@ Add these validation rules to the `validate/1` function:
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/backend
+cd /var$REPOS_DIR/stapeln/backend
 mix test test/stapeln_web/controllers/stack_controller_test.exs 2>&1
 # Must pass all existing tests.
 
@@ -500,7 +500,7 @@ mix run -e '
 ## TASK 14: Wire AppIntegrated.res port/security/gap callbacks properly
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/frontend/src/AppIntegrated.res` (lines 283-301)
+- `/var$REPOS_DIR/stapeln/frontend/src/AppIntegrated.res` (lines 283-301)
 
 **Problem:** The `onStateChange` callbacks for PortConfigPanel, SecurityInspector, GapAnalysis, and SimulationMode are all incorrect -- they dispatch hardcoded dummy messages instead of passing the actual new state:
 
@@ -524,7 +524,7 @@ This means `onStateChange` always sends `SelectPort(0)` regardless of what actua
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 npx rescript build 2>&1 | grep -i error
 # Must compile with no errors.
 
@@ -544,7 +544,7 @@ grep -n "ToggleStats" src/AppIntegrated.res
 ## TASK 15: Implement FileIO.res readFile to return actual file contents
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/frontend/src/FileIO.res` (line 39)
+- `/var$REPOS_DIR/stapeln/frontend/src/FileIO.res` (line 39)
 
 **Problem:** The `readFile` function has a hardcoded return value:
 ```rescript
@@ -560,7 +560,7 @@ The comment says "Would be actual contents" -- the FFI `read_file` external retu
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 npx rescript build 2>&1 | grep -i error
 # Must compile with no errors.
 
@@ -573,7 +573,7 @@ grep -n '"file contents"' src/FileIO.res
 ## TASK 16: Add tests for the gRPC server
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/backend/test/stapeln_grpc/stack_service_server_test.exs`
+- `/var$REPOS_DIR/stapeln/backend/test/stapeln_grpc/stack_service_server_test.exs`
 
 **Problem:** The gRPC tests exist and cover basic CRUD operations, but they do not test:
 1. Validation with stacks that have no services (should produce findings).
@@ -590,7 +590,7 @@ Add test cases for:
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/backend
+cd /var$REPOS_DIR/stapeln/backend
 mix test test/stapeln_grpc/stack_service_server_test.exs 2>&1
 # Must pass all tests including the new ones.
 
@@ -604,8 +604,8 @@ grep -c "test \"" test/stapeln_grpc/stack_service_server_test.exs
 ## TASK 17: Add Idris2 proofs for Types.idr
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/src/abi/Types.idr`
-- `/var/mnt/eclipse/repos/stapeln/frontend/src/abi/FileIO.idr`
+- `/var$REPOS_DIR/stapeln/src/abi/Types.idr`
+- `/var$REPOS_DIR/stapeln/frontend/src/abi/FileIO.idr`
 
 **Problem:** The Idris2 ABI layer has type definitions but zero actual dependent-type proofs. The types `ValidPath`, `SafeRead`, `AtomicWrite` in `FileIO.idr` are trivially inhabited (e.g., `MkValidPath : (s : String) -> ValidPath s` accepts any string including empty ones). There is no actual validation. The `safeReadFile` and `safeWriteFile` functions return hardcoded strings.
 
@@ -629,7 +629,7 @@ grep -c "test \"" test/stapeln_grpc/stack_service_server_test.exs
 **Verification:**
 ```bash
 # Verify Idris2 files type-check (requires idris2 compiler):
-cd /var/mnt/eclipse/repos/stapeln
+cd /var$REPOS_DIR/stapeln
 idris2 --check src/abi/Types.idr 2>&1
 # Must succeed with no errors.
 
@@ -646,7 +646,7 @@ grep -c "auto prf" src/abi/Types.idr
 ## TASK 18: Fix ErrorBoundary.res -- it does not actually catch errors
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/frontend/src/ErrorBoundary.res`
+- `/var$REPOS_DIR/stapeln/frontend/src/ErrorBoundary.res`
 
 **Problem:** The `ErrorBoundary` component uses `React.useReducer` and has a `handleError` callback, but nothing ever calls `handleError`. React error boundaries require class components with `componentDidCatch` and `getDerivedStateFromError` lifecycle methods. ReScript's React bindings do not support class components, so this "error boundary" is purely decorative -- it will never catch any rendering errors.
 
@@ -667,7 +667,7 @@ Alternatively, use an existing library like `react-error-boundary` and bind to i
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 npx rescript build 2>&1 | grep -i error
 # Must compile with no errors.
 
@@ -681,9 +681,9 @@ grep -n "getDerivedStateFromError\|componentDidCatch" src/ErrorBoundary.res src/
 ## TASK 19: Add missing DomMounter source files
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/frontend/lib/ocaml/DomMounter.res`
-- `/var/mnt/eclipse/repos/stapeln/frontend/lib/ocaml/DomMounterEnhanced.res`
-- `/var/mnt/eclipse/repos/stapeln/frontend/lib/ocaml/DomMounterSecurity.res`
+- `/var$REPOS_DIR/stapeln/frontend/lib/ocaml/DomMounter.res`
+- `/var$REPOS_DIR/stapeln/frontend/lib/ocaml/DomMounterEnhanced.res`
+- `/var$REPOS_DIR/stapeln/frontend/lib/ocaml/DomMounterSecurity.res`
 
 **Problem:** The adapter files (`ReactAdapter.res`, `SolidAdapter.res`, `VueAdapter.res`, `SSRAdapter.res`, `WebComponent.res`) all import `DomMounterEnhanced` and `DomMounterSecurity`, but these source files only exist in `frontend/lib/ocaml/` and `frontend/lib/bs/` (build output directories), not in `frontend/src/`. This means:
 1. The source files are build artifacts, not source-controlled code.
@@ -699,12 +699,12 @@ grep -n "getDerivedStateFromError\|componentDidCatch" src/ErrorBoundary.res src/
 **Verification:**
 ```bash
 # Verify source files exist:
-ls -la /var/mnt/eclipse/repos/stapeln/frontend/src/DomMounter.res \
-       /var/mnt/eclipse/repos/stapeln/frontend/src/DomMounterEnhanced.res \
-       /var/mnt/eclipse/repos/stapeln/frontend/src/DomMounterSecurity.res 2>&1
+ls -la /var$REPOS_DIR/stapeln/frontend/src/DomMounter.res \
+       /var$REPOS_DIR/stapeln/frontend/src/DomMounterEnhanced.res \
+       /var$REPOS_DIR/stapeln/frontend/src/DomMounterSecurity.res 2>&1
 # All three must exist.
 
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 npx rescript build 2>&1 | grep -i error
 # Must compile with no errors.
 ```
@@ -714,7 +714,7 @@ npx rescript build 2>&1 | grep -i error
 ## TASK 20: Replace /tmp storage with configurable persistence in StackStore
 
 **Files:**
-- `/var/mnt/eclipse/repos/stapeln/backend/lib/stapeln/stack_store.ex`
+- `/var$REPOS_DIR/stapeln/backend/lib/stapeln/stack_store.ex`
 
 **Problem:** The StackStore GenServer persists to `/tmp/stapeln-stack-store.json`. This path:
 1. Is not configurable.
@@ -734,7 +734,7 @@ npx rescript build 2>&1 | grep -i error
 
 **Verification:**
 ```bash
-cd /var/mnt/eclipse/repos/stapeln/backend
+cd /var$REPOS_DIR/stapeln/backend
 
 # Verify config key is used:
 grep -n "stack_store_path" lib/stapeln/stack_store.ex
@@ -759,44 +759,44 @@ Run these commands to verify the entire project is in a healthy state:
 
 ```bash
 # 1. Backend: compile and test
-cd /var/mnt/eclipse/repos/stapeln/backend
+cd /var$REPOS_DIR/stapeln/backend
 mix deps.get
 mix compile --warnings-as-errors 2>&1
 mix test 2>&1
 echo "Backend exit code: $?"
 
 # 2. Frontend: compile
-cd /var/mnt/eclipse/repos/stapeln/frontend
+cd /var$REPOS_DIR/stapeln/frontend
 npm install  # or deno install
 npx rescript build 2>&1
 echo "Frontend exit code: $?"
 
 # 3. Zig FFI: build and test
-cd /var/mnt/eclipse/repos/stapeln/ffi/zig
+cd /var$REPOS_DIR/stapeln/ffi/zig
 zig build 2>&1
 zig build test 2>&1
 echo "Zig exit code: $?"
 
 # 4. License check: no AGPL anywhere in source
 grep -rn "PMPL-1.0-or-later" \
-  /var/mnt/eclipse/repos/stapeln/src/ \
-  /var/mnt/eclipse/repos/stapeln/ffi/ \
-  /var/mnt/eclipse/repos/stapeln/frontend/src/ \
-  /var/mnt/eclipse/repos/stapeln/backend/lib/
+  /var$REPOS_DIR/stapeln/src/ \
+  /var$REPOS_DIR/stapeln/ffi/ \
+  /var$REPOS_DIR/stapeln/frontend/src/ \
+  /var$REPOS_DIR/stapeln/backend/lib/
 echo "AGPL check (should be empty): $?"
 
 # 5. No TODO/FIXME stubs in critical paths
 grep -rn "TODO\|FIXME\|HACK" \
-  /var/mnt/eclipse/repos/stapeln/frontend/src/Update.res \
-  /var/mnt/eclipse/repos/stapeln/frontend/src/GapAnalysis.res \
-  /var/mnt/eclipse/repos/stapeln/frontend/src/SecurityInspector.res \
-  /var/mnt/eclipse/repos/stapeln/frontend/src/Export.res \
-  /var/mnt/eclipse/repos/stapeln/ffi/zig/src/main.zig
+  /var$REPOS_DIR/stapeln/frontend/src/Update.res \
+  /var$REPOS_DIR/stapeln/frontend/src/GapAnalysis.res \
+  /var$REPOS_DIR/stapeln/frontend/src/SecurityInspector.res \
+  /var$REPOS_DIR/stapeln/frontend/src/Export.res \
+  /var$REPOS_DIR/stapeln/ffi/zig/src/main.zig
 echo "TODO check (should be empty): $?"
 
 # 6. Verify test counts
 echo "Backend tests:"
-cd /var/mnt/eclipse/repos/stapeln/backend && mix test --trace 2>&1 | tail -3
+cd /var$REPOS_DIR/stapeln/backend && mix test --trace 2>&1 | tail -3
 
 echo "All checks complete."
 ```

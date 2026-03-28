@@ -53,7 +53,7 @@ See `STATUS.md` for the canonical source of truth.
 
 This repo focuses on the stapeln app UI.
 The DOM-mounter workstream has been extracted to a separate repo:
-`/var/mnt/eclipse/repos/stapeln-dom-mounter`.
+`/var$REPOS_DIR/stapeln-dom-mounter`.
 
 == What is stapeln?
 
