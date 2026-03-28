@@ -1,0 +1,22 @@
+{
+  "groove_version": "1",
+  "service_id": "stapeln",
+  "service_version": "0.1.0",
+  "capabilities": {
+    "workflow": {
+      "type": "workflow",
+      "description": "Container stack management and deployment orchestration",
+      "protocol": "http",
+      "endpoint": "/api/stacks",
+      "requires_auth": true,
+      "panel_compatible": true
+    }
+  },
+  "consumes": ["octad-storage", "scanning", "static-analysis", "integrity"],
+  "endpoints": {
+    "health": "/health",
+    "groove": "/.well-known/groove"
+  },
+  "health": "/health",
+  "applicability": ["individual", "team"]
+}
