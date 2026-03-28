@@ -1,0 +1,21 @@
+[Desktop Entry]
+Type=Application
+Name=Stapeln
+GenericName=Container Stack Designer
+Comment=Visual container composition with verified security analysis
+Exec=stapeln-launcher %u
+Icon=stapeln
+Categories=Development;System;
+Terminal=false
+StartupWMClass=stapeln
+Keywords=containers;docker;podman;security;chainguard;devops;
+MimeType=x-scheme-handler/stapeln;
+Actions=gossamer;web;
+
+[Desktop Action gossamer]
+Name=Launch Desktop App (Gossamer)
+Exec=stapeln-launcher --gossamer
+
+[Desktop Action web]
+Name=Launch in Browser
+Exec=stapeln-launcher --web
