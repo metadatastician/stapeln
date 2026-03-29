@@ -49,6 +49,7 @@ defmodule StapelnWeb.Router do
     post "/pipelines/validate", PipelineController, :validate
     post "/pipelines/generate", PipelineController, :generate
     post "/pipelines/optimize", PipelineController, :optimize
+    post "/pipelines/dry-run", PipelineController, :dry_run
     get "/pipelines/templates", PipelineController, :templates
     post "/pipelines", PipelineController, :create
     get "/pipelines/:id", PipelineController, :show

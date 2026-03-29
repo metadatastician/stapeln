@@ -86,6 +86,64 @@ defmodule StapelnWeb.PipelineController do
   end
 
   # ---------------------------------------------------------------------------
+  # Dry-run simulation
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  POST /api/pipelines/dry-run — simulate packet flow through a pipeline.
+
+  Accepts a pipeline graph and optional simulation parameters:
+  - packet_rate: packets per second (default 4.0)
+  - latency_ms: base latency in milliseconds (default 50.0)
+  - drop_rate: packet drop probability 0.0-1.0 (default 0.02)
+  - jitter_ms: latency variance in ms (default 10.0)
+  - seed: PRNG seed for deterministic results (default 42)
+  - duration_steps: number of packets to simulate (default 100)
+
+  Returns events array + summary metrics for frontend animation playback.
+  """
+  def dry_run(conn, %{"pipeline" => pipeline} = params) when is_map(pipeline) do
+    sim_params =
+      params
+      |> Map.take(["packet_rate", "latency_ms", "drop_rate", "jitter_ms", "seed", "duration_steps"])
+      |> Enum.reduce(%{}, fn
+        {key, val}, acc when is_number(val) ->
+          Map.put(acc, String.to_existing_atom(key), val)
+
+        {key, val}, acc when is_binary(val) ->
+          case Float.parse(val) do
+            {num, _} -> Map.put(acc, String.to_existing_atom(key), num)
+            :error ->
+              case Integer.parse(val) do
+                {num, _} -> Map.put(acc, String.to_existing_atom(key), num)
+                :error -> acc
+              end
+          end
+
+        _, acc ->
+          acc
+      end)
+
+    result = Stapeln.SimulationEngine.dry_run(pipeline, sim_params)
+
+    VeriSimDB.record(:simulation, %{
+      type: "dry_run",
+      valid: result.valid,
+      packets_sent: result.packets_sent,
+      packets_delivered: result.packets_delivered,
+      packets_dropped: result.packets_dropped,
+      avg_latency_ms: result.avg_latency_ms,
+      security_findings: length(result.security_findings)
+    })
+
+    json(conn, %{data: result})
+  end
+
+  def dry_run(conn, _params) do
+    bad_request(conn, "missing required 'pipeline' object in request body")
+  end
+
+  # ---------------------------------------------------------------------------
   # Pipeline templates
   # ---------------------------------------------------------------------------
 
