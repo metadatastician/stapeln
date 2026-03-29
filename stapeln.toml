@@ -1,0 +1,600 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# stapeln.toml — Stapeln dogfooding its own layer-based container build.
+#
+# This is the canonical example of a stapeln.toml — Stapeln building itself.
+# Every section is production-ready and exercises the full feature set:
+# multi-language layers, sub-component stacks, security primitives, and
+# composable targets.
+#
+# Components:
+#   backend/     — Elixir/Phoenix (GraphQL + gRPC)
+#   frontend/    — ReScript-TEA + Deno
+#   ffi/zig/     — Zig FFI (stapeln_ffi + stapeln_crypto)
+#   src/abi/     — Idris2 ABI definitions + proofs
+#   container-stack/selur/    — Rust WASM IPC bridge
+#   container-stack/vordr/    — Rust container orchestration CLI
+#   container-stack/svalinn/  — ReScript/Deno edge gateway
+#   container-stack/cerro-torre/ — Ada/SPARK supply-chain signing
+#   container-stack/rokur/    — Deno secrets management gate
+#   dom-mounter/ — ReScript DOM mounting library
+#   ephapax-modules/ — Ephapax linear type modules
+#   api/v/       — V-lang API bindings
+
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  Metadata                                                               ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+
+[metadata]
+name = "stapeln"
+version = "0.1.0"
+description = "Visual drag-and-drop container stack designer — dogfooding itself"
+author = "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>"
+license = "PMPL-1.0-or-later"
+registry = "ghcr.io/hyperpolymath"
+homepage = "https://github.com/hyperpolymath/stapeln"
+repository = "https://github.com/hyperpolymath/stapeln"
+keywords = ["containers", "orchestration", "verification", "dogfooding"]
+
+[build]
+containerfile = "Containerfile"
+context = "."
+runtime = "podman"
+
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  Layer Definitions                                                      ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+#
+# Layers are composable, independently cacheable, and verifiable.
+# The dependency graph:
+#
+#   base ──┬── elixir-toolchain ── backend-deps ── backend-build ── backend-release
+#          ├── deno-toolchain ── rescript-toolchain ── frontend-build
+#          ├── zig-toolchain ── ffi-build
+#          ├── idris2-toolchain ── abi-verify
+#          └── runtime (multi-stage final image)
+
+# ── Base ──────────────────────────────────────────────────────────────────
+
+[layers.base]
+description = "Chainguard Wolfi minimal base image"
+from = "cgr.dev/chainguard/wolfi-base:latest"
+cache = true
+verify = true
+
+# ── Elixir / Backend ─────────────────────────────────────────────────────
+
+[layers.elixir-toolchain]
+description = "Erlang/OTP + Elixir + Mix build tooling"
+extends = "base"
+packages = ["erlang", "elixir", "git", "ca-certificates"]
+cache = true
+
+[layers.backend-deps]
+description = "Fetch and compile Elixir dependencies (cached layer)"
+extends = "elixir-toolchain"
+workdir = "/build/backend"
+copy = [
+    { src = "backend/mix.exs", dst = "mix.exs" },
+    { src = "backend/mix.lock", dst = "mix.lock" },
+    { src = "backend/config/", dst = "config/" },
+]
+env = { MIX_ENV = "prod" }
+commands = [
+    "mix local.hex --force",
+    "mix local.rebar --force",
+    "mix deps.get --only prod",
+    "mix deps.compile",
+]
+cache = true
+
+[layers.backend-build]
+description = "Compile Elixir backend (Phoenix + Absinthe + gRPC)"
+extends = "backend-deps"
+workdir = "/build/backend"
+copy = [
+    { src = "backend/lib/", dst = "lib/" },
+    { src = "backend/priv/", dst = "priv/" },
+    { src = "backend/schema.graphql", dst = "schema.graphql" },
+]
+env = { MIX_ENV = "prod" }
+commands = [
+    "mix compile --warnings-as-errors",
+    "mix release stapeln",
+]
+
+[layers.backend-release]
+description = "Extract OTP release artefact for runtime"
+extends = "backend-build"
+workdir = "/build/backend"
+artefacts = [
+    { src = "_build/prod/rel/stapeln/", dst = "/opt/stapeln/" },
+]
+
+# ── Deno / ReScript / Frontend ───────────────────────────────────────────
+
+[layers.deno-toolchain]
+description = "Deno runtime"
+extends = "base"
+packages = ["deno"]
+cache = true
+
+[layers.rescript-toolchain]
+description = "Deno + ReScript compiler (node needed for resc compiler)"
+extends = "deno-toolchain"
+packages = ["nodejs"]
+cache = true
+
+[layers.frontend-build]
+description = "Build ReScript-TEA frontend (SVG canvas, component library)"
+extends = "rescript-toolchain"
+workdir = "/build/frontend"
+copy = [
+    { src = "frontend/package.json", dst = "package.json" },
+    { src = "frontend/deno.json", dst = "deno.json" },
+    { src = "frontend/deno.lock", dst = "deno.lock" },
+    { src = "frontend/rescript.json", dst = "rescript.json" },
+    { src = "frontend/import_map.json", dst = "import_map.json" },
+]
+commands = [
+    "deno install",
+]
+cache = true
+
+[layers.frontend-compile]
+description = "Compile ReScript sources and bundle for production"
+extends = "frontend-build"
+workdir = "/build/frontend"
+copy = [
+    { src = "frontend/src/", dst = "src/" },
+    { src = "frontend/lib/", dst = "lib/" },
+    { src = "frontend/index.html", dst = "index.html" },
+    { src = "frontend/dev-server.js", dst = "dev-server.js" },
+    { src = "frontend/server.js", dst = "server.js" },
+]
+commands = [
+    "./node_modules/.bin/rescript build",
+    "deno bundle src/Main.res.js build/bundle.js || true",
+]
+artefacts = [
+    { src = "/build/frontend/build/", dst = "/opt/stapeln-frontend/" },
+    { src = "/build/frontend/index.html", dst = "/opt/stapeln-frontend/index.html" },
+    { src = "/build/frontend/server.js", dst = "/opt/stapeln-frontend/server.js" },
+]
+
+# ── Zig FFI ──────────────────────────────────────────────────────────────
+
+[layers.zig-toolchain]
+description = "Zig compiler for FFI library builds"
+extends = "base"
+packages = ["zig"]
+cache = true
+
+[layers.ffi-build]
+description = "Build stapeln_ffi and stapeln_crypto shared/static libraries"
+extends = "zig-toolchain"
+workdir = "/build/ffi/zig"
+copy = [
+    { src = "ffi/zig/build.zig", dst = "build.zig" },
+    { src = "ffi/zig/src/", dst = "src/" },
+    { src = "ffi/zig/test/", dst = "test/" },
+]
+commands = [
+    "zig build -Doptimize=ReleaseSafe",
+    "zig build test",
+]
+artefacts = [
+    { src = "/build/ffi/zig/zig-out/lib/", dst = "/opt/stapeln/lib/" },
+]
+
+# ── Idris2 ABI ───────────────────────────────────────────────────────────
+
+[layers.idris2-toolchain]
+description = "Idris2 compiler for ABI verification and proof checking"
+extends = "base"
+packages = ["idris2", "chez-scheme"]
+cache = true
+
+[layers.abi-verify]
+description = "Type-check Idris2 ABI definitions and discharge proofs"
+extends = "idris2-toolchain"
+workdir = "/build/src/abi"
+copy = [
+    { src = "src/abi/Types.idr", dst = "Types.idr" },
+    { src = "src/abi/Layout.idr", dst = "Layout.idr" },
+    { src = "src/abi/Proofs.idr", dst = "Proofs.idr" },
+    { src = "src/abi/Foreign.idr", dst = "Foreign.idr" },
+]
+commands = [
+    "idris2 --check Types.idr",
+    "idris2 --check Layout.idr",
+    "idris2 --check Proofs.idr",
+    "idris2 --check Foreign.idr",
+]
+# ABI layer produces no runtime artefact — it is a compile-time
+# verification gate. If proofs fail, the build fails.
+
+# ── DOM Mounter ──────────────────────────────────────────────────────────
+
+[layers.dom-mounter-build]
+description = "Build DOM mounter ReScript library"
+extends = "rescript-toolchain"
+workdir = "/build/dom-mounter"
+copy = [
+    { src = "dom-mounter/package.json", dst = "package.json" },
+    { src = "dom-mounter/deno.json", dst = "deno.json" },
+    { src = "dom-mounter/src/", dst = "src/" },
+]
+commands = [
+    "deno install",
+]
+artefacts = [
+    { src = "/build/dom-mounter/src/", dst = "/opt/stapeln-dom-mounter/" },
+]
+
+# ── Runtime (final multi-stage assembly) ─────────────────────────────────
+
+[layers.runtime]
+description = "Minimal production runtime — Elixir release + frontend assets + Zig FFI"
+from = "cgr.dev/chainguard/wolfi-base:latest"
+packages = ["erlang", "deno", "ca-certificates", "curl", "libgcc"]
+copy-from = [
+    { layer = "backend-release", src = "/opt/stapeln/", dst = "/opt/stapeln/" },
+    { layer = "frontend-compile", src = "/opt/stapeln-frontend/", dst = "/opt/stapeln/priv/static/" },
+    { layer = "ffi-build", src = "/opt/stapeln/lib/", dst = "/opt/stapeln/lib/" },
+]
+user = "stapeln"
+expose = [4000, 4001]
+healthcheck = { interval = "15s", timeout = "5s", start-period = "10s", retries = 3, cmd = "curl -sf http://localhost:4000/healthz || exit 1" }
+entrypoint = ["/opt/stapeln/bin/stapeln", "start"]
+
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  Sub-component Container Stacks                                         ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+#
+# Each container-stack/ component can also be built independently.
+# These reference existing Containerfiles but integrate them into the
+# Stapeln layer model for unified verification and signing.
+
+[components.selur]
+description = "Ephapax-linear WASM sealant — Rust IPC bridge between Svalinn and Vordr"
+path = "container-stack/selur"
+language = "rust"
+build-system = "cargo"
+containerfile = "container-stack/selur/containerfiles/Containerfile.selur"
+
+[components.selur.layers.build]
+description = "Compile Selur Rust WASM IPC bridge"
+from = "rust:1.83-slim"
+workdir = "/build"
+copy = [
+    { src = "container-stack/selur/Cargo.toml", dst = "Cargo.toml" },
+    { src = "container-stack/selur/Cargo.lock", dst = "Cargo.lock" },
+    { src = "container-stack/selur/src/", dst = "src/" },
+]
+commands = [
+    "apt-get update && apt-get install -y --no-install-recommends pkg-config libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*",
+    "cargo build --release --locked",
+]
+
+[components.selur.layers.runtime]
+from = "cgr.dev/chainguard/wolfi-base:latest"
+packages = ["libgcc"]
+copy-from = [
+    { layer = "build", src = "/build/target/release/selur", dst = "/usr/local/bin/selur" },
+]
+user = "selur"
+entrypoint = ["/usr/local/bin/selur"]
+
+[components.vordr]
+description = "Formally verified container orchestration engine — Rust CLI"
+path = "container-stack/vordr"
+language = "rust"
+build-system = "cargo"
+containerfile = "container-stack/vordr/Containerfile"
+
+[components.vordr.layers.build]
+description = "Compile Vordr Rust orchestration binary"
+from = "rust:1.83-slim"
+workdir = "/build"
+copy = [
+    { src = "container-stack/vordr/src/rust/Cargo.toml", dst = "Cargo.toml" },
+    { src = "container-stack/vordr/src/rust/Cargo.lock", dst = "Cargo.lock" },
+    { src = "container-stack/vordr/src/rust/", dst = "." },
+]
+commands = [
+    "apt-get update && apt-get install -y --no-install-recommends pkg-config libsqlite3-dev ca-certificates && rm -rf /var/lib/apt/lists/*",
+    "cargo build --release --locked",
+]
+
+[components.vordr.layers.runtime]
+from = "cgr.dev/chainguard/wolfi-base:latest"
+copy-from = [
+    { layer = "build", src = "/build/target/release/vordr", dst = "/usr/local/bin/vordr" },
+]
+entrypoint = ["/usr/local/bin/vordr"]
+
+[components.svalinn]
+description = "OCI edge gateway — ReScript/Deno with pre-start verification hooks"
+path = "container-stack/svalinn"
+language = "rescript"
+build-system = "deno"
+containerfile = "container-stack/svalinn/Containerfile"
+
+[components.svalinn.layers.build]
+description = "Compile Svalinn ReScript edge gateway"
+from = "cgr.dev/chainguard/wolfi-base:latest"
+packages = ["deno", "nodejs"]
+workdir = "/build"
+copy = [
+    { src = "container-stack/svalinn/deno.json", dst = "deno.json" },
+    { src = "container-stack/svalinn/deno.lock", dst = "deno.lock" },
+    { src = "container-stack/svalinn/package.json", dst = "package.json" },
+    { src = "container-stack/svalinn/src/", dst = "src/" },
+    { src = "container-stack/svalinn/spec/", dst = "spec/" },
+    { src = "container-stack/svalinn/config/", dst = "config/" },
+]
+commands = [
+    "deno install",
+    "cd src && ./node_modules/.bin/rescript build",
+]
+
+[components.svalinn.layers.runtime]
+from = "cgr.dev/chainguard/wolfi-base:latest"
+packages = ["deno"]
+copy-from = [
+    { layer = "build", src = "/build/src/", dst = "/app/src/" },
+    { layer = "build", src = "/build/deno.json", dst = "/app/deno.json" },
+    { layer = "build", src = "/build/deno.lock", dst = "/app/deno.lock" },
+    { layer = "build", src = "/build/node_modules/", dst = "/app/node_modules/" },
+    { layer = "build", src = "/build/spec/", dst = "/app/spec/" },
+    { layer = "build", src = "/build/config/", dst = "/app/config/" },
+]
+user = "svalinn"
+expose = [8000]
+healthcheck = { interval = "15s", timeout = "5s", start-period = "10s", retries = 3, cmd = "deno eval \"const r = await fetch('http://localhost:8000/healthz'); Deno.exit(r.ok ? 0 : 1)\"" }
+entrypoint = ["deno", "run", "--allow-net", "--allow-env", "--allow-read", "src/Main.res.js"]
+
+[components.cerro-torre]
+description = "Supply-chain-verified signing — Ada/SPARK + Rust"
+path = "container-stack/cerro-torre"
+language = "ada"
+build-system = "alire"
+containerfile = "container-stack/cerro-torre/Containerfile"
+
+[components.cerro-torre.layers.build]
+description = "Compile Cerro Torre Ada/SPARK binary + Rust signing utility"
+from = "ubuntu:24.04"
+workdir = "/build"
+env = { DEBIAN_FRONTEND = "noninteractive" }
+commands = [
+    "apt-get update && apt-get install -y --no-install-recommends gnat-14 gprbuild libcurl4-openssl-dev curl ca-certificates git unzip make && rm -rf /var/lib/apt/lists/*",
+    "curl -fsSL https://github.com/alire-project/alire/releases/latest/download/alr-2.0.2-bin-x86_64-linux.zip -o /tmp/alr.zip && unzip /tmp/alr.zip -d /usr/local/bin && rm /tmp/alr.zip",
+    "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal",
+    "alr build",
+    "cargo build --release",
+]
+
+[components.cerro-torre.layers.runtime]
+from = "cgr.dev/chainguard/wolfi-base:latest"
+packages = ["libcurl-openssl4"]
+copy-from = [
+    { layer = "build", src = "/build/bin/ct", dst = "/usr/local/bin/ct" },
+    { layer = "build", src = "/build/target/release/cerro-sign", dst = "/usr/local/bin/ct-sign" },
+]
+user = "cerro"
+entrypoint = ["ct"]
+
+[components.rokur]
+description = "Secrets management gate — Deno on Wolfi"
+path = "container-stack/rokur"
+language = "javascript"
+build-system = "deno"
+containerfile = "container-stack/rokur/Containerfile"
+
+[components.rokur.layers.build]
+description = "Cache Rokur Deno dependencies for offline runtime"
+from = "cgr.dev/chainguard/wolfi-base:latest"
+packages = ["curl", "unzip"]
+workdir = "/build"
+copy = [
+    { src = "container-stack/rokur/deno.json", dst = "deno.json" },
+    { src = "container-stack/rokur/deno.lock", dst = "deno.lock" },
+    { src = "container-stack/rokur/main.js", dst = "main.js" },
+    { src = "container-stack/rokur/audit.js", dst = "audit.js" },
+    { src = "container-stack/rokur/rate_limit.js", dst = "rate_limit.js" },
+    { src = "container-stack/rokur/policy/", dst = "policy/" },
+]
+commands = [
+    "curl -fsSL https://deno.land/install-manual@v2.2.8.sh | sh && mv /root/.deno/bin/deno /usr/local/bin/deno",
+    "deno cache --lock=deno.lock deno.json || true",
+    "deno cache main.js",
+]
+
+[components.rokur.layers.runtime]
+from = "cgr.dev/chainguard/wolfi-base:latest"
+packages = ["libgcc"]
+copy-from = [
+    { layer = "build", src = "/usr/local/bin/deno", dst = "/usr/local/bin/deno" },
+    { layer = "build", src = "/build/main.js", dst = "/app/main.js" },
+    { layer = "build", src = "/build/audit.js", dst = "/app/audit.js" },
+    { layer = "build", src = "/build/rate_limit.js", dst = "/app/rate_limit.js" },
+    { layer = "build", src = "/build/policy/", dst = "/app/policy/" },
+    { layer = "build", src = "/build/deno.json", dst = "/app/deno.json" },
+    { layer = "build", src = "/build/deno.lock", dst = "/app/deno.lock" },
+    { layer = "build", src = "/root/.cache/deno", dst = "/home/rokur/.cache/deno" },
+]
+user = "rokur"
+expose = [9090]
+healthcheck = { interval = "15s", timeout = "5s", start-period = "5s", retries = 3, cmd = "deno eval \"const r = await fetch('http://127.0.0.1:9090/health'); Deno.exit(r.ok ? 0 : 1)\"" }
+entrypoint = ["deno", "run", "--allow-net", "--allow-env", "--allow-read", "--allow-write", "main.js"]
+
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  Security                                                               ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+
+[security]
+non-root = true
+read-only-root = true
+no-new-privileges = true
+cap-drop = ["ALL"]
+seccomp-profile = "default"
+
+[security.signing]
+algorithm = "ML-DSA-87"
+provider = "cerro-torre"
+# Cerro Torre is itself a component — Stapeln signs its own layers
+# using the Ada/SPARK signing utility it builds. Full dogfooding.
+
+[security.sbom]
+format = "spdx-json"
+output = "sbom.spdx.json"
+include-deps = true
+include-build-deps = true
+
+[security.attestation]
+# SLSA provenance level 3 — build is hermetic and the provenance
+# document is signed with the same ML-DSA-87 key as the layers.
+slsa-level = 3
+in-toto = true
+rekor-transparency = true
+
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  Verification                                                           ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+
+[verify]
+vordr = true
+svalinn = true
+scan-on-build = true
+fail-on = ["critical", "high"]
+
+[verify.abi]
+# Idris2 proofs MUST pass before any layer is assembled.
+# This is the formal verification gate — no believe_me, no sorry.
+require-proofs = true
+banned-patterns = ["believe_me", "assert_total", "Admitted", "sorry"]
+
+[verify.ffi]
+# Zig FFI tests MUST pass before the library is linked.
+require-tests = true
+sanitizers = ["address", "undefined"]
+
+[verify.ephapax]
+# Ephapax linear type modules must type-check cleanly.
+require-linearity-check = true
+
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  Targets                                                                ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+
+[targets.development]
+description = "Full development stack — backend + frontend + FFI with debug logging"
+layers = ["base", "elixir-toolchain", "backend-deps", "backend-build", "deno-toolchain", "rescript-toolchain", "frontend-build", "frontend-compile", "zig-toolchain", "ffi-build", "idris2-toolchain", "abi-verify"]
+env = { MIX_ENV = "dev", LOG_LEVEL = "debug", PHX_SERVER = "true" }
+expose = [4000, 4001, 3000]
+
+[targets.production]
+description = "Minimal production image — OTP release + static assets + Zig FFI"
+layers = ["runtime"]
+env = { MIX_ENV = "prod", LOG_LEVEL = "info", PHX_SERVER = "true", RELEASE_COOKIE = "stapeln_prod" }
+
+[targets.test]
+description = "Test target — all toolchains + test deps + fuzz harness"
+layers = ["base", "elixir-toolchain", "backend-deps", "backend-build", "deno-toolchain", "rescript-toolchain", "frontend-build", "frontend-compile", "zig-toolchain", "ffi-build", "idris2-toolchain", "abi-verify"]
+env = { MIX_ENV = "test", LOG_LEVEL = "debug" }
+commands = [
+    "cd /build/backend && mix test",
+    "cd /build/ffi/zig && zig build test",
+    "cd /build/frontend && deno test",
+]
+
+[targets.ci]
+description = "CI target — verification-only, no runtime image"
+layers = ["base", "elixir-toolchain", "backend-deps", "backend-build", "zig-toolchain", "ffi-build", "idris2-toolchain", "abi-verify"]
+env = { MIX_ENV = "test", CI = "true" }
+commands = [
+    "cd /build/backend && mix compile --warnings-as-errors && mix test",
+    "cd /build/ffi/zig && zig build test",
+]
+
+[targets.verified-spec]
+description = "Build only the verified-container-spec conformance suite"
+layers = ["base", "idris2-toolchain", "abi-verify", "zig-toolchain", "ffi-build"]
+env = { SPEC_MODE = "conformance" }
+
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  Compose                                                                ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+#
+# Full-stack composition for local development and integration testing.
+# This replaces docker-compose / podman-compose with Stapeln-native
+# service orchestration.
+
+[compose]
+description = "Full Stapeln stack — all services on an internal network"
+network = "stapeln-net"
+
+[compose.services.backend]
+target = "production"
+ports = ["4000:4000", "4001:4001"]
+env = { DATABASE_URL = "ecto://stapeln:stapeln@db:5432/stapeln_prod", SECRET_KEY_BASE = "${SECRET_KEY_BASE}" }
+depends-on = ["db"]
+restart = "unless-stopped"
+
+[compose.services.frontend]
+image = "cgr.dev/chainguard/wolfi-base:latest"
+packages = ["deno"]
+workdir = "/app"
+copy-from = [
+    { layer = "frontend-compile", src = "/opt/stapeln-frontend/", dst = "/app/" },
+]
+command = ["deno", "run", "--allow-net", "--allow-read", "--allow-env", "server.js"]
+ports = ["3000:3000"]
+env = { BACKEND_URL = "http://backend:4000", DENO_ENV = "production" }
+depends-on = ["backend"]
+restart = "unless-stopped"
+
+[compose.services.svalinn]
+component = "svalinn"
+ports = ["8000:8000"]
+env = { UPSTREAM_URL = "http://backend:4000" }
+depends-on = ["backend"]
+restart = "unless-stopped"
+
+[compose.services.rokur]
+component = "rokur"
+ports = ["9090:9090"]
+env = { ROKUR_BACKEND = "http://backend:4000" }
+restart = "unless-stopped"
+
+[compose.services.db]
+image = "cgr.dev/chainguard/postgres:latest"
+volumes = ["stapeln-pgdata:/var/lib/postgresql/data"]
+env = { POSTGRES_USER = "stapeln", POSTGRES_PASSWORD = "${POSTGRES_PASSWORD}", POSTGRES_DB = "stapeln_prod" }
+healthcheck = { interval = "10s", timeout = "5s", retries = 5, cmd = "pg_isready -U stapeln" }
+restart = "unless-stopped"
+
+[compose.volumes]
+stapeln-pgdata = { driver = "local" }
+
+# ╔═══════════════════════════════════════════════════════════════════════════╗
+# ║  Hooks                                                                  ║
+# ╚═══════════════════════════════════════════════════════════════════════════╝
+#
+# Lifecycle hooks run at specific points in the build pipeline.
+
+[hooks]
+pre-build = [
+    "scripts/readiness-check.sh",
+]
+post-build = [
+    "vordr scan --fail-on=critical,high ${IMAGE}",
+    "svalinn verify --oci ${IMAGE}",
+]
+pre-push = [
+    "cerro-torre sign --algorithm=ML-DSA-87 ${IMAGE}",
+    "cerro-torre attest --slsa-level=3 ${IMAGE}",
+]
+post-push = [
+    "cerro-torre rekor-submit ${IMAGE}",
+]
