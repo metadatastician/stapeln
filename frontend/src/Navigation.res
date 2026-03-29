@@ -32,13 +32,15 @@ let make = (~currentRoute: AppRouter.route, ~onNavigate: AppRouter.route => unit
       </p>
     </div>
 
-    <nav style={Sx.make(~flex="1", ~padding="12px 0", ())}>
+    <nav style={Sx.make(~flex="1", ~padding="12px 0", ())} ariaLabel="Main navigation">
       {Array.map(AppRouter.navigationItems, item => {
         let isActive = item.route == currentRoute
 
         <button
           key={AppRouter.routeToPath(item.route)}
           onClick={_ => onNavigate(item.route)}
+          ariaCurrent={isActive ? #page : #"false"}
+          ariaLabel={item.label ++ (isActive ? " (current page)" : "")}
           style={Sx.make(
             ~width="100%",
             ~display="flex",

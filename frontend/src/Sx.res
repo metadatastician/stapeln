@@ -45,6 +45,8 @@ external make: (
   ~minHeight: string=?,
   ~minWidth: string=?,
   ~opacity: string=?,
+  ~outline: string=?,
+  ~outlineOffset: string=?,
   ~overflow: string=?,
   ~overflowY: string=?,
   ~padding: string=?,

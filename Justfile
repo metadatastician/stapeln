@@ -28,6 +28,14 @@ tour:
     @echo "4. Read EXPLAINME.adoc for architecture decisions"
     @echo "5. Run 'just doctor' to check your setup"
     @echo ""
+    @echo "INTERACTIVE TOUR:"
+    @echo "  The frontend includes an interactive guided tour that highlights"
+    @echo "  key UI areas (navigation, palette, canvas, simulation, deploy)."
+    @echo "  It shows automatically on first visit. To replay it, open the"
+    @echo "  browser console and run: stapelnStartTour()"
+    @echo "  The tour is fully keyboard navigable (Enter/Space to advance,"
+    @echo "  Escape to skip)."
+    @echo ""
     @echo "Tour complete! Try 'just --list' to see all available commands."
 
 # Open feedback channel with diagnostic context

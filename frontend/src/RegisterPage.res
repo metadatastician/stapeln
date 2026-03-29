@@ -171,6 +171,8 @@ let make = (~auth: authState, ~isDark: bool, ~dispatch: msg => unit, ~onSwitchTo
           />
           {passwordTooShort
             ? <p
+                role="alert"
+                ariaLive=#polite
                 style={Sx.make(
                   ~fontSize="0.85rem",
                   ~color=isDark ? "#ff6b6b" : "#c53030",
@@ -205,6 +207,8 @@ let make = (~auth: authState, ~isDark: bool, ~dispatch: msg => unit, ~onSwitchTo
           />
           {passwordMismatch
             ? <p
+                role="alert"
+                ariaLive=#polite
                 style={Sx.make(
                   ~fontSize="0.85rem",
                   ~color=isDark ? "#ff6b6b" : "#c53030",

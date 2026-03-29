@@ -124,6 +124,172 @@
   margin: 0;
 }
 
+/* ---------------------------------------------------------------
+   Accessibility: Skip-to-content link (WCAG 2.4.1)
+   --------------------------------------------------------------- */
+.skip-to-content {
+  position: absolute;
+  left: -10000px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  z-index: 100000;
+  padding: 0.75rem 1.5rem;
+  background: #4a9eff;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border: 2px solid #fff;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.skip-to-content:focus {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------
+   Accessibility: Visible focus indicators (WCAG 2.4.7)
+   Applied globally to all interactive elements. Individual
+   components may override with Tailwind focus:ring utilities.
+   --------------------------------------------------------------- */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid #4a9eff;
+  outline-offset: 2px;
+}
+
+/* Ensure focus indicators are never hidden */
+*:focus-visible {
+  outline: 3px solid #4a9eff;
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------
+   Accessibility: Reduced motion (WCAG 2.3.3)
+   --------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Tour overlay styles
+   --------------------------------------------------------------- */
+.tour-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 99998;
+  pointer-events: auto;
+}
+
+.tour-tooltip {
+  position: fixed;
+  z-index: 99999;
+  max-width: 400px;
+  padding: 24px;
+  background: linear-gradient(135deg, #1e2431 0%, #252d3d 100%);
+  border: 2px solid #4a9eff;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  color: #e0e6ed;
+}
+
+.tour-tooltip h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #4a9eff;
+}
+
+.tour-tooltip p {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #b0bec5;
+}
+
+.tour-tooltip-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.tour-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s;
+}
+
+.tour-btn-primary {
+  background: #4a9eff;
+  color: #fff;
+}
+
+.tour-btn-primary:hover {
+  background: #3a8eef;
+}
+
+.tour-btn-secondary {
+  background: transparent;
+  color: #8892a6;
+  border: 1px solid #2a3142;
+}
+
+.tour-btn-secondary:hover {
+  color: #e0e6ed;
+  border-color: #4a9eff;
+}
+
+.tour-progress {
+  display: flex;
+  gap: 4px;
+  margin-right: auto;
+}
+
+.tour-progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2a3142;
+  transition: background 0.2s;
+}
+
+.tour-progress-dot.active {
+  background: #4a9eff;
+}
+
+.tour-progress-dot.completed {
+  background: #66bb6a;
+}
+
 /* Loading animations */
 @keyframes spin {
   0% { transform: rotate(0deg); }
@@ -133,4 +299,9 @@
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
 }

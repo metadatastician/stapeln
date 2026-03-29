@@ -429,66 +429,93 @@ let make = () => {
       }
     } else {
     <div className="app">
-      <nav className="nav-tabs">
+      // Skip-to-content link (WCAG 2.4.1 — Bypass Blocks)
+      <a
+        className="skip-to-content"
+        href="#main-content"
+      >
+        {"Skip to main content"->React.string}
+      </a>
+      <nav className="nav-tabs" role="tablist" ariaLabel="Main navigation">
         <button
+          role="tab"
+          ariaSelected={state.currentPage == NetworkView}
           className={state.currentPage == NetworkView ? "tab active" : "tab"}
           onClick={_ => switchPage(NetworkView)}
         >
-          {"🌐 Network"->React.string}
+          {"Network"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == StackView}
           className={state.currentPage == StackView ? "tab active" : "tab"}
           onClick={_ => switchPage(StackView)}
         >
-          {"📚 Stack"->React.string}
+          {"Stack"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == PipelineView}
           className={state.currentPage == PipelineView ? "tab active" : "tab"}
           onClick={_ => switchPage(PipelineView)}
         >
-          {"🔧 Pipeline"->React.string}
+          {"Pipeline"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == LagoGreyView}
           className={state.currentPage == LagoGreyView ? "tab active" : "tab"}
           onClick={_ => switchPage(LagoGreyView)}
         >
-          {"🏔️ Lago Grey"->React.string}
+          {"Lago Grey"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == PortConfigView}
           className={state.currentPage == PortConfigView ? "tab active" : "tab"}
           onClick={_ => switchPage(PortConfigView)}
         >
-          {"🔌 Ports"->React.string}
+          {"Ports"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == SecurityView}
           className={state.currentPage == SecurityView ? "tab active" : "tab"}
           onClick={_ => switchPage(SecurityView)}
         >
-          {"🛡️ Security"->React.string}
+          {"Security"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == AttackSurfaceView}
           className={state.currentPage == AttackSurfaceView ? "tab active" : "tab"}
           onClick={_ => switchPage(AttackSurfaceView)}
         >
-          {"🎯 Surface"->React.string}
+          {"Surface"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == GapAnalysisView}
           className={state.currentPage == GapAnalysisView ? "tab active" : "tab"}
           onClick={_ => switchPage(GapAnalysisView)}
         >
-          {"🔍 Gaps"->React.string}
+          {"Gaps"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == SimulationView}
           className={state.currentPage == SimulationView ? "tab active" : "tab"}
           onClick={_ => switchPage(SimulationView)}
         >
-          {"🎮 Simulation"->React.string}
+          {"Simulation"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == SettingsView}
           className={state.currentPage == SettingsView ? "tab active" : "tab"}
           onClick={_ => switchPage(SettingsView)}
         >
-          {"⚙️ Settings"->React.string}
+          {"Settings"->React.string}
         </button>
 
         <div className="nav-actions">
@@ -590,7 +617,7 @@ let make = () => {
           </div>
         : React.null}
 
-      <div className="content">
+      <div className="content" id="main-content" role="tabpanel">
         {switch state.currentPage {
         | NetworkView => TopologyView.view(state.model, state.isDark, dispatch)
         | StackView => StackView.view(state.model, ~isDark=state.isDark)
@@ -653,6 +680,9 @@ let make = () => {
       >
         <IdrisBadge style=Compact />
       </div>
+
+      // Interactive tour overlay (shows on first visit or via `just tour`)
+      <Tour />
     </div>
     }} // closes the else branch of the auth gate
   </ErrorBoundary>

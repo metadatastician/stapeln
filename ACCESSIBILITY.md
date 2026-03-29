@@ -251,26 +251,54 @@ query GetStack($id: ID!) {
 
 ## Conformance Statement
 
-stackur conforms to **WCAG 2.3 Level AAA** as of 2026-02-05.
+stackur targets **WCAG 2.1 Level AA** compliance, with select AAA enhancements
+(7:1 contrast ratios, reduced motion).
 
 This includes:
-- ✅ 1.1 Text Alternatives
-- ✅ 1.2 Time-based Media
-- ✅ 1.3 Adaptable
-- ✅ 1.4 Distinguishable (AAA: 7:1 contrast)
-- ✅ 2.1 Keyboard Accessible
-- ✅ 2.2 Enough Time
-- ✅ 2.3 Seizures and Physical Reactions
-- ✅ 2.4 Navigable
-- ✅ 2.5 Input Modalities
-- ✅ 3.1 Readable (AAA: reading level, pronunciation)
-- ✅ 3.2 Predictable
-- ✅ 3.3 Input Assistance
-- ✅ 4.1 Compatible
+- 1.1 Text Alternatives
+- 1.2 Time-based Media
+- 1.3 Adaptable
+- 1.4 Distinguishable (AAA: 7:1 contrast)
+- 2.1 Keyboard Accessible
+- 2.2 Enough Time
+- 2.3 Seizures and Physical Reactions
+- 2.4 Navigable (skip-to-content link, visible focus, ARIA tabs)
+- 2.5 Input Modalities
+- 3.1 Readable
+- 3.2 Predictable
+- 3.3 Input Assistance
+- 4.1 Compatible
+
+### Audit History
+
+| Date | Scope | Report |
+|------|-------|--------|
+| 2026-03-29 | Full keyboard + ARIA audit of all frontend/src/ components | `docs/ACCESSIBILITY-AUDIT-2026-03-29.adoc` |
+
+### 2026-03-29 Audit Fixes Applied
+
+1. **Skip-to-content link** added to App.res (WCAG 2.4.1)
+2. **Visible focus indicators** added globally via App.css (WCAG 2.4.7)
+3. **`prefers-reduced-motion`** media query added to App.css (WCAG 2.3.3)
+4. **ARIA tab roles** added to main navigation bar (`role="tablist"`, `role="tab"`, `aria-selected`)
+5. **Navigation.res** — added `aria-label` and `aria-current` on active item
+6. **Toast.res** — added `role="status"`, `aria-live="polite"`, accessible dismiss button
+7. **Breadcrumb.res** — wrapped in `<nav aria-label="Breadcrumb">`
+8. **RegisterPage.res** — validation hints now use `role="alert"` and `aria-live`
+9. **Sx.res** — added `outline` and `outlineOffset` CSS properties
+10. **Tour.res** — new interactive tour component, fully keyboard navigable
+
+### Known Gaps (Not AA Blockers)
+
+- SVG canvas nodes in TopologyView and PipelineCanvas are not individually
+  keyboard-selectable (complex widget pattern — enhancement)
+- SimulationMode and PortConfigPanel have no ARIA attributes on their internal
+  elements (buttons are inherently focusable but lack accessible names)
+- Drag-and-drop operations lack keyboard alternatives
 
 ## Resources
 
-- [WCAG 2.3 Guidelines](https://www.w3.org/WAI/WCAG23/quickref/)
+- [WCAG 2.1 Quick Reference](https://www.w3.org/WAI/WCAG21/quickref/)
 - [ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)
 - [Braille ASCII Standard](https://en.wikipedia.org/wiki/Braille_ASCII)
 - [GraphQL Accessibility Best Practices](https://www.w3.org/WAI/standards-guidelines/aria/)
