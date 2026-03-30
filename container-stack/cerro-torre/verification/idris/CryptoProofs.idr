@@ -136,6 +136,18 @@ ed25519Deterministic pub msg sig = Refl
 ||| Cannot be proven in Idris2 because it requires reasoning about
 ||| the Edwards curve group law and modular arithmetic over a
 ||| 255-bit prime field, which is beyond Idris2's arithmetic.
+|||
+||| KNOWN WEAKNESS: The type signature is overly permissive — it
+||| claims ALL signatures verify for ALL key/message combinations,
+||| regardless of whether the signature was actually produced by
+||| sign(sk, msg). A tighter formulation would require:
+|||   1. A `sign` specification function: sign : Ed25519PrivateKey -> Message -> Ed25519Signature
+|||   2. A `derivePublicKey` function: derivePublicKey : Ed25519PrivateKey -> Ed25519PublicKey
+|||   3. The postulate restricted to: verifyEd25519 (derivePublicKey sk) msg (sign sk msg) = True
+||| This is deferred pending addition of sign/derivePublicKey spec functions.
+||| The current formulation is SAFE because it is only used to establish
+||| correctness (not security) — security properties use the separate
+||| unforgeability postulates (signatureNonReplayable, signatureNonMalleable).
 export
 postulate ed25519Correctness
   : (sk : Ed25519PrivateKey)
