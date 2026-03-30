@@ -9,7 +9,9 @@ defmodule Stapeln.Auth.Token do
   from the Phoenix endpoint secret_key_base. No external JWT library needed.
   """
 
-  @token_ttl_seconds 86_400 * 7  # 7 days
+  @token_ttl_seconds 86_400 * 7  # 7 days (access token)
+  @refresh_ttl_seconds 86_400 * 30  # 30 days (refresh token)
+  @refresh_window_seconds 86_400  # Tokens within 1 day of expiry can be refreshed
 
   @doc "Generate a signed token for the given user identifier."
   @spec generate(String.t()) :: String.t()
@@ -32,6 +34,55 @@ defmodule Stapeln.Auth.Token do
       [encoded_payload, signature] ->
         if Plug.Crypto.secure_compare(sign(encoded_payload), signature) do
           decode_and_validate(encoded_payload)
+        else
+          {:error, :invalid_signature}
+        end
+
+      _ ->
+        {:error, :malformed_token}
+    end
+  end
+
+  @doc "Generate a refresh token (longer-lived, used only to obtain new access tokens)."
+  @spec generate_refresh(String.t()) :: String.t()
+  def generate_refresh(user_id) when is_binary(user_id) do
+    payload = %{
+      sub: user_id,
+      typ: "refresh",
+      iat: System.system_time(:second),
+      exp: System.system_time(:second) + @refresh_ttl_seconds
+    }
+
+    encoded_payload = payload |> Jason.encode!() |> Base.url_encode64(padding: false)
+    signature = sign(encoded_payload)
+    encoded_payload <> "." <> signature
+  end
+
+  @doc """
+  Refresh an access token. Returns a new access + refresh token pair.
+
+  Only works if:
+  - The refresh token is valid and not expired
+  - The refresh token has typ="refresh"
+  """
+  @spec refresh(String.t()) :: {:ok, %{access: String.t(), refresh: String.t()}} | {:error, atom()}
+  def refresh(refresh_token) when is_binary(refresh_token) do
+    case String.split(refresh_token, ".", parts: 2) do
+      [encoded_payload, signature] ->
+        if Plug.Crypto.secure_compare(sign(encoded_payload), signature) do
+          with {:ok, json} <- Base.url_decode64(encoded_payload, padding: false),
+               {:ok, %{"sub" => sub, "typ" => "refresh", "exp" => exp}} <- Jason.decode(json) do
+            if exp > System.system_time(:second) do
+              {:ok, %{
+                access: generate(sub),
+                refresh: generate_refresh(sub)
+              }}
+            else
+              {:error, :refresh_token_expired}
+            end
+          else
+            _ -> {:error, :not_a_refresh_token}
+          end
         else
           {:error, :invalid_signature}
         end

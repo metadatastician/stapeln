@@ -57,6 +57,51 @@ defmodule StapelnWeb.AuthController do
     |> json(%{error: "email and password required"})
   end
 
+  @doc "POST /api/auth/login — returns access + refresh token pair."
+  def login_with_refresh(conn, %{"email" => email, "password" => password}) do
+    case Auth.login(email, password) do
+      {:ok, _access_token} ->
+        # Generate token pair (access + refresh).
+        case Auth.get_user_by_email(email) do
+          {:ok, user} ->
+            json(conn, %{
+              access_token: Token.generate(user.id),
+              refresh_token: Token.generate_refresh(user.id),
+              token_type: "Bearer",
+              expires_in: 604_800
+            })
+
+          _ ->
+            conn |> put_status(:unauthorized) |> json(%{error: "invalid credentials"})
+        end
+
+      {:error, :invalid_credentials} ->
+        conn |> put_status(:unauthorized) |> json(%{error: "invalid email or password"})
+    end
+  end
+
+  @doc "POST /api/auth/refresh — exchange refresh token for new token pair."
+  def refresh(conn, %{"refresh_token" => refresh_token}) do
+    case Token.refresh(refresh_token) do
+      {:ok, %{access: access, refresh: refresh}} ->
+        json(conn, %{
+          access_token: access,
+          refresh_token: refresh,
+          token_type: "Bearer",
+          expires_in: 604_800
+        })
+
+      {:error, reason} ->
+        conn
+        |> put_status(:unauthorized)
+        |> json(%{error: "refresh failed: #{reason}"})
+    end
+  end
+
+  def refresh(conn, _params) do
+    conn |> put_status(:bad_request) |> json(%{error: "refresh_token required"})
+  end
+
   @doc "GET /api/auth/me"
   def me(conn, _params) do
     with {:ok, token} <- extract_bearer_token(conn),
