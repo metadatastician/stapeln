@@ -17,6 +17,7 @@ defmodule Stapeln.Application do
       Stapeln.Auth.UserStore,
       Stapeln.SettingsStore,
       Stapeln.Firewall.PinholeManager,
+      Stapeln.SimulationServer,
       {Task.Supervisor, name: Stapeln.TaskSupervisor},
       StapelnWeb.Endpoint
     ]

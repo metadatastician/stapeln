@@ -1,6 +1,6 @@
 # stapeln Status (Source of Truth)
 
-**Date:** 2026-03-23
+**Date:** 2026-03-29
 
 ## Product Goal
 
@@ -31,7 +31,11 @@ A reasonably IT-capable 12-year-old can help their parents build a secure contai
 - **Auth:** JWT + Plug module present but no token refresh, revocation, or session management. No login UI.
 - **Firewall:** Schema present but no nftables integration.
 - **Post-Quantum Crypto:** Module scaffolded; no real XMSS implementation.
-- **Simulation:** Packet flow UI fully renders with animation and stats but no real backend simulation engine.
+- **Simulation — Network (packet flow):** Packet flow UI fully renders with animation and stats; backend `SimulationEngine` produces deterministic dry-run events.
+- **Simulation — Build:** `BuildSimulator` simulates container build layers, sizes, times, security per-layer. Wired to API.
+- **Simulation — What-If:** `WhatIfEngine` compares pipeline variants (Chainguard swap, add gate, merge runs, pin images). Auto-suggests scenarios.
+- **Simulation — Supply Chain:** `SupplyChainAnalyzer` assesses SLSA levels, image provenance, trust boundaries, reproducibility.
+- **Simulation — Sessions:** `SimulationServer` GenServer manages async simulation sessions with start/poll/cancel.
 - **AttackSurfaceAnalyzer:** Documented in ROADMAP but not yet built (0%).
 
 ## Preserved Future Work

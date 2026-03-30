@@ -45,6 +45,16 @@ defmodule StapelnWeb.Router do
     post "/security/panic-attacker/stop", SecurityController, :stop
     get "/security/panic-attacker/status", SecurityController, :status
 
+    # Simulation engine endpoints (build sim, what-if, supply chain)
+    post "/simulations/build", SimulationController, :build
+    post "/simulations/what-if", SimulationController, :what_if
+    post "/simulations/suggest", SimulationController, :suggest
+    post "/simulations/supply-chain", SimulationController, :supply_chain
+    post "/simulations/sessions", SimulationController, :create_session
+    get "/simulations/sessions", SimulationController, :list_sessions
+    get "/simulations/sessions/:id", SimulationController, :show_session
+    delete "/simulations/sessions/:id", SimulationController, :cancel_session
+
     # Assembly pipeline operations
     post "/pipelines/validate", PipelineController, :validate
     post "/pipelines/generate", PipelineController, :generate

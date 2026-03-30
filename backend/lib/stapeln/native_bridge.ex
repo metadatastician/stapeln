@@ -17,10 +17,13 @@ defmodule Stapeln.NativeBridge do
   alias Stapeln.ValidationEngine
   alias Stapeln.SecurityScanner
   alias Stapeln.GapAnalyzer
+  alias Stapeln.BuildSimulator
+  alias Stapeln.WhatIfEngine
+  alias Stapeln.SupplyChainAnalyzer
 
   @type op ::
           :list_stacks | :create_stack | :get_stack | :update_stack | :validate_stack
-          | :security_scan | :gap_analysis
+          | :security_scan | :gap_analysis | :build_simulate | :what_if | :supply_chain
 
   @spec backend() :: :zig_cli | :elixir
   def backend do
@@ -63,6 +66,24 @@ defmodule Stapeln.NativeBridge do
   @spec gap_analysis(pos_integer()) :: {:ok, map()} | {:error, :not_found}
   def gap_analysis(id) when is_integer(id) and id > 0 do
     dispatch(:gap_analysis, %{id: id})
+  end
+
+  @doc "Simulate a container build from a pipeline graph (no real containers)."
+  @spec build_simulate(map()) :: {:ok, map()}
+  def build_simulate(pipeline) when is_map(pipeline) do
+    {:ok, BuildSimulator.simulate(pipeline)}
+  end
+
+  @doc "Compare pipeline variants for what-if analysis."
+  @spec what_if(map(), [map()]) :: {:ok, map()}
+  def what_if(pipeline, scenarios) when is_map(pipeline) and is_list(scenarios) do
+    {:ok, WhatIfEngine.compare(pipeline, scenarios)}
+  end
+
+  @doc "Analyze supply chain integrity of a pipeline."
+  @spec supply_chain_analyze(map()) :: {:ok, map()}
+  def supply_chain_analyze(pipeline) when is_map(pipeline) do
+    {:ok, SupplyChainAnalyzer.analyze(pipeline)}
   end
 
   defp dispatch(op, payload) do
