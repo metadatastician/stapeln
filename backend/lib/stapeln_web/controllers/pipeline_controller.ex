@@ -275,7 +275,7 @@ defmodule StapelnWeb.PipelineController do
   @valid_formats ~w(containerfile selur_compose podman_compose k8s helm oci_bundle all)
 
   defp parse_format(format_str) when format_str in @valid_formats do
-    {:ok, String.to_atom(format_str)}
+    {:ok, String.to_existing_atom(format_str)}
   end
 
   defp parse_format(format_str) do

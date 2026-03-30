@@ -739,7 +739,7 @@ defmodule Stapeln.PipelineCodegen do
   defp node_config(node), do: Map.get(node, "config", Map.get(node, :config, %{}))
 
   defp config_value(config, key) when is_map(config) do
-    Map.get(config, key, Map.get(config, String.to_atom(key), nil))
+    Map.get(config, key, Map.get(config, String.to_existing_atom(key), nil))
   end
 
   defp config_value(_, _), do: nil

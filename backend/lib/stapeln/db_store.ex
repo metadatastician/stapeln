@@ -308,7 +308,7 @@ defmodule Stapeln.DbStore do
   defp safe_to_atom(key) when is_binary(key) do
     String.to_existing_atom(key)
   rescue
-    ArgumentError -> String.to_atom(key)
+    ArgumentError -> String.to_existing_atom(key)
   end
 
   defp parse_user_id("user_" <> rest), do: {:ok, rest}

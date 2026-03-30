@@ -542,7 +542,7 @@ defmodule Stapeln.WhatIfEngine do
   defp conn_to(c), do: Map.get(c, "to", Map.get(c, :to, ""))
 
   defp config_value(config, key) when is_map(config) do
-    Map.get(config, key, Map.get(config, String.to_atom(key), nil))
+    Map.get(config, key, Map.get(config, String.to_existing_atom(key), nil))
   end
 
   defp config_value(_, _), do: nil
