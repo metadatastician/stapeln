@@ -74,15 +74,15 @@ bundleIntegrity bundle wellFormed properlySigned = sym wellFormed
 ||| If a bundle has a valid signature chain, then each individual
 ||| signature in the chain is valid.
 |||
-||| Proof: Delegates to chainImpliesIndividual from SignatureProofs.
-||| That theorem is currently postulated (see SignatureProofs.idr
-||| for justification).
+||| Proof: Delegates to the now-proven chainImpliesIndividual from
+||| SignatureProofs, which uses IsElem (propositional membership)
+||| instead of boolean elem. This is a fully machine-checked proof.
 export
 signatureChainSoundness : (bundle : Bundle)
                        -> ProperlySigned bundle
                        -> (pk : Ed25519PublicKey)
                        -> (sig : Ed25519Signature)
-                       -> elem (pk, sig) (signatures bundle) = True
+                       -> IsElem (pk, sig) (signatures bundle)
                        -> verifyEd25519 pk (cast $ bundleHash bundle) sig = True
 signatureChainSoundness bundle properlySigned pk sig inChain =
   chainImpliesIndividual (bundleHash bundle) (signatures bundle) properlySigned pk sig inChain

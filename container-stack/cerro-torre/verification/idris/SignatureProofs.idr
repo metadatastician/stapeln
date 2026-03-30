@@ -139,36 +139,56 @@ chainTailValid hash pk sig rest prf with (verifyEd25519 pk (cast hash) sig)
   chainTailValid hash pk sig rest prf | False = absurd prf
 
 -- ============================================================================
--- Structural Proofs (proven from definitions, no postulates needed)
+-- Propositional Membership (replaces boolean elem for proof purposes)
 -- ============================================================================
 
-||| POSTULATE: Chain Implies Individual
+||| Type-level proof that an element is in a list.
+||| Unlike boolean `elem` (which uses ==), this carries propositional
+||| equality, enabling substitution in proof goals.
+public export
+data IsElem : a -> List a -> Type where
+  ||| The element is at the head of the list.
+  Here : IsElem x (x :: xs)
+  ||| The element is somewhere in the tail.
+  There : IsElem x xs -> IsElem x (y :: xs)
+
+||| The empty list contains no elements.
+export
+Uninhabited (IsElem x []) where
+  uninhabited Here impossible
+  uninhabited (There _) impossible
+
+-- ============================================================================
+-- Structural Proofs (all proven from definitions)
+-- ============================================================================
+
+||| PROVEN: Chain Implies Individual
 |||
 ||| If a signature chain is valid, then each individual signature
 ||| in the chain is valid.
 |||
-||| Structurally sound but blocked by the Bool/propositional equality gap:
-||| `elem` uses `==` (Bool Eq typeclass), but the inductive step needs
-||| propositional equality `(pk', sig') = (pk, sig)` to substitute into
-||| the `verifyEd25519` call. Bridging `== True` to `=` requires a
-||| DecEq instance for `(Vect 32 Bits8, Vect 64 Bits8)` pairs and a
-||| reflection lemma `(a == b) = True -> a = b`, neither of which exist
-||| in Idris2's stdlib.
+||| Proof: By induction on the IsElem membership proof.
+|||   - Here: (pk, sig) is the head → delegate to chainHeadValid.
+|||   - There: (pk, sig) is in the tail → extract tail validity via
+|||     chainTailValid, then recurse.
 |||
-||| The individual components ARE proven via chainHeadValid/chainTailValid
-||| above — this postulate composes them with the elem decomposition.
-|||
-||| To eliminate: define elem using Data.List.Elem (type-level membership)
-||| instead of boolean elem, or add the DecEq bridge.
+||| Previously postulated because boolean `elem` uses `==` (Bool Eq)
+||| which doesn't give propositional equality. Solved by defining
+||| IsElem as a type-level membership proof carrying `=`.
 export
-postulate chainImpliesIndividual
+chainImpliesIndividual
   : (hash : SHA256Hash)
   -> (chain : SignatureChain)
   -> verifyChain hash chain = True
   -> (pk : Ed25519PublicKey)
   -> (sig : Ed25519Signature)
-  -> elem (pk, sig) chain = True
+  -> IsElem (pk, sig) chain
   -> verifyEd25519 pk (cast hash) sig = True
+chainImpliesIndividual hash [] _ _ _ inChain = absurd inChain
+chainImpliesIndividual hash ((pk, sig) :: rest) chainPrf pk sig Here =
+  chainHeadValid hash pk sig rest chainPrf
+chainImpliesIndividual hash ((pk', sig') :: rest) chainPrf pk sig (There later) =
+  chainImpliesIndividual hash rest (chainTailValid hash pk' sig' rest chainPrf) pk sig later
 
 ||| PROVEN: Chain Extension
 |||
