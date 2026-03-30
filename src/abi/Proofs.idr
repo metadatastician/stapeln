@@ -179,15 +179,29 @@ data Adjacent : FieldLayout -> FieldLayout -> Type where
 ||| name_ptr[0..8), name_len[8..16), kind_ptr[16..24), kind_len[24..32),
 ||| port[32..36), padding[36..40)
 |||
-||| Postulated because Idris2 cannot reduce `fieldEnd` on concrete FieldLayout
-||| records at type-checking time (record field projection + addition).
-||| Each adjacency is trivially verified by arithmetic:
+||| PROVEN: Idris2 reduces fieldEnd on concrete FieldLayout records and
+||| Nat addition normalizes correctly. Each proof is by Refl:
 ||| 0+8=8, 8+8=16, 16+8=24, 24+8=32, 32+4=36.
-postulate serviceSpecContiguous0 : fieldEnd (MkFieldLayout "name_ptr" 0 8) = offset (MkFieldLayout "name_len" 8 8)
-postulate serviceSpecContiguous1 : fieldEnd (MkFieldLayout "name_len" 8 8) = offset (MkFieldLayout "kind_ptr" 16 8)
-postulate serviceSpecContiguous2 : fieldEnd (MkFieldLayout "kind_ptr" 16 8) = offset (MkFieldLayout "kind_len" 24 8)
-postulate serviceSpecContiguous3 : fieldEnd (MkFieldLayout "kind_len" 24 8) = offset (MkFieldLayout "port" 32 4)
-postulate serviceSpecContiguous4 : fieldEnd (MkFieldLayout "port" 32 4) = offset (MkFieldLayout "padding" 36 4)
+||| Previously postulated unnecessarily.
+public export
+serviceSpecContiguous0 : fieldEnd (MkFieldLayout "name_ptr" 0 8) = offset (MkFieldLayout "name_len" 8 8)
+serviceSpecContiguous0 = Refl
+
+public export
+serviceSpecContiguous1 : fieldEnd (MkFieldLayout "name_len" 8 8) = offset (MkFieldLayout "kind_ptr" 16 8)
+serviceSpecContiguous1 = Refl
+
+public export
+serviceSpecContiguous2 : fieldEnd (MkFieldLayout "kind_ptr" 16 8) = offset (MkFieldLayout "kind_len" 24 8)
+serviceSpecContiguous2 = Refl
+
+public export
+serviceSpecContiguous3 : fieldEnd (MkFieldLayout "kind_len" 24 8) = offset (MkFieldLayout "port" 32 4)
+serviceSpecContiguous3 = Refl
+
+public export
+serviceSpecContiguous4 : fieldEnd (MkFieldLayout "port" 32 4) = offset (MkFieldLayout "padding" 36 4)
+serviceSpecContiguous4 = Refl
 
 -- ============================================================================
 -- Proof 7: ResultCode Round-Trip

@@ -18,6 +18,14 @@ import CryptoProofs
 %default total
 
 -- ============================================================================
+-- Cast Instance (needed for proof reduction of `cast hash` in verifyChain)
+-- ============================================================================
+
+export
+Cast (Vect n Bits8) (List Bits8) where
+  cast = toList
+
+-- ============================================================================
 -- Data Types
 -- ============================================================================
 
@@ -100,6 +108,37 @@ verifyChain hash ((pk, sig) :: rest) =
     else False
 
 -- ============================================================================
+-- Chain Decomposition Helpers (proven by with-block on opaque verifyEd25519)
+-- ============================================================================
+
+||| If a chain verifies, the head element's signature is valid.
+||| Proven by case-splitting on verifyEd25519's Bool result: if False,
+||| the chain returns False, contradicting the True premise.
+export
+chainHeadValid : (hash : SHA256Hash)
+              -> (pk : Ed25519PublicKey)
+              -> (sig : Ed25519Signature)
+              -> (rest : SignatureChain)
+              -> verifyChain hash ((pk, sig) :: rest) = True
+              -> verifyEd25519 pk (cast hash) sig = True
+chainHeadValid hash pk sig rest prf with (verifyEd25519 pk (cast hash) sig)
+  chainHeadValid hash pk sig rest prf | True = Refl
+  chainHeadValid hash pk sig rest prf | False = absurd prf
+
+||| If a chain verifies, the tail also verifies.
+||| Same proof strategy as chainHeadValid.
+export
+chainTailValid : (hash : SHA256Hash)
+              -> (pk : Ed25519PublicKey)
+              -> (sig : Ed25519Signature)
+              -> (rest : SignatureChain)
+              -> verifyChain hash ((pk, sig) :: rest) = True
+              -> verifyChain hash rest = True
+chainTailValid hash pk sig rest prf with (verifyEd25519 pk (cast hash) sig)
+  chainTailValid hash pk sig rest prf | True = prf
+  chainTailValid hash pk sig rest prf | False = absurd prf
+
+-- ============================================================================
 -- Structural Proofs (proven from definitions, no postulates needed)
 -- ============================================================================
 
@@ -108,17 +147,19 @@ verifyChain hash ((pk, sig) :: rest) =
 ||| If a signature chain is valid, then each individual signature
 ||| in the chain is valid.
 |||
-||| This is structurally provable by induction on the chain, but
-||| the proof requires case-splitting on the Bool result of
-||| verifyEd25519 and reasoning about if-then-else, which requires
-||| decidable equality on the return type. Postulated pending
-||| a full structural proof.
+||| Structurally sound but blocked by the Bool/propositional equality gap:
+||| `elem` uses `==` (Bool Eq typeclass), but the inductive step needs
+||| propositional equality `(pk', sig') = (pk, sig)` to substitute into
+||| the `verifyEd25519` call. Bridging `== True` to `=` requires a
+||| DecEq instance for `(Vect 32 Bits8, Vect 64 Bits8)` pairs and a
+||| reflection lemma `(a == b) = True -> a = b`, neither of which exist
+||| in Idris2's stdlib.
 |||
-||| Proof sketch (for future implementation):
-|||   Base case: chain = [] → vacuously true (elem returns False)
-|||   Inductive case: chain = (pk', sig') :: rest
-|||     If (pk, sig) = (pk', sig') → follows from verifyChain definition
-|||     If (pk, sig) in rest → follows from inductive hypothesis
+||| The individual components ARE proven via chainHeadValid/chainTailValid
+||| above — this postulate composes them with the elem decomposition.
+|||
+||| To eliminate: define elem using Data.List.Elem (type-level membership)
+||| instead of boolean elem, or add the DecEq bridge.
 export
 postulate chainImpliesIndividual
   : (hash : SHA256Hash)
@@ -129,22 +170,17 @@ postulate chainImpliesIndividual
   -> elem (pk, sig) chain = True
   -> verifyEd25519 pk (cast hash) sig = True
 
-||| POSTULATE: Chain Extension
+||| PROVEN: Chain Extension
 |||
 ||| Adding a valid signature to a valid chain preserves validity.
 |||
-||| Proof sketch: Follows directly from verifyChain definition.
-|||   verifyChain hash ((pk, sig) :: chain)
-|||   = if verifyEd25519 pk (cast hash) sig then verifyChain hash chain else False
-|||   = if True then True else False     (by validSig and validChain)
-|||   = True
-|||
-||| Postulated because Idris2 cannot reduce the if-then-else without
-||| knowing the concrete Bool value at compile time. The verifyEd25519
-||| specification function crashes at runtime, so case-splitting on
-||| its result requires the postulated validSig premise.
+||| Proof: rewrite with validSig substitutes True for the if-condition,
+||| reducing the if-then-else to `verifyChain hash chain`, which equals
+||| True by validChain. Previously postulated because the approach of
+||| case-splitting on the opaque verifyEd25519 was tried instead of
+||| rewriting with the equality premise.
 export
-postulate chainExtension
+chainExtension
   : (hash : SHA256Hash)
   -> (chain : SignatureChain)
   -> (pk : Ed25519PublicKey)
@@ -152,21 +188,21 @@ postulate chainExtension
   -> verifyChain hash chain = True
   -> verifyEd25519 pk (cast hash) sig = True
   -> verifyChain hash ((pk, sig) :: chain) = True
+chainExtension hash chain pk sig validChain validSig =
+  rewrite validSig in validChain
 
-||| POSTULATE: Chain Commutativity
+||| PROVEN: Chain Commutativity
 |||
 ||| Signature verification order doesn't matter — verifying [A, B]
 ||| gives the same result as verifying [B, A].
 |||
-||| Justification: Each signature is verified independently against
-||| the same hash. The verifyChain function is a conjunction (AND)
-||| of independent boolean checks, and AND is commutative.
-|||
-||| Postulated because proving commutativity of boolean AND through
-||| the if-then-else encoding of verifyChain requires case analysis
-||| on the opaque verifyEd25519 function.
+||| Proof: Nested with-blocks abstract over each verifyEd25519 call
+||| in sequence, then case-split on all four Bool combinations.
+||| Each case reduces to Refl. Previously postulated because parallel
+||| with-blocks `| v1 | v2` fail (Idris2 doesn't abstract nested
+||| occurrences), but sequential nesting works correctly.
 export
-postulate chainCommutative
+chainCommutative
   : (hash : SHA256Hash)
   -> (pk1 : Ed25519PublicKey)
   -> (sig1 : Ed25519Signature)
@@ -174,3 +210,13 @@ postulate chainCommutative
   -> (sig2 : Ed25519Signature)
   -> verifyChain hash [(pk1, sig1), (pk2, sig2)]
    = verifyChain hash [(pk2, sig2), (pk1, sig1)]
+chainCommutative hash pk1 sig1 pk2 sig2
+  with (verifyEd25519 pk1 (cast hash) sig1)
+  chainCommutative hash pk1 sig1 pk2 sig2 | True
+    with (verifyEd25519 pk2 (cast hash) sig2)
+    chainCommutative hash pk1 sig1 pk2 sig2 | True | True = Refl
+    chainCommutative hash pk1 sig1 pk2 sig2 | True | False = Refl
+  chainCommutative hash pk1 sig1 pk2 sig2 | False
+    with (verifyEd25519 pk2 (cast hash) sig2)
+    chainCommutative hash pk1 sig1 pk2 sig2 | False | True = Refl
+    chainCommutative hash pk1 sig1 pk2 sig2 | False | False = Refl

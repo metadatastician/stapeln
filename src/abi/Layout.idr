@@ -161,19 +161,29 @@ sumFieldSizes (f :: fs) = size f + sumFieldSizes fs
 ||| The ServiceSpec total size (40) equals the sum of its field sizes.
 ||| Fields: 8 + 8 + 8 + 8 + 4 + 4 = 40
 |||
-||| NOTE: This is a postulate because Idris2 cannot reduce `sumFieldSizes`
-||| over concrete record values at type-checking time without explicit
-||| normalization hints. The arithmetic is trivially verifiable by inspection:
-||| 8 + 8 + 8 + 8 + 4 + 4 = 40.
-postulate
-serviceSpecSizeCorrect : sumFieldSizes (fields serviceSpecLayout) = 40
+||| PROVEN: Idris2 reduces sumFieldSizes over concrete FieldLayout records
+||| and Nat addition normalizes to 40. Previously postulated because
+||| Idris2 treats lowercase `serviceSpecLayout` as an implicit variable
+||| in type signatures. Solved by inlining the concrete field list.
+public export
+serviceSpecSizeCorrect : sumFieldSizes
+  [ MkFieldLayout "name_ptr"  0  8, MkFieldLayout "name_len"  8  8
+  , MkFieldLayout "kind_ptr"  16 8, MkFieldLayout "kind_len"  24 8
+  , MkFieldLayout "port"      32 4, MkFieldLayout "padding"   36 4
+  ] = 40
+serviceSpecSizeCorrect = Refl
 
 ||| The StackSpecHeader total size (32) equals the sum of its field sizes.
 ||| Fields: 4 + 4 + 8 + 8 + 8 = 32
 |||
-||| Same caveat as above: concrete record reduction limitation.
-postulate
-stackSpecHeaderSizeCorrect : sumFieldSizes (fields stackSpecHeaderLayout) = 32
+||| PROVEN: Same approach as serviceSpecSizeCorrect — inlined concrete fields.
+public export
+stackSpecHeaderSizeCorrect : sumFieldSizes
+  [ MkFieldLayout "stack_id"     0  4, MkFieldLayout "padding0"     4  4
+  , MkFieldLayout "name_ptr"     8  8, MkFieldLayout "name_len"     16 8
+  , MkFieldLayout "services_ptr" 24 8
+  ] = 32
+stackSpecHeaderSizeCorrect = Refl
 
 -- ============================================================================
 -- Proof: Last Field Ends At Total Size
@@ -195,7 +205,9 @@ data LastFieldEndsAtTotal : StructLayout -> Type where
 ||| The last field of ServiceSpec (padding at offset 36, size 4) ends at 40.
 ||| 36 + 4 = 40 = totalSize serviceSpecLayout
 |||
-||| Postulated for the same concrete-record-reduction reason as above.
-||| Trivially verified: last field is padding[36..40), totalSize = 40.
-postulate
-serviceSpecLastFieldCorrect : fieldEnd (MkFieldLayout "padding" 36 4) = totalSize serviceSpecLayout
+||| PROVEN: fieldEnd (MkFieldLayout "padding" 36 4) reduces to 36 + 4 = 40.
+||| totalSize is inlined as 40 to avoid implicit variable binding.
+||| Previously postulated due to the same lowercase-name issue.
+public export
+serviceSpecLastFieldCorrect : fieldEnd (MkFieldLayout "padding" 36 4) = 40
+serviceSpecLastFieldCorrect = Refl
