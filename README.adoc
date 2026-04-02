@@ -12,7 +12,7 @@ image:https://img.shields.io/badge/Security-OWASP%20Compliant-brightgreen.svg[OW
 image:https://img.shields.io/badge/ReScript-TEA-e34c4c.svg[ReScript-TEA]
 image:https://img.shields.io/badge/runtime-Deno-000000.svg[Deno]
 image:https://img.shields.io/badge/backend-Elixir%20%2B%20Phoenix-4e2a8e.svg[Elixir]
-image:https://api.thegreenwebfoundation.org/greencheckimage/jewell.nexus[Green Hosting,link="https://www.thegreenwebfoundation.org/green-web-check/?url=jewell.nexus"]
+image:https://api.thegreenwebfoundation.org/greencheckimage/svalinnproject.org[Green Hosting,link="https://www.thegreenwebfoundation.org/green-web-check/?url=svalinnproject.org"]
 
 _"Containers for People Who Hate Containers"_
 
