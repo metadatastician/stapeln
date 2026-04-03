@@ -348,11 +348,10 @@ function handleReloadSecrets(request, requestId, clientIp) {
   try {
     policyEvaluator = initPolicyEvaluator();
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    console.error("Policy reload failed:", error instanceof Error ? error.message : String(error));
     return jsonResponse(
       {
         error: "Reload failed",
-        detail: message,
         requestId,
       },
       500,

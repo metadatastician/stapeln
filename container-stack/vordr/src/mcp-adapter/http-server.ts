@@ -226,13 +226,13 @@ async function handler(req: Request): Promise<Response> {
     return new Response(JSON.stringify(response), { status: 200, headers: corsHeaders });
   } catch (error) {
     console.error("Error:", error);
+    console.error("MCP parse error detail:", error instanceof Error ? error.message : String(error));
     const errorResponse = {
       jsonrpc: "2.0",
       id: null,
       error: {
         code: -32700,
         message: "Parse error",
-        data: error instanceof Error ? error.message : String(error),
       },
     };
     return new Response(JSON.stringify(errorResponse), { status: 500, headers: corsHeaders });
