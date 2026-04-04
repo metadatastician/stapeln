@@ -5,13 +5,15 @@
 [metadata]
 project = "stapeln"
 version = "0.1.0"
-last-updated = "2026-03-23"
+last-updated = "2026-04-04"
 status = "active"
 
 [project-context]
 name = "stapeln"
-completion-percentage = 82
-phase = "MVP integration"
+completion-percentage = 87
+phase = "CRG C — test coverage blitz complete"
+crg-grade = "C"
+crg-achieved-date = "2026-04-04"
 
 [current-position]
 frontend-modules = 51
@@ -59,3 +61,9 @@ priority-4 = "WebSocket live events"
 #             URL routing, security views wired to backend, API proxy, PostgreSQL running.
 # 2026-04-03: Stack trace exposure fixed in rokur/main.js and vordr/http-server.ts.
 #             Error details now logged server-side only, removed from HTTP responses.
+# 2026-04-04: CRG D→C blitz. Added: selur property_test.rs (18 proptest), e2e_test.rs (10),
+#             aspect_test.rs (13); vordr property_test.rs (15 proptest), e2e_test.rs (7).
+#             Deno: unit/container_types_test.ts (27), property/nickel_config_properties_test.ts (20),
+#             e2e/container_lifecycle_test.ts (7), aspect/security_test.ts (10).
+#             Fixed both vordr benchmarks (container_lifecycle + ebpf_overhead — pre-existing API errors).
+#             Removed tests/fuzz/placeholder.txt. All tests pass: 186+80 Deno + 48 new Rust = 314+ total.

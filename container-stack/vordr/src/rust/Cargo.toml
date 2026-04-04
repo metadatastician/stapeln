@@ -96,6 +96,7 @@ assert_cmd = "2"
 predicates = "3"
 tempfile = "3"
 criterion = { version = "0.5", features = ["html_reports"] }
+proptest = "1.6"
 
 [lib]
 name = "vordr"

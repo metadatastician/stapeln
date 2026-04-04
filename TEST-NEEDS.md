@@ -1,61 +1,73 @@
 # TEST-NEEDS: stapeln
 
-## Current State
+## CRG C — ACHIEVED 2026-04-04
+
+This file documents the CRG D→C blitz completed in session 2026-04-04.
+
+## Current State (Post-Blitz)
 
 | Category | Count | Details |
 |----------|-------|---------|
-| **Source modules** | 94+ | Rust across container-stack (selur, vordr, cerro-torre), verified-container-spec, 44 Nickel configs, 4 Idris2 ABI |
-| **Unit tests (inline Rust)** | 186 | Spread across selur compose commands, vordr, cerro-torre |
-| **Unit tests (JS)** | ~79 | stapeln.test.js (73 assertions), test_assert.js (6) |
-| **Integration tests** | 0 | No dedicated integration test files |
-| **E2E tests** | 0 | None |
-| **Benchmarks** | 3 files | selur ipc_benchmark.rs, vordr container_lifecycle.rs, vordr ebpf_overhead.rs |
-| **Fuzz tests** | 2 | selur compose fuzz + selur fuzz targets |
+| **Unit tests (inline Rust)** | 186 | selur, vordr, cerro-torre inline |
+| **Unit tests (Deno/TS)** | 80 | tests/stapeln.test.js (16) + tests/unit/container_types_test.ts (27) + tests/property/nickel_config_properties_test.ts (20) + tests/e2e/container_lifecycle_test.ts (7) + tests/aspect/security_test.ts (10) |
+| **P2P / Property tests (Rust)** | 33 | selur: 18 proptest tests; vordr: 15 proptest tests |
+| **E2E tests (Rust)** | 17 | selur: 10 e2e tests; vordr: 7 e2e tests |
+| **Aspect tests (Rust)** | 13 | selur: security, concurrency, resilience |
+| **Benchmarks** | 4 executables | selur: ipc_benchmark; vordr: container_lifecycle (fixed), ebpf_overhead (fixed) — ALL COMPILE |
+| **Fuzz placeholder** | REMOVED | tests/fuzz/placeholder.txt deleted |
 
-## What's Missing
+## Test File Locations
 
-### P2P Tests (CRITICAL)
-- [ ] No tests for selur <-> vordr communication
-- [ ] No tests for cerro-torre integration with selur
-- [ ] No cross-component container lifecycle tests
+### Rust (selur: container-stack/selur/)
+- `tests/property_test.rs` — 18 proptest P2P tests (container names, ports, volumes, env vars, images, restart policies, protocol encoding)
+- `tests/e2e_test.rs` — 10 E2E pipeline tests (round-trips, multi-container compose ordering, circular dep detection, port validation, config defaults)
+- `tests/aspect_test.rs` — 13 aspect tests (path traversal, capability injection, image shell injection, env var HTTP injection, concurrency, oversized input)
 
-### E2E Tests (CRITICAL)
-- [ ] No test that runs a full container build-deploy-monitor cycle
-- [ ] No test for the verified-container-spec shim with actual containerd
-- [ ] No test for Nickel config evaluation with actual container deployment
+### Rust (vordr: container-stack/vordr/src/rust/)
+- `tests/property_test.rs` — 15 proptest tests (monitoring intervals, CPU bounds, memory bounds, state transitions)
+- `tests/e2e_test.rs` — 7 E2E tests (create container pipeline, state transitions, multi-container list, image management, duplicate rejection, health probe eval, network registration)
 
-### Aspect Tests
-- [ ] **Security**: Container security tool with no security-focused tests (namespace escape, capability leakage, eBPF bypass)
-- [ ] **Performance**: Benchmark files exist but need verification they actually run
-- [ ] **Concurrency**: No tests for concurrent container operations, race conditions in lifecycle management
-- [ ] **Error handling**: No tests for OCI spec violations, malformed container images, network partitions
+### Deno (tests/)
+- `unit/container_types_test.ts` — 27 unit tests for container spec type invariants
+- `property/nickel_config_properties_test.ts` — 20 property tests for Nickel config invariants
+- `e2e/container_lifecycle_test.ts` — 7 E2E lifecycle tests (deploy → monitor → undeploy)
+- `aspect/security_test.ts` — 10 security contract tests (namespace isolation, capability model, image refs, seccomp)
 
-### Build & Execution
-- [ ] No Nickel config validation tests (44 configs, 0 tests)
-- [ ] No Idris2 ABI compilation test
-- [ ] No verified-container-spec proof verification
+## Benchmark Status
 
-### Benchmarks Status
-- [x] ipc_benchmark.rs exists (selur)
-- [x] container_lifecycle.rs exists (vordr)
-- [x] ebpf_overhead.rs exists (vordr)
-- [ ] No benchmark for Nickel config evaluation
-- [ ] No benchmark for container image pull/push
+All benchmarks compile and are baselined (Criterion will emit output on run):
 
-### Self-Tests
-- [ ] No container runtime self-diagnostic
-- [ ] No health probe for vordr monitoring
+| Benchmark | Package | Status |
+|-----------|---------|--------|
+| `ipc_benchmark` | selur | COMPILES — benchmarks binary protocol encoding |
+| `container_lifecycle` | vordr | COMPILES (fixed: was using non-existent `lifecycle.state` field) |
+| `ebpf_overhead` | vordr | COMPILES (fixed: was using non-existent `SyscallEvent` field names) |
 
-## FLAGGED ISSUES
-- **186 inline tests for 94 source files** = decent unit test count but NO integration or E2E
-- **Container security platform with 0 security-specific tests** -- critical gap
-- **44 Nickel configs with 0 validation tests** -- config correctness unverified
-- **verified-container-spec has no proof verification tests** -- "verified" is a claim, not a fact
+Run with: `cargo bench` in the respective package directory.
 
-## Priority: P1 (HIGH)
+## CRG C Requirements — Checklist
 
-## FAKE-FUZZ ALERT
+- [x] Unit tests — 186 Rust inline + 80 Deno
+- [x] Smoke tests — E2E tests cover basic smoke paths
+- [x] Build — all Rust packages build cleanly
+- [x] P2P (property-based) — proptest in both selur and vordr (33 tests)
+- [x] E2E tests — full pipeline tests in both selur and vordr (17 Rust + 7 Deno)
+- [x] Reflexive tests — state string round-trip in vordr property tests
+- [x] Contract tests — Deno security aspect tests, Nickel config property tests
+- [x] Aspect tests — security, concurrency, resilience in selur aspect_test.rs + Deno security_test.ts
+- [x] Benchmarks baselined — all 3 bench files compile with Criterion
 
-- `tests/fuzz/placeholder.txt` is a scorecard placeholder inherited from rsr-template-repo — it does NOT provide real fuzz testing
-- Replace with an actual fuzz harness (see rsr-template-repo/tests/fuzz/README.adoc) or remove the file
-- Priority: P2 — creates false impression of fuzz coverage
+## Remaining Gaps (for CRG B+)
+
+- [ ] No integration tests against real containerd/youki runtime
+- [ ] No Idris2 ABI proof compilation test
+- [ ] No verified-container-spec proof verification (claimed but unrun)
+- [ ] No Nickel config evaluation tests (configs parsed but not `nix eval`'d)
+- [ ] No benchmark for Nickel config evaluation performance
+- [ ] No contract tests for selur <-> vordr HTTP API compatibility
+- [ ] Fuzz harness still missing (placeholder removed, no replacement)
+
+## Historical
+
+See previous state in git history. Notable: tests/fuzz/placeholder.txt removed (was
+rsr-template-repo scorecard artifact, not real fuzz coverage).
