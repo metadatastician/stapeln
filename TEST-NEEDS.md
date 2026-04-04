@@ -1,6 +1,6 @@
 # TEST-NEEDS: stapeln
 
-## CRG C — ACHIEVED 2026-04-04
+## CRG Grade: C — ACHIEVED 2026-04-04
 
 This file documents the CRG D→C blitz completed in session 2026-04-04.
 
