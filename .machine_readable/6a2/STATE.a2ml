@@ -10,7 +10,7 @@ status = "active"
 
 [project-context]
 name = "stapeln"
-completion-percentage = 87
+completion-percentage = 91
 phase = "CRG C — test coverage blitz complete"
 crg-grade = "C"
 crg-achieved-date = "2026-04-04"
@@ -67,3 +67,5 @@ priority-4 = "WebSocket live events"
 #             e2e/container_lifecycle_test.ts (7), aspect/security_test.ts (10).
 #             Fixed both vordr benchmarks (container_lifecycle + ebpf_overhead — pre-existing API errors).
 #             Removed tests/fuzz/placeholder.txt. All tests pass: 186+80 Deno + 48 new Rust = 314+ total.
+# 2026-04-04: Session 9 dogfooding. Added: tests/property/layer_invariants_test.ts (25 property tests),
+#             .github/workflows/e2e.yml workflow. Completion 87% → 91% (4% for property + test infrastructure).
