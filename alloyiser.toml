@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# alloyiser manifest for stapeln
+
+[project]
+name = "stapeln"
+
+[[specs]]
+name = "stapeln-graphql"
+source = "/var/mnt/eclipse/repos/stapeln/backend/schema.graphql"
+format = "graphql"
+
+[[assertions]]
+name = "no-orphan-records"
+check = "all r: Record | some r.owner"
+scope = 5
+
+[[assertions]]
+name = "container-integrity"
+check = "all c: Container | some c.manifest and some c.digest"
+scope = 5
+
+[[assertions]]
+name = "layer-acyclic"
+check = "all l: Layer | l not in l.^parent"
+scope = 6
+
+[alloy]
+solver = "sat4j"
+max-scope = 6
