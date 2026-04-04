@@ -71,3 +71,20 @@ Run with: `cargo bench` in the respective package directory.
 
 See previous state in git history. Notable: tests/fuzz/placeholder.txt removed (was
 rsr-template-repo scorecard artifact, not real fuzz coverage).
+
+## Session 9 additions (2026-04-04)
+
+### What Was Added
+
+| Area | Tests Added | Location |
+|------|-------------|----------|
+| Property tests (Deno/TS) | 25 property tests: OCI label generation, roundtrip parse→serialize→parse identity, budget enforcement (memory_budget > 0), layer set composition | `tests/property/layer_invariants_test.ts` |
+| CI runner | GitHub Actions workflow for E2E + property + aspect suites | `.github/workflows/e2e.yml` |
+
+### Updated Test Counts
+
+| Suite | Count | Status |
+|-------|-------|--------|
+| Unit tests (Deno/TS) | 105 | All passing (80 + 25 property) |
+| Property tests (Deno/TS) | 25 | All passing |
+| CI workflows | 21 | Running E2E/property/aspect suites |
