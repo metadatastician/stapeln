@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# stapeln.launcher.a2ml — per-app launcher config for Stapeln.
+#
+# This is the repo-root copy. The canonical test-fixture duplicate lives at
+# launch-scaffolder/examples/stapeln.launcher.a2ml and is used by unit tests;
+# keep the two in sync until the fixture can be relocated.
+
+[project]
+name         = "stapeln"
+display      = "Stapeln"
+description  = "Visual Container Stack Designer — containers for people who hate containers"
+categories   = ["Development", "System", "Utility"]
+version      = "0.1.0"
+license      = "PMPL-1.0-or-later"
+
+[repo]
+path = "/var/mnt/eclipse/repos/stapeln"
+
+[runtime]
+kind = "server-url"
+port = 4010
+url  = "http://localhost:4010"
+startup-command-search = [
+    "{repo-dir}/scripts/run.sh",
+    "{repo-dir}/dev.sh",
+]
+pid-file = "/tmp/stapeln-server.pid"
+log-file = "/tmp/stapeln-server.log"
+wait-for-url-timeout-seconds = 15
+
+[icon]
+source = "{repo-dir}/assets/icon-256.png"
