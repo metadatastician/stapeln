@@ -1,5 +1,78 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# 0-AI-MANIFEST — Stapeln
 
-# AI Assistant Instructions
+## Project Identity
+
+**Stapeln** is the unified GUI for the entire **Svalinn project**. Every
+user-facing surface of the Svalinn ecosystem lives here: container
+management, policy admin, observability panels, and — critically —
+**Rokur**, the cross-cutting secrets-management component for ALL parts of
+the Svalinn project.
+
+### Rokur lives here
+
+Rokur is *not* a separate repo and *not* in the Svalinn core repo. Rokur's
+code and UX both live inside Stapeln, specifically at:
+
+```
+stapeln/container-stack/rokur/
+```
+
+alongside the other container-stack subsystems (`cerro-torre/`, `svalinn/`,
+`vordr/`, `selur/`) that Stapeln's GUI wires together. As of 2026-04-10,
+Rokur itself is a scaffold (24 files, 0 source files) — the other four
+subsystems are built (cerro-torre 116 source files, vordr 123, selur 75,
+in-stack svalinn 53).
+
+Rokur belongs here because:
+
+1. Stapeln is the unified GUI for everything in the Svalinn project, so
+   Rokur is most readily discovered through the GUI.
+2. Rokur serves every component of the Svalinn project (OAuth secrets, JWT
+   keys, TLS certs, per-service tokens — anything any component needs), so
+   a cross-cutting home under the unified GUI is the natural fit.
+3. Stapeln's container-stack/ is the canonical monorepo layout for the
+   subsystems that Stapeln composes — the same reasoning that places
+   cerro-torre, vordr, and selur there also places rokur there.
+
+If you are working on secrets management for any part of the Svalinn
+project, you are working on Rokur, and the code lives at
+`stapeln/container-stack/rokur/` **in this repo**.
+
+## Disambiguation Gate — READ BEFORE ACTING
+
+Three names are frequently conflated. They are DISTINCT:
+
+1. **Svalinn** (`/var/mnt/eclipse/repos/svalinn`) — the core Deno HTTP
+   gateway *and* the name of the overall project. Not a GUI, not a
+   secrets store.
+2. **Stapeln** (THIS REPO) — the unified GUI for everything in the Svalinn
+   project. Hosts Rokur as a component.
+3. **Rokur** (inside THIS REPO) — cross-cutting secrets-management
+   component for the whole Svalinn project. Owned by Stapeln. **Not RGTV.**
+4. **RGTV — Reasonably Good Token Vault** (`/var/mnt/eclipse/repos/reasonably-good-token-vault`)
+   — a **completely separate** top-level monorepo. Zero-trust credential
+   broker for LLM agents. Not part of Svalinn, not Stapeln, not Rokur.
+
+### Where to go if you're in the wrong place
+
+- Looking for Svalinn's core gateway? → `/var/mnt/eclipse/repos/svalinn`
+- Looking for Stapeln GUI / Rokur secrets management? → **RIGHT PLACE**
+- Looking for RGTV (LLM credential broker)? → `/var/mnt/eclipse/repos/reasonably-good-token-vault`
+
+### AI agent instructions
+
+Before acting on any request in this repo, **confirm with the user** which
+of Stapeln, Rokur, Svalinn, or RGTV they actually mean. The naming
+collision has caused real confusion. A good opening prompt:
+
+> "Just to confirm — you're in the Stapeln repo (the unified GUI for the
+> whole Svalinn project, and the home of Rokur for secrets management).
+> Did you mean Stapeln itself, Rokur specifically, the Svalinn core
+> gateway (separate repo), or RGTV (the zero-trust LLM credential broker,
+> also a separate repo)?"
+
+Only proceed once the user has explicitly confirmed the intended target.
 
 ## Repository Focus
 - `rsr-template-repo` is treated as a Rhodium Standard Repository; obey the Rhodium policies, maintain `.bot_directives`, and keep `.machines_readable/6scm/` authoritative.
