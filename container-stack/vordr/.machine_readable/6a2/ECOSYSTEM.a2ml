@@ -1,26 +1,20 @@
-;; ECOSYSTEM.scm - Overview of the Vordr project ecosystem
-;; Media-Type: application/ecosystem+scheme
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# ECOSYSTEM.a2ml — Vordr ecosystem position
+[metadata]
+version = "0.1.0"
+last-updated = "2026-04-11"
 
-(ecosystem
-  (project-name "Vordr")
-  (purpose "Formally verified container orchestration and verification engine")
-  (core-languages
-    (elixir "Orchestration & MCP server (BEAM fault tolerance, GenStateMachine)")
-    (rust "CLI, eBPF monitoring (zero-cost abstractions, runtime integration, syscall interception)")
-    (idris2 "Formal verification core (dependent types for proofs)"))
-  (removed-languages
-    (ada/spark "Previously for trust mechanisms; removed to simplify build and reduce toolchain complexity"))
-  (integrations
-    (svalinn "Edge gateway, request validation (calls Vordr via MCP/JSON-RPC)")
-    (cerro-torre "Provenance-verified builds (produces .ctp bundles verified by Vordr)")
-    (oblibeny "Orchestration handoff"))
-  (data-layer
-    (arangodb "Attestations")
-    (dragonfly "Cache")
-    (lmdb "Proofs"))
-  (tooling
-    (cargo "Rust package manager and build tool")
-    (mix "Elixir build tool")
-    (gprbuild "Ada/SPARK build tool (removed from Rust build process)"))
-  (standard-compliance
-    ("RSR Compliant" "verified-container-spec Runtime Integration")))
+[project]
+name = "Vordr"
+purpose = "Formally verified container orchestration and verification engine"
+role = ""
+
+[position-in-ecosystem]
+category = ""
+
+[related-projects]
+projects = [
+  { name = "RSR Compliant", relationship = "verified-container-spec Runtime Integration" },
+]
