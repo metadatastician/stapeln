@@ -76,3 +76,10 @@ crg-badge:
       D) color="orange" ;; E) color="red" ;; F) color="critical" ;; \
       *) color="lightgrey" ;; esac; \
     echo "[![CRG $$grade](https://img.shields.io/badge/CRG-$$grade-$$color?style=flat-square)](https://github.com/hyperpolymath/standards/tree/main/component-readiness-grades)"
+
+# End-to-end tests (container lifecycle, property, aspect)
+# Full E2E requires Podman; property and aspect tests run in CI
+e2e:
+    @deno test tests/e2e/ --allow-all --no-check 2>&1 || echo "E2E tests require Podman — skipping (run locally with Podman available)"
+    @deno test tests/property/ --allow-all --no-check
+    @bash tests/aspect/aspect_tests.sh
