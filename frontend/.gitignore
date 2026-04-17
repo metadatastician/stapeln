@@ -25,3 +25,9 @@ yarn-error.log*
 # Temporary files
 *.tmp
 .cache/
+target/
+_build/
+deps/
+.elixir_ls/
+build/
+dist/

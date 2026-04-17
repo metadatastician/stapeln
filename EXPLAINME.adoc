@@ -23,7 +23,7 @@ let view: model => React.element
 Time-travel debugging. Fully testable. Predictable.
 ____
 
-**Evidence**: `/var/mnt/eclipse/repos/stapeln/frontend/src/App.res` implements the TEA pattern: immutable `type model`, pure `update` function, deterministic `view` function. Paragon, Cisco, LagoGrey, and Settings views at `/var/mnt/eclipse/repos/stapeln/frontend/src/views/` all follow this pattern.
+**Evidence**: `/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/frontend/src/App.res` implements the TEA pattern: immutable `type model`, pure `update` function, deterministic `view` function. Paragon, Cisco, LagoGrey, and Settings views at `/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/frontend/src/views/` all follow this pattern.
 
 **Caveat**: TEA pattern ensures *local* UI determinism. Backend state (VeriSimDB, Elixir GenServers) may have race conditions not visible in ReScript code. `effect<msg>` side effects (HTTP calls) can fail unpredictably.
 
@@ -40,7 +40,7 @@ ____
 * ✅ Small (< 10 MB, no GPU needed)
 ____
 
-**Evidence**: `/var/mnt/eclipse/repos/stapeln/security-rules/` contains Scheme files with miniKanren rule definitions. Example: `/var/mnt/eclipse/repos/stapeln/security-rules/rules/expose-ssh-rule.scm` defines the constraint that SSH port 22 must never expose to public interface.
+**Evidence**: `/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/security-rules/` contains Scheme files with miniKanren rule definitions. Example: `/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/security-rules/rules/expose-ssh-rule.scm` defines the constraint that SSH port 22 must never expose to public interface.
 
 **Caveat**: Rules are only as good as their *specification*. A CVE written incorrectly into miniKanren will be deterministically wrong. No formal verification that the rule set covers actual attack surface.
 
@@ -70,7 +70,7 @@ VeriSim.sparql_query("""
 ```
 ____
 
-**Evidence**: `/var/mnt/eclipse/repos/stapeln/backend/lib/verisimdb_integration.ex` integrates VeriSimDB graph, semantic (RDF), and temporal modalities. Stack data stored via `VeriSim.insert/1` with structured UUID and metadata at `/var/mnt/eclipse/repos/stapeln/backend/lib/components/stack.ex`.
+**Evidence**: `/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/backend/lib/verisimdb_integration.ex` integrates VeriSimDB graph, semantic (RDF), and temporal modalities. Stack data stored via `VeriSim.insert/1` with structured UUID and metadata at `/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/backend/lib/components/stack.ex`.
 
 **Caveat**: Multi-modal storage adds complexity. Query results depend on modality consistency—if graph says "nginx" but semantic says "apache", consensus is undefined.
 

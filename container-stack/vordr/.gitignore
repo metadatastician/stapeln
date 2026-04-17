@@ -66,3 +66,8 @@ docs/.asciidoctor/
 
 # Crash recovery artifacts
 ai-cli-crash-capture/
+.elixir_ls/
+.cache/
+*.log
+*.tmp
+dist/
