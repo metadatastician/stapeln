@@ -17,7 +17,7 @@
 #     "LM-LA-LIFECYCLE-STANDARD.adoc"
 #     "cross-platform-system-integration-modes"
 #   ]
-#   standard-spec-version = "0.1.0"
+#   standard-spec-version = "0.2.0"
 #   generator             = "launch-scaffolder"
 # )
 # @a2ml-metadata end
@@ -44,14 +44,14 @@ APP_CATEGORIES="Development;System;Utility;"
 APP_GENERIC_NAME="Stapeln"
 RUNTIME_KIND="server-url"
 
-REPO_DIR="/var/mnt/eclipse/repos/stapeln"
-ICON_SOURCE="/var/mnt/eclipse/repos/stapeln/assets/icon-256.png"
+REPO_DIR="/var/mnt/eclipse/repos/fleet-ecosystem/stapeln"
+ICON_SOURCE="/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/assets/icon-256.png"
 
 # Absolute path back to the per-app `<app>.launcher.a2ml` config that
 # produced this script. Consumed by the --integ / --disinteg arms when
 # the `launch-scaffolder` binary is on $PATH, so they can delegate to
 # the Rust implementation instead of running the shell fallback.
-CONFIG_FILE="/var/mnt/eclipse/repos/stapeln/stapeln.launcher.a2ml"
+CONFIG_FILE="/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/stapeln.launcher.a2ml"
 
 URL="http://localhost:4010"
 APP_PORT="4010"
@@ -63,8 +63,8 @@ LOG_FILE="/tmp/stapeln-server.log"
 # Search list from [runtime].startup-command-search — first executable wins.
 START_COMMAND=""
 for candidate in \
-    "/var/mnt/eclipse/repos/stapeln/scripts/run.sh" \
-    "/var/mnt/eclipse/repos/stapeln/dev.sh" \
+    "/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/scripts/run.sh" \
+    "/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/dev.sh" \
     ; do
     if [ -x "$candidate" ]; then
         START_COMMAND="$candidate"
@@ -275,6 +275,16 @@ write_linux_desktop_file() {
     else
         icon_name="package-x-generic"
     fi
+
+    # keepopen.sh implements the standard fallback ladder: GUI → TUI →
+    # bash-at-repo-root. See launcher-standard.adoc §Fallback Ladder.
+    local keepopen="/var/mnt/eclipse/repos/.desktop-tools/keepopen.sh"
+    local gui_cmd tui_cmd
+# server-url: GUI = start server + open browser + tail log (so terminal
+    # stays open); TUI = start-only + follow log; Shell = repo root.
+    gui_cmd="$LAUNCHER_TARGET --auto && tail -f $LOG_FILE"
+    tui_cmd="$LAUNCHER_TARGET --start && tail -f $LOG_FILE"
+
     cat > "$target" <<EOF
 [Desktop Entry]
 Type=Application
@@ -282,9 +292,9 @@ Version=1.0
 Name=$APP_DISPLAY
 GenericName=$APP_GENERIC_NAME
 Comment=$APP_DESC
-Exec=$LAUNCHER_TARGET --auto
+Exec=$keepopen "$APP_DISPLAY" "$REPO_DIR" "$gui_cmd" "$tui_cmd" "$LOG_FILE"
 Icon=$icon_name
-Terminal=false
+Terminal=true
 Categories=$APP_CATEGORIES
 StartupNotify=true
 StartupWMClass=$APP_NAME
