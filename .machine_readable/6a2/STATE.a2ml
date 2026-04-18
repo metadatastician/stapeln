@@ -11,9 +11,17 @@ status = "active"
 [project-context]
 name = "stapeln"
 completion-percentage = 91
-phase = "CRG C — test coverage blitz complete"
-crg-grade = "C"
-crg-achieved-date = "2026-04-04"
+phase = "D-floor lift in progress toward C"
+crg-grade = "D"
+crg-achieved-date = "2026-04-18"
+crg-grade-previous = "C"
+crg-grade-demoted = "2026-04-18"
+crg-grade-notes = "Demoted C->D per docs/governance/CRG-AUDIT-2026-04-18.adoc. Dogfooding evidence now populated below (2026-04-18). Remaining C-blockers: no docs/READINESS file, weak implementation-subtree README coverage, no regular Rust test signal in push/PR CI."
+
+[dogfooding-status]
+# Populated 2026-04-18 against real on-disk integrations.
+boj-server-mcp = "2026-04-18 — stapeln-mcp cartridge (284 LOC, Deno mod.js + Idris2 ABI + Zig FFI). Container orchestration MCP shim. Path: boj-server/cartridges/stapeln-mcp/"
+verisimdb-migration = "2026-04-18 — estate-wide dogfooding decision 2026-03-23: stapeln runs on VeriSimDB (port 8093), migrated from PostgreSQL. Matches memory rule 'VeriSimDB mandatory everywhere'."
 
 [current-position]
 frontend-modules = 51
