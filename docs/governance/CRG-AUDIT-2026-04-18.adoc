@@ -1,0 +1,214 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+
+= Stapeln — CRG Audit (2026-04-18)
+Codex
+2026-04-18
+:toc:
+:sectnums:
+
+== Scope and Standard
+
+Evaluates `fleet-ecosystem/stapeln` against *Component Readiness Grades v2.0 (STRICT)*.
+
+- Standard: `standards/component-readiness-grades/COMPONENT-READINESS-GRADES.md`
+- Criteria boilerplate: `rsr-template-repo/docs/governance/CRG-CRITERIA.adoc`
+- Self-declared grade source:
+  * `.machine_readable/6a2/STATE.a2ml` -> `crg-grade = "C"`, `version = "0.1.0"`, `completion-percentage = 91`
+- Audit date: 2026-04-18
+
+This audit grades the repository *as-is today*, not aspirationally.
+
+== v2.0 Strictness Recap
+
+[cols="1,3,4"]
+|===
+| Grade | Release Stage | Hard Requirement (v2.0)
+
+| X | None             | Untested.
+| F | Reject           | Harmful, wasteful, or superseded.
+| E | Pre-alpha        | >=1 test, failures documented.
+| D | Alpha            | Test matrix + scope documented + *RSR compliance mandatory*.
+| C | Alpha-stable     | Dogfooded, CI green, *deep per-file + per-directory annotation*.
+| B | Beta             | 6+ *diverse* external targets, issues fed back.
+| A | Stable           | Real-world external feedback confirms value; no harm.
+|===
+
+== Evidence Inventory (verified 2026-04-18)
+
+=== Structural compliance (D floor)
+
+[cols="2,1,3"]
+|===
+| Item | State | Source
+
+| RSR mandatory workflows (17+)
+| PRESENT (18)
+| `.github/workflows/`
+
+| `.machine_readable/6a2/` canonical A2ML
+| PRESENT
+| `.machine_readable/6a2/STATE.a2ml`, `META.a2ml`, `ECOSYSTEM.a2ml`, `AGENTIC.a2ml`, `NEUROSYM.a2ml`, `PLAYBOOK.a2ml`
+
+| `0-AI-MANIFEST.a2ml`
+| PRESENT
+| Root
+
+| `EXPLAINME` + readiness docs
+| PARTIAL
+| Root `EXPLAINME.adoc` present; no canonical `docs/READINESS.md`/`docs/READINESS.adoc`
+
+| `guix.scm` + `flake.nix`
+| PRESENT
+| Root
+
+| `.well-known/` baseline (`security.txt`, `ai.txt`, `humans.txt`)
+| PARTIAL
+| `.well-known/groove/manifest.json` exists; baseline files absent
+
+| Container policy
+| PRESENT
+| Multiple `Containerfile` files across container stack; no `Dockerfile*` found
+
+| Contractile trident
+| PRESENT
+| `.machine_readable/INTENT.contractile`, `TRUST.contractile`, `MUST.contractile`, `ADJUST.contractile`
+
+| Build policy (`Justfile`, no `Makefile`)
+| PRESENT
+| Root `Justfile`; no `Makefile`
+|===
+
+RSR compliance verdict: *met with caveats*. D floor is defensible.
+
+=== Code and proofs
+
+[cols="2,1,3"]
+|===
+| Item | Count | Notes
+
+| Idris2 files
+| 24 files, 4,276 LOC
+| Proof surface exists across ABI and container-stack verification.
+
+| Zig files
+| 22 files, 4,961 LOC
+| FFI/runtime implementation surface present.
+
+| Rust files
+| 139 files, 27,354 LOC
+| Container stack runtime and tooling surface.
+
+| Dangerous-pattern scan
+| Mixed
+| No active `Dockerfile*`; `believe_me`/`postulate`/`assert_total` references exist in proof trees and documentation. This does not block D but requires explicit handling for any C claim.
+|===
+
+=== Test matrix
+
+Evidence from state/docs and local execution:
+
+- `TEST-NEEDS.md` claims broad C-style matrix and reports 300+ tests.
+- Local runs on 2026-04-18:
+  * `deno test tests/property/ --allow-all --no-check` -> PASS (`42 passed`)
+  * `deno test tests/e2e/ --allow-all --no-check` -> PASS (`7 passed`)
+  * `cargo test` in `container-stack/selur` -> PASS (`7 unit + 13 aspect + 10 e2e + 18 property`, plus ignored tests)
+  * `cargo test` in `container-stack/vordr/src/rust` -> PASS (`49 unit + 38 cli-expanded + 6 cli-integration + 7 e2e + 28 ebpf + 15 property`, with some ignored tests)
+
+CI signal:
+
+- `e2e.yml` runs Deno e2e/property/aspect on push/PR.
+- No push/PR workflow was found that runs Rust `cargo test` for `selur`/`vordr`.
+
+=== Annotation depth
+
+Per-directory orientation in implementation roots is below C threshold:
+
+- Selected top-level README coverage: `6/13`.
+- Implementation key-root first-level coverage (`backend`, `frontend`, `container-stack`, `src`, `tests`, `api`, `ffi`, `dom-mounter`): `7/24`.
+- Many active subtrees have no local orienting README (`backend/*`, `frontend/*`, `tests/*`, `api/*`, `ffi/*`).
+
+This fails v2.0 C's "deep per-file + per-directory annotation" expectation.
+
+=== Dogfooding / home-stable evidence
+
+- `STATE.a2ml` has no canonical `[dogfooding-status]` section.
+- No `DOGFOOD-LOG` file found.
+- References to "dogfooding decision" exist in narrative fields, but not in canonical, dated evidence format.
+
+Under v2.0 STRICT, this is insufficient for C.
+
+=== External validation (B/A)
+
+- No `[external-targets]`, `[issues-fed-back]`, or `[field-signal]` sections in `STATE.a2ml`.
+
+B and A are not supportable on current evidence.
+
+== Grade x Evidence Matrix
+
+[cols="1,1,3,3"]
+|===
+| Grade | Met? | Evidence supporting | Evidence against / gaps
+
+| X
+| n/a
+| Substantial runnable test matrix exists
+| —
+
+| F
+| n/a
+| Not superseded/harmful in this audit
+| —
+
+| E
+| ✓
+| Extensive tests and implementation depth
+| —
+
+| D
+| ✓
+| RSR baseline mostly present; scope documented; local test matrix executes
+| `.well-known` baseline partial; canonical READINESS doc absent
+
+| C
+| ✗
+| Strong executable test evidence
+| No canonical dogfooding section/log; incomplete implementation-subtree orientation; missing regular Rust CI test signal
+
+| B
+| ✗
+| —
+| No external-target evidence
+
+| A
+| ✗
+| —
+| No field-signal evidence
+|===
+
+== Verdict
+
+*Current CRG grade: **D (Alpha)**.*
+
+This diverges from the self-declared `C`. The repo is technically strong but
+does not currently satisfy v2.0 C evidence gates.
+
+Strong positive signals:
+
+1. Local execution confirms broad Deno and Rust test suites pass.
+2. Structural and machine-readable baseline is mostly present.
+3. Multi-language implementation and verification depth are substantial.
+
+Immediate blockers to C:
+
+1. Add canonical `[dogfooding-status]` entries in `STATE.a2ml` with dated evidence.
+2. Add a dogfood log (`docs/practice/DOGFOOD-LOG.adoc` or equivalent).
+3. Add regular Rust test jobs in push/PR CI (`selur`, `vordr`) and record green run evidence.
+4. Improve per-directory orientation coverage in implementation subtrees.
+5. Add canonical `docs/READINESS.md`/`.adoc` aligned to v2.0 strict criteria.
+
+== Related Files
+
+- `.machine_readable/6a2/STATE.a2ml` — updated to `D`.
+- `docs/governance/CRG-LIFT-PLAN-2026-04-18.adoc` — D->C action plan.
+
+_End of audit._

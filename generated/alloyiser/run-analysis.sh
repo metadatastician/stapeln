@@ -4,7 +4,7 @@
 # Requires: java, alloy.jar
 
 ALLOY_JAR="alloy.jar"
-MODEL="/var/mnt/eclipse/repos/stapeln/generated/alloyiser/stapeln.als"
+MODEL="/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/generated/alloyiser/stapeln.als"
 SOLVER="sat4j"
 TIMEOUT="300"
 

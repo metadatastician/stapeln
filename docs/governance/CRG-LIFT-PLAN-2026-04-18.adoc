@@ -1,0 +1,78 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+
+= Stapeln — CRG Lift Plan (D -> C)
+Codex
+2026-04-18
+:toc:
+:sectnums:
+
+== Context
+
+`docs/governance/CRG-AUDIT-2026-04-18.adoc` demoted Stapeln from `C` to `D`
+under CRG v2.0 STRICT. This plan defines the minimum evidence work required
+to re-earn `C`.
+
+== Exit Criteria for C
+
+All items below must be complete and evidenced in-repo:
+
+1. Canonical `[dogfooding-status]` exists in `.machine_readable/6a2/STATE.a2ml` with dated entries.
+2. Dogfooding log exists and is maintained (for example `docs/practice/DOGFOOD-LOG.adoc`).
+3. Push/PR CI includes Rust test signal for both `container-stack/selur` and `container-stack/vordr/src/rust`.
+4. `docs/READINESS.md` (or `.adoc`) exists and is aligned to v2.0 strict criteria.
+5. Per-directory orientation coverage is materially improved in implementation roots (`backend/`, `frontend/`, `src/`, `tests/`, `api/`, `ffi/`, `dom-mounter/`).
+
+== Work Packages
+
+=== WP1 — Canonical Dogfooding Evidence
+
+- Add `[dogfooding-status]` section to `STATE.a2ml`.
+- Record at least 5 dated, concrete dogfood lines with evidence links:
+  * build/deploy pipeline
+  * container lifecycle flow
+  * runtime monitoring path
+  * rollback/failure path
+  * policy/security gate path
+
+=== WP2 — CI Test Signal Hardening
+
+- Add Rust test jobs on push/PR:
+  * `cd container-stack/selur && cargo test`
+  * `cd container-stack/vordr/src/rust && cargo test`
+- Keep Deno suites (`tests/e2e`, `tests/property`, `tests/aspect`) active.
+- Record latest green run SHA/date in state notes.
+
+=== WP3 — Annotation Depth
+
+- Add README orientation files for missing implementation subtrees, minimally:
+  * `backend/*` primary modules
+  * `frontend/*` primary modules
+  * `src/*`, `tests/*`, `api/*`, `ffi/*`
+  * `dom-mounter/*` modules lacking orientation
+- Minimum README contents:
+  * purpose and boundaries
+  * key entrypoints
+  * invariants and safety constraints
+  * how to run tests
+
+=== WP4 — Readiness Canonicalization
+
+- Create `docs/READINESS.md` or `docs/READINESS.adoc` with:
+  * current CRG grade and date
+  * criteria-by-criteria evidence table
+  * blockers to next grade
+  * links to dogfooding and CI evidence
+
+== Sequencing
+
+1. WP1 and WP2 in parallel.
+2. WP3 after initial evidence is in place.
+3. WP4 last.
+4. Re-run CRG audit before any D->C promotion.
+
+== Risk Notes
+
+- Existing dirty worktree changes were intentionally left untouched.
+- Do not promote based on claimed test counts alone; promotion requires dated, canonical evidence.
+
+_End of lift plan._

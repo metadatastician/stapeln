@@ -6,7 +6,7 @@ name = "stapeln"
 
 [[specs]]
 name = "stapeln-graphql"
-source = "/var/mnt/eclipse/repos/stapeln/backend/schema.graphql"
+source = "/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/backend/schema.graphql"
 format = "graphql"
 
 [[assertions]]
