@@ -176,7 +176,7 @@ module VordrClient = McpClient
 - ReScript compilation script
 - Deno bundle script
 - Docker image (optional)
-- justfile recipes
+- Justfile recipes
 
 ## Current Blockers: None
 

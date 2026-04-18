@@ -76,7 +76,7 @@ cargo test --features bpf
 cd ../elixir
 mix test
 
-# All tests via justfile
+# All tests via Justfile
 cd ../..
 just test
 ```
