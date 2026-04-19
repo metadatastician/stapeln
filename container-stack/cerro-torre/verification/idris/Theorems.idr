@@ -142,15 +142,16 @@ supplyChainIntegrity stage1 finalStage wf1 sameStored sameComputed =
 |||
 ||| Cannot be proven in Idris2: requires composition of two
 ||| computational hardness assumptions with game-based reasoning.
+partial
 export
-postulate tamperEvidence
-  : (original : Bundle)
-  -> (modified : Bundle)
-  -> WellFormed original
-  -> ProperlySigned original
-  -> Not (manifest original = manifest modified)
-  -> Either (Not (WellFormed modified))
-            (Not (ProperlySigned modified))
+tamperEvidence : (original : Bundle)
+              -> (modified : Bundle)
+              -> WellFormed original
+              -> ProperlySigned original
+              -> Not (manifest original = manifest modified)
+              -> Either (Not (WellFormed modified))
+                        (Not (ProperlySigned modified))
+tamperEvidence _ _ _ _ _ = idris_crash "tamperEvidence: cryptographic postulate — type-level use only"
 
 ||| PROVEN: Multi-signature Threshold Satisfaction
 |||
@@ -184,15 +185,16 @@ thresholdSatisfaction _ _ _ _ _ = ()
 ||| The signature is computed over the full message (including hash),
 ||| so a signature for hash(A) is not valid for hash(B) when A ≠ B.
 ||| See signatureNonReplayable in SignatureProofs.idr.
+partial
 export
-postulate replayPrevention
-  : (bundleA : Bundle)
-  -> (bundleB : Bundle)
-  -> (pk : Ed25519PublicKey)
-  -> (sig : Ed25519Signature)
-  -> Not (bundleHash bundleA = bundleHash bundleB)
-  -> verifyEd25519 pk (cast $ bundleHash bundleA) sig = True
-  -> verifyEd25519 pk (cast $ bundleHash bundleB) sig = False
+replayPrevention : (bundleA : Bundle)
+                -> (bundleB : Bundle)
+                -> (pk : Ed25519PublicKey)
+                -> (sig : Ed25519Signature)
+                -> Not (bundleHash bundleA = bundleHash bundleB)
+                -> verifyEd25519 pk (cast $ bundleHash bundleA) sig = True
+                -> verifyEd25519 pk (cast $ bundleHash bundleB) sig = False
+replayPrevention _ _ _ _ _ _ = idris_crash "replayPrevention: cryptographic postulate — type-level use only"
 
 ||| PROVEN: Non-repudiation
 |||

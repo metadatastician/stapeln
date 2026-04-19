@@ -105,11 +105,12 @@ normalizePath p =
 |||   3. SafePath is defined inductively over string concatenation,
 |||      but String in Idris2 is a primitive type, not an inductive
 |||      data structure
+partial
 export
-postulate normalizedIsSafe
-  : (p : Path)
-  -> Not (isInfixOf ".." (normalizePath p))
-  -> SafePath (normalizePath p)
+normalizedIsSafe : (p : Path)
+                -> Not (isInfixOf ".." (normalizePath p))
+                -> SafePath (normalizePath p)
+normalizedIsSafe _ _ = idris_crash "normalizedIsSafe: string-primitive postulate — type-level use only"
 
 ||| POSTULATE: Extraction Safety
 |||
@@ -125,12 +126,13 @@ postulate normalizedIsSafe
 ||| Cannot currently be proven because Idris2's isPrefixOf is
 ||| implemented as a C primitive with no reduction rules available
 ||| to the type checker.
+partial
 export
-postulate extractionSafety
-  : (root : Path)
-  -> (entry : TarEntry)
-  -> SafePath (entry.path)
-  -> isPrefixOf root (root ++ "/" ++ entry.path) = True
+extractionSafety : (root : Path)
+                -> (entry : TarEntry)
+                -> SafePath (entry.path)
+                -> isPrefixOf root (root ++ "/" ++ entry.path) = True
+extractionSafety _ _ _ = idris_crash "extractionSafety: string-primitive postulate — type-level use only"
 
 ||| POSTULATE: Symlink Safety
 |||
@@ -139,15 +141,16 @@ postulate extractionSafety
 ||| Same justification as extractionSafety — symlink targets are
 ||| validated to be SafePath, and the concatenation with root
 ||| ensures the target is under root.
+partial
 export
-postulate symlinkSafety
-  : (root : Path)
-  -> (entry : TarEntry)
-  -> (target : Path)
-  -> entry.isSymlink = True
-  -> entry.symlinkTarget = Just target
-  -> SafePath target
-  -> isPrefixOf root (root ++ "/" ++ target) = True
+symlinkSafety : (root : Path)
+             -> (entry : TarEntry)
+             -> (target : Path)
+             -> entry.isSymlink = True
+             -> entry.symlinkTarget = Just target
+             -> SafePath target
+             -> isPrefixOf root (root ++ "/" ++ target) = True
+symlinkSafety _ _ _ _ _ _ = idris_crash "symlinkSafety: string-primitive postulate — type-level use only"
 
 ||| POSTULATE: Absolute Path Rejection
 |||
@@ -167,11 +170,12 @@ postulate symlinkSafety
 |||       isPrefixOf "/" (component ++ "/" ++ rest) = True (given)
 |||       This implies isPrefixOf "/" component = True (string prefix lemma)
 |||       But notSlash : Not (isPrefixOf "/" component) → contradiction
+partial
 export
-postulate absolutePathRejection
-  : (entry : TarEntry)
-  -> isPrefixOf "/" entry.path = True
-  -> Not (SafePath entry.path)
+absolutePathRejection : (entry : TarEntry)
+                     -> isPrefixOf "/" entry.path = True
+                     -> Not (SafePath entry.path)
+absolutePathRejection _ _ = idris_crash "absolutePathRejection: string-primitive postulate — type-level use only"
 
 -- ============================================================================
 -- Tar Entry Types
@@ -213,11 +217,12 @@ data OCILayout : List TarEntry -> Type where
 ||| on the full record. These are equivalent when the path field
 ||| matches, but proving the equivalence requires decidable equality
 ||| on TarEntry and a lemma relating elem to any with (==).
+partial
 export
-postulate ociLayoutEnforcement
-  : (entries : List TarEntry)
-  -> OCILayout entries
-  -> any (\e => e.path == "manifest.json") entries = True
+ociLayoutEnforcement : (entries : List TarEntry)
+                    -> OCILayout entries
+                    -> any (\e => e.path == "manifest.json") entries = True
+ociLayoutEnforcement _ _ = idris_crash "ociLayoutEnforcement: decidable-equality postulate — type-level use only"
 
 -- ============================================================================
 -- Attack Prevention
@@ -252,9 +257,10 @@ tarBombPrevention _ _ _ _ _ = ()
 ||| Same justification as extractionSafety — SafePath after
 ||| normalization ensures no ".." traversal, and concatenation
 ||| with root ensures the path prefix property.
+partial
 export
-postulate zipSlipPrevention
-  : (root : Path)
-  -> (entry : TarEntry)
-  -> SafePath (normalizePath entry.path)
-  -> isPrefixOf root (root ++ "/" ++ normalizePath entry.path) = True
+zipSlipPrevention : (root : Path)
+                 -> (entry : TarEntry)
+                 -> SafePath (normalizePath entry.path)
+                 -> isPrefixOf root (root ++ "/" ++ normalizePath entry.path) = True
+zipSlipPrevention _ _ _ = idris_crash "zipSlipPrevention: string-primitive postulate — type-level use only"

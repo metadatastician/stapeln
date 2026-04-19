@@ -64,30 +64,25 @@ SHA256Hash = Vect 32 Bits8
 |||
 ||| This is an opaque function — its implementation is provided by
 ||| the Zig FFI at runtime (CryptoFFI.verifyEd25519IO). We declare
-||| it here as a pure function for use in proof signatures.
+||| it here as a `partial` function for use in proof signatures.
 |||
 ||| At runtime, callers should use CryptoFFI.verifyEd25519IO instead.
 ||| This pure version exists only so that proof types can reference it.
+partial
 export
 verifyEd25519 : Ed25519PublicKey -> Message -> Ed25519Signature -> Bool
-verifyEd25519 pk msg sig =
-  -- This pure wrapper exists for proof type signatures only.
-  -- The actual verification is performed by CryptoFFI.verifyEd25519IO
-  -- which calls the Zig Ed25519 implementation via FFI.
-  --
-  -- This function crashes at runtime to prevent accidental use.
-  -- All runtime code MUST use CryptoFFI.verifyEd25519IO instead.
-  -- The postulates below state its properties without computing.
-  assert_total $ idris_crash "CryptoProofs.verifyEd25519: use CryptoFFI.verifyEd25519IO at runtime"
+verifyEd25519 _ _ _ =
+  idris_crash "CryptoProofs.verifyEd25519: use CryptoFFI.verifyEd25519IO at runtime"
 
 ||| Abstract specification of SHA-256 hashing.
 |||
-||| Same pattern as verifyEd25519 — this is a specification function
-||| for use in proof types. Runtime code must use CryptoFFI.sha256IO.
+||| Same `partial` pattern as verifyEd25519 — this is a specification
+||| function for use in proof types. Runtime code must use CryptoFFI.sha256IO.
+partial
 export
 sha256 : List Bits8 -> SHA256Hash
-sha256 input =
-  assert_total $ idris_crash "CryptoProofs.sha256: use CryptoFFI.sha256IO at runtime"
+sha256 _ =
+  idris_crash "CryptoProofs.sha256: use CryptoFFI.sha256IO at runtime"
 
 -- ============================================================================
 -- Trivially True Properties
@@ -95,18 +90,23 @@ sha256 input =
 
 ||| SHA-256 is a function: same input always produces same output.
 ||| This is trivially true by referential transparency.
+||| Marked `covering` (not `total`) because it mentions the partial `sha256`
+||| spec function; the proof itself is Refl, which is always total.
+partial
 export
 sha256Deterministic : (m : List Bits8) -> sha256 m = sha256 m
 sha256Deterministic m = Refl
 
 ||| SHA-256 has no side effects.
 ||| Guaranteed by Idris2's type system (no IO in the signature).
+partial
 export
 sha256Pure : (m : List Bits8) -> sha256 m = sha256 m
 sha256Pure m = Refl
 
 ||| Ed25519 verification is deterministic.
 ||| Same inputs always produce the same result.
+partial
 export
 ed25519Deterministic : (pub : Ed25519PublicKey)
                     -> (msg : Message)
@@ -148,13 +148,14 @@ ed25519Deterministic pub msg sig = Refl
 ||| The current formulation is SAFE because it is only used to establish
 ||| correctness (not security) — security properties use the separate
 ||| unforgeability postulates (signatureNonReplayable, signatureNonMalleable).
+partial
 export
-postulate ed25519Correctness
-  : (sk : Ed25519PrivateKey)
-  -> (pk : Ed25519PublicKey)
-  -> (msg : Message)
-  -> (sig : Ed25519Signature)
-  -> verifyEd25519 pk msg sig = True
+ed25519Correctness : (sk : Ed25519PrivateKey)
+                  -> (pk : Ed25519PublicKey)
+                  -> (msg : Message)
+                  -> (sig : Ed25519Signature)
+                  -> verifyEd25519 pk msg sig = True
+ed25519Correctness _ _ _ _ = idris_crash "ed25519Correctness: cryptographic postulate — type-level use only"
 
 ||| POSTULATE: SHA-256 Collision Resistance
 |||
@@ -170,9 +171,10 @@ postulate ed25519Correctness
 ||| The hash function operates over a finite domain mapping to a
 ||| smaller codomain, so collisions must mathematically exist —
 ||| the assumption is that finding them is computationally infeasible.
+partial
 export
-postulate sha256CollisionResistant
-  : (m1 : List Bits8)
-  -> (m2 : List Bits8)
-  -> Not (m1 = m2)
-  -> Not (sha256 m1 = sha256 m2)
+sha256CollisionResistant : (m1 : List Bits8)
+                        -> (m2 : List Bits8)
+                        -> Not (m1 = m2)
+                        -> Not (sha256 m1 = sha256 m2)
+sha256CollisionResistant _ _ _ = idris_crash "sha256CollisionResistant: cryptographic postulate — type-level use only"

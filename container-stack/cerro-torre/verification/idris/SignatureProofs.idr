@@ -57,15 +57,16 @@ record SignedBundle where
 ||| Cannot be proven in Idris2: requires reduction to the discrete
 ||| log problem on Curve25519, which involves modular arithmetic
 ||| over a 255-bit prime field.
+partial
 export
-postulate signatureNonReplayable
-  : (bundle1 : SignedBundle)
-  -> (bundle2 : SignedBundle)
-  -> (sig : Ed25519Signature)
-  -> (pk : Ed25519PublicKey)
-  -> Not (bundleHash bundle1 = bundleHash bundle2)
-  -> verifyEd25519 pk (cast $ bundleHash bundle1) sig = True
-  -> verifyEd25519 pk (cast $ bundleHash bundle2) sig = False
+signatureNonReplayable : (bundle1 : SignedBundle)
+                      -> (bundle2 : SignedBundle)
+                      -> (sig : Ed25519Signature)
+                      -> (pk : Ed25519PublicKey)
+                      -> Not (bundleHash bundle1 = bundleHash bundle2)
+                      -> verifyEd25519 pk (cast $ bundleHash bundle1) sig = True
+                      -> verifyEd25519 pk (cast $ bundleHash bundle2) sig = False
+signatureNonReplayable _ _ _ _ _ _ = idris_crash "signatureNonReplayable: cryptographic postulate — type-level use only"
 
 ||| POSTULATE: Signature Non-Malleability
 |||
@@ -76,15 +77,16 @@ postulate signatureNonReplayable
 ||| ECDSA). The signature format uses cofactored verification which
 ||| prevents the small-subgroup attacks that cause malleability in
 ||| other EdDSA variants. See RFC 8032 Section 8.
+partial
 export
-postulate signatureNonMalleable
-  : (pk : Ed25519PublicKey)
-  -> (msg : Message)
-  -> (sig1 : Ed25519Signature)
-  -> (sig2 : Ed25519Signature)
-  -> verifyEd25519 pk msg sig1 = True
-  -> verifyEd25519 pk msg sig2 = True
-  -> sig1 = sig2
+signatureNonMalleable : (pk : Ed25519PublicKey)
+                     -> (msg : Message)
+                     -> (sig1 : Ed25519Signature)
+                     -> (sig2 : Ed25519Signature)
+                     -> verifyEd25519 pk msg sig1 = True
+                     -> verifyEd25519 pk msg sig2 = True
+                     -> sig1 = sig2
+signatureNonMalleable _ _ _ _ _ _ = idris_crash "signatureNonMalleable: cryptographic postulate — type-level use only"
 
 -- ============================================================================
 -- Signature Chain Verification
