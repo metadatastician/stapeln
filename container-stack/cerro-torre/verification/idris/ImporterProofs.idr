@@ -17,6 +17,8 @@ module ImporterProofs
 import Data.String
 import Data.List
 import Data.List1
+import Data.Nat
+import Decidable.Equality
 
 %default total
 
@@ -45,7 +47,7 @@ data SafePath : Path -> Type where
   ||| A relative component without ".." is safe
   SafeComponent : (component : String)
                -> Not (component = "..")
-               -> Not (isPrefixOf "/" component)
+               -> Not (Data.String.isPrefixOf "/" component = True)
                -> SafePath rest
                -> SafePath (component ++ "/" ++ rest)
 
@@ -80,6 +82,32 @@ normalizePath p =
     joinBy sep (x :: xs) = x ++ sep ++ joinBy sep xs
 
 -- ============================================================================
+-- Tar Entry Types
+-- ============================================================================
+-- (Hoisted above the safety postulates so those postulates can refer to
+-- TarEntry in their types without forward-reference errors.)
+
+||| A tar entry with path and content.
+|||
+||| `Eq` is defined below so `elem`-based constructors on `List TarEntry`
+||| can compare entries (needed by OCILayout's hasManifest witness).
+public export
+record TarEntry where
+  constructor MkTarEntry
+  path : Path
+  size : Nat
+  isSymlink : Bool
+  symlinkTarget : Maybe Path
+
+public export
+Eq TarEntry where
+  a == b =
+    a.path == b.path
+    && a.size == b.size
+    && a.isSymlink == b.isSymlink
+    && a.symlinkTarget == b.symlinkTarget
+
+-- ============================================================================
 -- Importer Safety Postulates
 -- ============================================================================
 -- These properties relate to String operations (isPrefixOf, isInfixOf)
@@ -108,7 +136,7 @@ normalizePath p =
 partial
 export
 normalizedIsSafe : (p : Path)
-                -> Not (isInfixOf ".." (normalizePath p))
+                -> Not (Data.String.isInfixOf ".." (normalizePath p) = True)
                 -> SafePath (normalizePath p)
 normalizedIsSafe _ _ = idris_crash "normalizedIsSafe: string-primitive postulate — type-level use only"
 
@@ -178,19 +206,6 @@ absolutePathRejection : (entry : TarEntry)
 absolutePathRejection _ _ = idris_crash "absolutePathRejection: string-primitive postulate — type-level use only"
 
 -- ============================================================================
--- Tar Entry Types
--- ============================================================================
-
-||| A tar entry with path and content
-public export
-record TarEntry where
-  constructor MkTarEntry
-  path : Path
-  size : Nat
-  isSymlink : Bool
-  symlinkTarget : Maybe Path
-
--- ============================================================================
 -- OCI Layout Validation
 -- ============================================================================
 
@@ -246,7 +261,7 @@ tarBombPrevention
   -> (maxSize : Nat)
   -> (maxEntries : Nat)
   -> length entries `LTE` maxEntries
-  -> sum (map size entries) `LTE` maxSize
+  -> sum (map TarEntry.size entries) `LTE` maxSize
   -> ()  -- Witness that extraction within bounds is safe
 tarBombPrevention _ _ _ _ _ = ()
 

@@ -17,6 +17,8 @@ import CryptoProofs
 import SignatureProofs
 import ImporterProofs
 import Data.List
+import Data.Vect
+import Data.Nat
 
 %default total
 
@@ -34,18 +36,25 @@ record Bundle where
   signatures : SignatureChain
   bundleHash : SHA256Hash
 
-||| Compute bundle hash from components
+||| Compute bundle hash from components.
+|||
+||| Partial because `sha256` is a spec stub (runtime uses CryptoFFI).
+partial
 export
 computeBundleHash : Bundle -> SHA256Hash
 computeBundleHash bundle =
   sha256 (bundle.manifest ++ concat bundle.layers ++ bundle.config)
 
-||| A bundle is well-formed if its stored hash matches computed hash
+||| A bundle is well-formed if its stored hash matches computed hash.
+||| Partial because the equation references `computeBundleHash` (spec stub).
+partial
 public export
 WellFormed : Bundle -> Type
 WellFormed bundle = bundleHash bundle = computeBundleHash bundle
 
-||| A bundle is properly signed if all signatures in the chain verify
+||| A bundle is properly signed if all signatures in the chain verify.
+||| Partial because it references `verifyChain` (spec stub).
+partial
 public export
 ProperlySigned : Bundle -> Type
 ProperlySigned bundle = verifyChain (bundleHash bundle) (signatures bundle) = True
@@ -62,6 +71,9 @@ ProperlySigned bundle = verifyChain (bundleHash bundle) (signatures bundle) = Tr
 ||| Proof: Direct from the WellFormed definition. WellFormed bundle
 ||| is defined as (bundleHash bundle = computeBundleHash bundle),
 ||| and symmetry gives us (computeBundleHash bundle = bundleHash bundle).
+||| Partial because the type references `computeBundleHash` (spec stub);
+||| the proof content is just `sym`, which is total.
+partial
 export
 bundleIntegrity : (bundle : Bundle)
                -> WellFormed bundle
@@ -77,6 +89,8 @@ bundleIntegrity bundle wellFormed properlySigned = sym wellFormed
 ||| Proof: Delegates to the now-proven chainImpliesIndividual from
 ||| SignatureProofs, which uses IsElem (propositional membership)
 ||| instead of boolean elem. This is a fully machine-checked proof.
+||| Partial because it references `verifyEd25519` / `verifyChain` stubs.
+partial
 export
 signatureChainSoundness : (bundle : Bundle)
                        -> ProperlySigned bundle
@@ -105,6 +119,8 @@ signatureChainSoundness bundle properlySigned pk sig inChain =
 |||
 ||| We prove the weaker version: if bundleHash is identical AND
 ||| computeBundleHash gives the same result, then WellFormed transfers.
+||| Partial because the type references `computeBundleHash` (spec stub).
+partial
 export
 supplyChainIntegrity : (stage1 : Bundle)
                     -> (finalStage : Bundle)
@@ -166,6 +182,8 @@ tamperEvidence _ _ _ _ _ = idris_crash "tamperEvidence: cryptographic postulate 
 ||| that verifyChain succeeds. Previously postulated unnecessarily
 ||| because the analysis focused on what the premises mean rather
 ||| than the trivial return type.
+||| Partial because the type references `verifyChain` (spec stub).
+partial
 export
 thresholdSatisfaction
   : (bundle : Bundle)
@@ -208,6 +226,8 @@ replayPrevention _ _ _ _ _ _ = idris_crash "replayPrevention: cryptographic post
 ||| legal/procedural claim backed by the Ed25519 discrete log assumption,
 ||| which is captured by the signatureNonMalleable postulate in
 ||| SignatureProofs.idr.
+||| Partial because the type references `verifyEd25519` (spec stub).
+partial
 export
 nonRepudiation
   : (bundle : Bundle)

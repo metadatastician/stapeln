@@ -101,6 +101,14 @@ SignatureChain = List (Ed25519PublicKey, Ed25519Signature)
 |||
 ||| Each signature in the chain is independently verified against the
 ||| bundle hash. The chain is valid if and only if every signature verifies.
+|||
+||| Marked `partial` because it transitively calls `verifyEd25519` — a
+||| `partial`+`idris_crash` spec stub whose runtime implementation lives
+||| in CryptoFFI.verifyEd25519IO. Idris2 0.8 has no native `postulate`
+||| keyword, so partiality propagates through any caller of the spec
+||| function. Using this chain at runtime would crash; the chain exists
+||| only to state proof obligations at the type level.
+partial
 export
 verifyChain : SHA256Hash -> SignatureChain -> Bool
 verifyChain hash [] = True
@@ -116,6 +124,11 @@ verifyChain hash ((pk, sig) :: rest) =
 ||| If a chain verifies, the head element's signature is valid.
 ||| Proven by case-splitting on verifyEd25519's Bool result: if False,
 ||| the chain returns False, contradicting the True premise.
+|||
+||| Marked `partial` because it calls the partial spec `verifyEd25519`.
+||| The proof content is structural; only the symbol itself inherits
+||| partiality from the spec stub.
+partial
 export
 chainHeadValid : (hash : SHA256Hash)
               -> (pk : Ed25519PublicKey)
@@ -129,6 +142,7 @@ chainHeadValid hash pk sig rest prf with (verifyEd25519 pk (cast hash) sig)
 
 ||| If a chain verifies, the tail also verifies.
 ||| Same proof strategy as chainHeadValid.
+partial
 export
 chainTailValid : (hash : SHA256Hash)
               -> (pk : Ed25519PublicKey)
@@ -177,6 +191,9 @@ Uninhabited (IsElem x []) where
 ||| Previously postulated because boolean `elem` uses `==` (Bool Eq)
 ||| which doesn't give propositional equality. Solved by defining
 ||| IsElem as a type-level membership proof carrying `=`.
+|||
+||| Partial because downstream of `verifyEd25519` / `verifyChain` stubs.
+partial
 export
 chainImpliesIndividual
   : (hash : SHA256Hash)
@@ -201,6 +218,9 @@ chainImpliesIndividual hash ((pk', sig') :: rest) chainPrf pk sig (There later) 
 ||| True by validChain. Previously postulated because the approach of
 ||| case-splitting on the opaque verifyEd25519 was tried instead of
 ||| rewriting with the equality premise.
+|||
+||| Partial because downstream of `verifyEd25519` / `verifyChain` stubs.
+partial
 export
 chainExtension
   : (hash : SHA256Hash)
@@ -213,16 +233,35 @@ chainExtension
 chainExtension hash chain pk sig validChain validSig =
   rewrite validSig in validChain
 
-||| PROVEN: Chain Commutativity
+||| POSTULATE: Chain Commutativity
 |||
 ||| Signature verification order doesn't matter — verifying [A, B]
 ||| gives the same result as verifying [B, A].
 |||
-||| Proof: Nested with-blocks abstract over each verifyEd25519 call
-||| in sequence, then case-split on all four Bool combinations.
-||| Each case reduces to Refl. Previously postulated because parallel
-||| with-blocks `| v1 | v2` fail (Idris2 doesn't abstract nested
-||| occurrences), but sequential nesting works correctly.
+||| PROOF STATUS: Postulated, pending `verifyChain` refactor.
+|||
+||| Why the obvious with-block proof fails:
+|||   The proof attempt
+|||     chainCommutative ... | True | True = Refl  (etc. for 4 cases)
+|||   fails because Idris2's `with`-abstraction is syntactic: it
+|||   substitutes matched expressions only where they appear in the
+|||   current goal. The goal
+|||     verifyChain hash [(pk1,sig1),(pk2,sig2)]
+|||       = verifyChain hash [(pk2,sig2),(pk1,sig1)]
+|||   doesn't syntactically contain `verifyEd25519 pk1 (cast hash) sig1`
+|||   at the point of with-abstraction — those occurrences are inside
+|||   unfolded `verifyChain` calls. Idris2 also refuses to reduce
+|||   `verifyChain [n]` past the opaque `verifyEd25519` head, so even
+|||   after the outer substitution the inner if-expressions stay stuck
+|||   as `if verifyEd25519 ... then myChain [] else False`.
+|||
+|||   The clean fix is to refactor `verifyChain` as
+|||     verifyChain hash chain = allValid (map (verifyPair hash) chain)
+|||   where `allValid` pattern-matches on `(True :: _)` / `(False :: _)`
+|||   (rather than using `if`). Commutativity then reduces structurally
+|||   to a two-argument Bool lemma. Deferred to a follow-up that touches
+|||   chainHeadValid / chainTailValid / chainImpliesIndividual together.
+partial
 export
 chainCommutative
   : (hash : SHA256Hash)
@@ -232,13 +271,5 @@ chainCommutative
   -> (sig2 : Ed25519Signature)
   -> verifyChain hash [(pk1, sig1), (pk2, sig2)]
    = verifyChain hash [(pk2, sig2), (pk1, sig1)]
-chainCommutative hash pk1 sig1 pk2 sig2
-  with (verifyEd25519 pk1 (cast hash) sig1)
-  chainCommutative hash pk1 sig1 pk2 sig2 | True
-    with (verifyEd25519 pk2 (cast hash) sig2)
-    chainCommutative hash pk1 sig1 pk2 sig2 | True | True = Refl
-    chainCommutative hash pk1 sig1 pk2 sig2 | True | False = Refl
-  chainCommutative hash pk1 sig1 pk2 sig2 | False
-    with (verifyEd25519 pk2 (cast hash) sig2)
-    chainCommutative hash pk1 sig1 pk2 sig2 | False | True = Refl
-    chainCommutative hash pk1 sig1 pk2 sig2 | False | False = Refl
+chainCommutative _ _ _ _ _ =
+  idris_crash "chainCommutative: postulated pending verifyChain refactor (see PROOF-NEEDS.md)"
