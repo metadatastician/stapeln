@@ -1,15 +1,37 @@
 # PROOF-NEEDS.md
 <!-- SPDX-License-Identifier: PMPL-1.0-or-later -->
 
-## Current State (2026-03-30 final)
+## Current State (2026-04-19 update — compile-clean after assert_total removal)
 
 - **LOC**: ~60,900
 - **Languages**: Elixir, ReScript, Idris2, Zig, Rust
 - **Postulates before**: 26 across 5 files + 2 `assert_total` (spec crash stubs)
-- **Postulates after**: 12 (54% reduction)
-- **Proven**: 14 postulates eliminated with genuine proofs
+- **Postulates after**: 13 (one reintroduced; see §"chainCommutative regression")
+- **Proven**: 13 postulates eliminated with genuine proofs
 - **New infrastructure**: IsElem type, chainHead/chainTail helpers, StringLemmas module
 - **Vordr proofs**: 0 postulates (all proven structurally)
+
+### Idris2 partiality propagation (2026-04-19)
+
+Idris2 0.8 has no `postulate` keyword, so crypto/string axioms are expressed
+as `partial`+`idris_crash` stubs. Any caller of a `partial` function is itself
+not-covering; since `%default total` is on, that inheritance has to be made
+explicit. As of this pass every spec-stub caller carries an explicit `partial`
+marker — the proof content is unchanged, but the modules once again
+type-check cleanly under `%default total`.
+
+### chainCommutative regression
+
+Previously listed as "proven". The with-block proof
+(`chainCommutative ... | True | True = Refl` × 4 cases) doesn't type-check
+because Idris2's `with`-abstraction is syntactic: the goal
+`verifyChain hash [a,b] = verifyChain hash [b,a]` doesn't contain
+`verifyEd25519 …` as a subterm at abstraction time, and Idris2 won't reduce
+`verifyChain [n]` past an opaque `verifyEd25519` head. Demoted to a
+postulate. The clean fix — refactor `verifyChain = allValid ∘ map verifyPair`
+so `allValid` pattern-matches on `(True::_)`/`(False::_)` and reduces — is
+deferred; it touches `chainHeadValid`/`chainTailValid`/`chainImpliesIndividual`
+together.
 
 ## What Was Proven (2026-03-30)
 
@@ -31,13 +53,13 @@
 | `serviceSpecContiguous3` | `Refl` | 24+8=32 |
 | `serviceSpecContiguous4` | `Refl` | 32+4=36 |
 
-### Chain Properties — 3 postulates → structural proofs (cerro-torre SignatureProofs.idr)
+### Chain Properties — 2 postulates → structural proofs (cerro-torre SignatureProofs.idr)
 
 | Postulate | Proof technique | Notes |
 |-----------|----------------|-------|
 | `chainExtension` | `rewrite validSig in validChain` | Substitutes True into if-condition |
-| `chainCommutative` | Nested `with`-blocks, 4-case Bool split | Sequential nesting key — parallel `\|` fails |
 | `chainImpliesIndividual` | Induction on `IsElem` + chainHead/chainTail helpers | Replaced boolean `elem` with type-level `IsElem` |
+| ~~`chainCommutative`~~ | — | **Regressed to postulate 2026-04-19.** See header notes. |
 
 New helper lemmas added:
 - `chainHeadValid` — extracts head signature validity via `with`-block

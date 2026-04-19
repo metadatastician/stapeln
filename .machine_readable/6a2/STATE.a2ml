@@ -5,7 +5,7 @@
 [metadata]
 project = "stapeln"
 version = "0.1.0"
-last-updated = "2026-04-04"
+last-updated = "2026-04-19"
 status = "active"
 
 [project-context]
@@ -77,3 +77,29 @@ priority-4 = "WebSocket live events"
 #             Removed tests/fuzz/placeholder.txt. All tests pass: 186+80 Deno + 48 new Rust = 314+ total.
 # 2026-04-04: Session 9 dogfooding. Added: tests/property/layer_invariants_test.ts (25 property tests),
 #             .github/workflows/e2e.yml workflow. Completion 87% → 91% (4% for property + test infrastructure).
+# 2026-04-19: Idris2 proof build restored in cerro-torre/verification/idris. After the assert_total
+#             spec-stub removal the modules had stopped type-checking: `chainCommutative` had a real
+#             type error, and five other proofs (verifyChain, chainHeadValid, chainTailValid,
+#             chainImpliesIndividual, chainExtension + their callers in Theorems.idr) were flagged
+#             "not covering" under %default total because they transitively call the partial
+#             `verifyEd25519`/`sha256`/string-primitive spec stubs. Fixes:
+#               - Propagated explicit `partial` markers through every caller of a spec stub so
+#                 partiality stays auditable without disabling %default total.
+#               - Disambiguated Data.List.isPrefixOf vs Data.String.isPrefixOf in SafePath and
+#                 normalizedIsSafe; added Data.Nat + Decidable.Equality imports.
+#               - Added Eq TarEntry so OCILayout's hasManifest `elem` witness type-checks.
+#               - Hoisted TarEntry above its first use (was declared after the postulates that
+#                 referred to it); fixed the `size`-shadow warning in tarBombPrevention.
+#               - Theorems.idr: added Data.Vect import (was leaning on transitive visibility);
+#                 marked computeBundleHash / WellFormed / ProperlySigned / bundleIntegrity /
+#                 signatureChainSoundness / supplyChainIntegrity / thresholdSatisfaction /
+#                 nonRepudiation as partial (inherited from spec stubs).
+#               - `chainCommutative`: demoted from proven to postulate. The with-block proof
+#                 fails because Idris2's with-abstraction is syntactic — the goal
+#                 `verifyChain hash [a,b] = verifyChain hash [b,a]` never contains
+#                 `verifyEd25519 ...` as a literal subterm at abstraction time, and Idris2 refuses
+#                 to reduce `verifyChain [n]` past an opaque verifyEd25519 head. Documented the
+#                 required refactor (`verifyChain = allValid ∘ map verifyPair` with pattern-match
+#                 on Bool head) in the postulate comment + PROOF-NEEDS.md §"chainCommutative
+#                 regression". Postulate count 12 → 13 (regression acknowledged, not hidden).
+#             Net: all 5 modules now build clean under %default total with zero warnings.
