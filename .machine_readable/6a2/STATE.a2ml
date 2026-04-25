@@ -5,7 +5,7 @@
 [metadata]
 project = "stapeln"
 version = "0.1.0"
-last-updated = "2026-04-19"
+last-updated = "2026-04-25"
 status = "active"
 
 [project-context]
@@ -16,7 +16,7 @@ crg-grade = "D"
 crg-achieved-date = "2026-04-18"
 crg-grade-previous = "C"
 crg-grade-demoted = "2026-04-18"
-crg-grade-notes = "Demoted C->D per docs/governance/CRG-AUDIT-2026-04-18.adoc. Dogfooding evidence now populated below (2026-04-18). Remaining C-blockers: no docs/READINESS file, weak implementation-subtree README coverage, no regular Rust test signal in push/PR CI."
+crg-grade-notes = "Demoted C->D per docs/governance/CRG-AUDIT-2026-04-18.adoc. D→C blockers resolved 2026-04-25: docs/READINESS.adoc created; 9 implementation-subtree README.adoc files added (api/ container-stack/ docs/ examples/ ffi/ generated/ scripts/ site/ src/). Dogfooding evidence populated 2026-04-18. Remaining gap: regular Rust test signal in push/PR CI. Pending CI green to formally claim C."
 
 [dogfooding-status]
 # Populated 2026-04-18 against real on-disk integrations.
@@ -77,6 +77,9 @@ priority-4 = "WebSocket live events"
 #             Removed tests/fuzz/placeholder.txt. All tests pass: 186+80 Deno + 48 new Rust = 314+ total.
 # 2026-04-04: Session 9 dogfooding. Added: tests/property/layer_invariants_test.ts (25 property tests),
 #             .github/workflows/e2e.yml workflow. Completion 87% → 91% (4% for property + test infrastructure).
+# 2026-04-25: D→C blocker sweep. docs/READINESS.adoc created; 9 implementation-subtree
+#             README.adoc files added (api/ container-stack/ docs/ examples/ ffi/
+#             generated/ scripts/ site/ src/).
 # 2026-04-19: Idris2 proof build restored in cerro-torre/verification/idris. After the assert_total
 #             spec-stub removal the modules had stopped type-checking: `chainCommutative` had a real
 #             type error, and five other proofs (verifyChain, chainHeadValid, chainTailValid,
