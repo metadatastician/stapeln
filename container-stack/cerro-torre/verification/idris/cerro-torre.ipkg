@@ -1,0 +1,11 @@
+package cerro-torre
+
+modules = CryptoFFI
+        , CryptoProofs
+        , ImporterProofs
+        , Proofs
+        , SignatureProofs
+        , StringLemmas
+        , Theorems
+
+sourcedir = "."

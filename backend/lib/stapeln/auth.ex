@@ -77,6 +77,17 @@ defmodule Stapeln.Auth do
     end
   end
 
+  @doc "Get user info by email address."
+  @spec get_user_by_email(String.t()) :: {:ok, map()} | {:error, :not_found}
+  def get_user_by_email(email) do
+    email = String.downcase(String.trim(email))
+    if DbStore.available?() do
+      DbStore.get_user_by_email(email)
+    else
+      UserStore.get_by_email(email)
+    end
+  end
+
   defp hash_password(password) do
     :crypto.hash(:sha256, password) |> Base.encode16(case: :lower)
   end

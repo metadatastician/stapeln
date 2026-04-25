@@ -11,7 +11,6 @@ defmodule Stapeln.Auth.Token do
 
   @token_ttl_seconds 86_400 * 7  # 7 days (access token)
   @refresh_ttl_seconds 86_400 * 30  # 30 days (refresh token)
-  @refresh_window_seconds 86_400  # Tokens within 1 day of expiry can be refreshed
 
   @doc "Generate a signed token for the given user identifier."
   @spec generate(String.t()) :: String.t()

@@ -767,7 +767,16 @@ defmodule Stapeln.PipelineEngine do
   # ---------------------------------------------------------------------------
 
   defp config_value(config, key) when is_map(config) do
-    Map.get(config, key, Map.get(config, String.to_existing_atom(key), nil))
+    case Map.fetch(config, key) do
+      {:ok, val} -> val
+      :error ->
+        atom_key = try do
+          String.to_existing_atom(key)
+        rescue
+          ArgumentError -> nil
+        end
+        if atom_key, do: Map.get(config, atom_key, nil), else: nil
+    end
   end
 
   defp config_value(_, _), do: nil

@@ -18,6 +18,7 @@ pub fn build(b: *std.Build) void {
         .name = "stapeln_ffi",
         .root_module = shared_root_module,
     });
+    lib.linkLibC();
     b.installArtifact(lib);
 
     const static_root_module = b.createModule(.{
@@ -31,6 +32,7 @@ pub fn build(b: *std.Build) void {
         .name = "stapeln_ffi",
         .root_module = static_root_module,
     });
+    static_lib.linkLibC();
     b.installArtifact(static_lib);
 
     // --- Crypto library (real SHA-256 + Ed25519) ---
@@ -70,6 +72,7 @@ pub fn build(b: *std.Build) void {
             .optimize = optimize,
         }),
     });
+    tests.linkLibC();
 
     const crypto_tests = b.addTest(.{
         .root_module = b.createModule(.{

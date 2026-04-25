@@ -39,7 +39,7 @@ echo ""
 
 # 1. SPDX headers
 missing_spdx=$(find src/ -name '*.ts' -o -name '*.js' -o -name '*.rs' 2>/dev/null \
-    | xargs grep -rL "SPDX-License-Identifier" 2>/dev/null | wc -l)
+    | xargs -r grep -rL "SPDX-License-Identifier" 2>/dev/null | wc -l)
 check "SPDX headers present on source files" "$([ "$missing_spdx" -eq 0 ] && echo 0 || echo 1)"
 
 # 2. No hardcoded secrets (basic check)
