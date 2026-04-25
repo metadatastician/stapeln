@@ -1,0 +1,167 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= stapeln — Deployment Readiness
+:toc: left
+:toclevels: 3
+:icons: font
+
+This document defines what "production-ready" means for stapeln and tracks the current
+state of readiness against those criteria. Updated from README.adoc status table
+(last reviewed 2026-02-13).
+
+== What "Ready for Production" Means
+
+A production-ready stapeln instance satisfies all of the following:
+
+=== Functional Completeness
+
+* All four views (Paragon, Cisco, Lago Grey Designer, Settings) are fully wired to backend.
+* Frontend-backend data model is consistent end-to-end (no shape mismatches on save/load).
+* miniKanren security engine is live — not sample data.
+* Security inspector and gap analysis sidebar query the backend in real time.
+* Simulation mode uses the live WASM/JS packet kernel against real stack topology.
+* Authentication is implemented (PAM system-user verification at minimum).
+
+=== Persistence and Storage
+
+* Elixir backend uses Ecto + PostgreSQL (not the current in-memory GenServer).
+* VeriSimDB integration is wired for graph, semantic (RDF), and temporal modalities.
+* Ephemeral pinhole GenServer is implemented with audit logging to VeriSimDB.
+
+=== Security Baselines
+
+* OWASP Top 10 2021: 10/10 (currently 6/10).
+* CIS Benchmarks: 20/20 (currently 12/20).
+* NIST Cybersecurity: 15/15 (currently 8/15).
+* ModSecurity CRS is configured (Paranoia Level 3) and active.
+* firewalld default-deny rules are deployed.
+* Post-quantum crypto: Dilithium5-AES, Kyber-1024, Ed448 hybrid, SPHINCS+, SHAKE3-512.
+
+=== Formal Verification
+
+* Idris2 proofs are complete (currently stubs — declarations only, zero proven lemmas).
+* Ephapax linear types applied to container lifecycle invariants (see `ephapax-modules/`).
+* All K9-SVC Nickel contracts validated at CI time.
+
+=== Infrastructure
+
+* Container images use Chainguard base images (no Ubuntu/Debian base allowed).
+* Rekor transparency log integration for signature verification.
+* SBOM generation and verification at build time.
+* Containerfile builds pass `panic-attack assail` with zero critical findings.
+
+== Current State (as of 2026-02-13)
+
+[cols="3,1,3"]
+|===
+| Criterion | State | Notes
+
+| UI views render and navigate
+| ✅ Working
+| All four views, TEA pattern solid
+
+| Backend REST + GraphQL MVP
+| ✅ Working
+| CRUD + basic validation, not production-hardened
+
+| Zig FFI shared library
+| ✅ Working
+| Real CRUD + validation (not stubs)
+
+| Export / Import (JSON + Compose)
+| ✅ Working
+| Real container images, round-trip support
+
+| Frontend-backend wiring
+| ⚠️ Partial
+| SaveStack/LoadStack wired, data model mismatch remains
+
+| Security inspector (live)
+| ⚠️ Partial
+| UI renders; calls sample data, not backend
+
+| Gap analysis sidebar (live)
+| ⚠️ Partial
+| UI renders; calls sample data, not backend
+
+| Simulation mode (live packet kernel)
+| ⚠️ Partial
+| WASM/JS kernel exists; uses sample data only
+
+| miniKanren security engine
+| ❌ Not started
+| Documentation and rule definitions only
+
+| VeriSimDB integration
+| ❌ Not started
+| No wiring; in-memory GenServer only
+
+| Authentication (PAM)
+| ❌ Not started
+| No auth flow exists
+
+| Database (Ecto/PostgreSQL)
+| ❌ Not started
+| In-memory GenServer only
+
+| Ephemeral pinholes GenServer
+| ❌ Not started
+| Elixir module stub exists; not wired
+
+| Idris2 proofs
+| ❌ Stubs only
+| Declarations in `src/abi/`; zero proven lemmas
+
+| Post-quantum crypto
+| ❌ Not started
+| 0%; roadmap items only
+
+| OWASP Top 10 compliance
+| ⚠️ Partial
+| 6/10 currently
+
+| CIS Benchmarks
+| ⚠️ Partial
+| 12/20 currently
+
+| Chainguard base images
+| ✅ Intended
+| Spec in `container-stack/`; build pipeline pending
+|===
+
+Overall honest completion: ~35%.
+
+== Known Gaps Before Production
+
+The following are hard blockers for any production deployment:
+
+. **Authentication** — no PAM flow, no session management, no RBAC.
+. **Persistent database** — in-memory GenServer does not survive restarts.
+. **VeriSimDB wiring** — audit trail, security events, temporal modality all missing.
+. **miniKanren engine live** — security inspector and gap analysis use static sample data.
+. **Idris2 proofs** — all formal guarantees are declarations without proofs; these underpin the "verified" claim in the project name.
+. **Post-quantum crypto** — planned but not begun; required before any public deployment.
+. **Frontend data model alignment** — mismatch between frontend shape and backend API causes silent data loss on save/load.
+
+== Route to Production
+
+See `ROADMAP.adoc` for the phased milestone plan.
+
+The minimum viable production path (in dependency order):
+
+. Ecto/PostgreSQL replaces GenServer.
+. PAM authentication flow.
+. VeriSimDB integration.
+. Frontend-backend data model alignment.
+. miniKanren engine wired to backend.
+. Idris2 proofs completed for container lifecycle invariants.
+. OWASP/CIS/NIST compliance gaps closed.
+. Post-quantum crypto layer.
+
+== Related Documents
+
+* link:READINESS-CHECKLIST.md[READINESS-CHECKLIST.md] — automated pass/fail gates (repo health, tests, build)
+* link:../ROADMAP.adoc[ROADMAP.adoc] — phased milestone timeline
+* link:../STATUS.md[STATUS.md] — canonical live status (more granular)
+* link:../PROOF-NEEDS.md[PROOF-NEEDS.md] — outstanding formal verification requirements
+* link:../TEST-NEEDS.md[TEST-NEEDS.md] — testing gaps
+* link:../SECURITY-STACK-AUDIT.md[SECURITY-STACK-AUDIT.md] — compliance scores per standard

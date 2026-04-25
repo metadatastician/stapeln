@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= container-stack/
+Embedded snapshots of the upstream container components that stapeln designs, validates,
+and orchestrates.
+
+Each subdirectory contains the source tree for one component of the hyperpolymath
+container stack. They exist here as context for stapeln's validation rules, security
+inspector, and gap analysis — stapeln is the *design surface* for these components,
+not a fork of them.
+
+== Components
+
+[cols="1,3"]
+|===
+| Directory | Component
+
+| `cerro-torre/`
+| Container builder — produces cryptographically signed, minimal Chainguard-based images. Upstream repo: `hyperpolymath/cerro-torre`.
+
+| `svalinn/`
+| Edge gateway — handles routing, rate-limiting, ephemeral pinholes at the network boundary. Upstream repo: `hyperpolymath/svalinn`.
+
+| `rokur/`
+| Stapeln GUI runtime — the Stapeln GUI component itself (Tauri/Dioxus shell). Upstream repo: `hyperpolymath/rokur`.
+
+| `selur/`
+| IPC bridge — provides the inter-process communication layer between stapeln components. Upstream repo: `hyperpolymath/selur`.
+
+| `vordr/`
+| Container runtime wrapper — handles lifecycle management (start/stop/restart) for the stack. Upstream repo: `hyperpolymath/vordr` (vörðr).
+|===
+
+== Usage
+
+These snapshots are used by stapeln's miniKanren security engine to derive attack-surface
+rules and by the Cisco View simulation mode to model realistic component behaviour.
+
+For canonical sources, refer to the upstream repos listed above.

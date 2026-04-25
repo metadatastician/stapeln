@@ -1,0 +1,38 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= src/
+Formal ABI definitions and Idris2 proof stubs for stapeln.
+
+This directory holds the Idris2 layer of the hyperpolymath ABI/FFI standard.
+It defines the interface contracts that the Zig FFI in `ffi/zig/` must satisfy,
+and the formal proofs that verify those contracts at compile time.
+
+== Structure
+
+[source]
+----
+src/
+└── abi/
+    ├── Types.idr        # Dependent-type definitions for container stack types
+    ├── Layout.idr       # Memory layout specifications for FFI boundary
+    ├── Proofs.idr       # Correctness proofs (currently stubs — see below)
+    └── Foreign.idr      # FFI function declarations
+----
+
+== Status
+
+WARNING: All Idris2 proofs in `src/abi/Proofs.idr` are currently *declarations
+only* — zero lemmas are proven. This is a production blocker. See `docs/READINESS.adoc`
+and `PROOF-NEEDS.md` for the outstanding proof obligations.
+
+The `Types.idr` and `Layout.idr` files establish the type definitions that the
+Zig implementation must match. `Foreign.idr` declares the C-ABI surface.
+
+== Building
+
+[source,bash]
+----
+idris2 --build src/abi/
+----
+
+Requires Idris2 0.8.0+. Proof type-checking is part of the build; any admitted
+or partial definition will be flagged.

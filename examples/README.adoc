@@ -1,0 +1,32 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= examples/
+Worked examples demonstrating how to use stapeln components and patterns.
+
+== Contents
+
+* `SafeDOMExample.res` — ReScript example showing safe DOM manipulation within the
+  TEA pattern; demonstrates the boundary between pure `update` logic and effectful
+  DOM operations without breaking referential transparency.
+
+* `web-project-deno.json` — Minimal Deno project configuration for integrating
+  the stapeln frontend build pipeline into a web project. Use as a starting point
+  when embedding stapeln components into a wider Deno workspace.
+
+== Running the Examples
+
+The ReScript example requires the frontend build environment:
+
+[source,bash]
+----
+cd ../frontend
+deno task build
+# Then open examples/SafeDOMExample.res in your editor or test harness
+----
+
+The Deno config example is drop-in for any Deno 2.0+ project:
+
+[source,bash]
+----
+cp examples/web-project-deno.json my-project/deno.json
+deno install
+----

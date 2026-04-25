@@ -1,0 +1,39 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= scripts/
+Utility scripts for stapeln development, installation, and benchmarking.
+
+These are operator-facing tools intended to be run directly by developers or
+the CI pipeline. They are not part of the shipped application.
+
+== Scripts
+
+[cols="2,3"]
+|===
+| Script | Purpose
+
+| `readiness-check.sh`
+| Runs the full readiness gate suite defined in `docs/READINESS-CHECKLIST.md`.
+  Exits non-zero if any gate fails. Run before every push.
+
+| `install-desktop.sh`
+| Installs the stapeln `.desktop` entry and launcher script for the current user's
+  XDG desktop environment (Linux). Requires `stapeln.desktop` in the repo root.
+
+| `stapeln-launcher.sh`
+| Shell wrapper that sets up the environment and launches the stapeln frontend
+  development server. Equivalent to `deno task dev` in `frontend/`.
+
+| `bench-packet-kernel.mjs`
+| JavaScript/Deno microbenchmark for the WASM packet-kernel used in simulation mode.
+  Measures throughput of simulated packet routing through a sample 3-node topology.
+  Run with: `deno run --allow-hrtime scripts/bench-packet-kernel.mjs`
+|===
+
+== Running the Readiness Check
+
+[source,bash]
+----
+bash scripts/readiness-check.sh
+----
+
+All gates must pass before opening a PR or cutting a release.

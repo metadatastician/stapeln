@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= ffi/
+Zig FFI implementation for stapeln's C-ABI bridge layer.
+
+This directory implements the hyperpolymath standard ABI/FFI architecture:
+Idris2 defines the ABI in `src/abi/`; Zig implements the C-compatible FFI here.
+
+== Structure
+
+[source]
+----
+ffi/
+└── zig/
+    ├── build.zig         # Zig build system configuration
+    ├── src/              # Zig FFI implementation files
+    └── test/             # Integration tests verifying ABI compliance
+----
+
+== Purpose
+
+The Zig FFI layer exposes stapeln's core validation and stack-inspection logic as
+a C-ABI shared library. This allows:
+
+* The Elixir backend (via NIFs or ports) to call Zig-validated logic directly.
+* The ReScript frontend (via WASM) to run container-safety checks in the browser.
+* External tools to integrate stapeln's miniKanren rule results without requiring
+  the full Elixir runtime.
+
+== ABI Definition
+
+The interface contract is formally specified in `src/abi/` using Idris2 dependent
+types. The Zig implementation must satisfy those specs. See `ABI-FFI-README.md`
+in the root for the full architecture rationale.
+
+== Building
+
+[source,bash]
+----
+cd ffi/zig
+zig build
+zig build test
+----

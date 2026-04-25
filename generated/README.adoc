@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= generated/
+Auto-generated files — do not edit by hand.
+
+All contents here are produced by build tooling and will be overwritten on the
+next build run. Source-of-truth lives in the configuration or spec files that
+drove the generation.
+
+== Contents
+
+* `alloyiser/` — Alloy model output produced by `alloyiser` from `*.als` spec files
+  (see `src/abi/stapeln.als`). Used for formal model-checking of the container
+  topology invariants.
+
+== Regenerating
+
+[source,bash]
+----
+# Regenerate Alloy analysis output
+just alloyise
+# or directly:
+alloyiser --input src/abi/stapeln.als --output generated/alloyiser/
+----
+
+== Policy
+
+Do not commit partial or stale generated output. Run the generator to completion
+before committing. The `.gitignore` pattern for this directory excludes large
+binary artefacts; only text output is tracked.

@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= api/
+API contract definitions and interface specifications for stapeln.
+
+Contains V-language interface descriptions (`.v`) used to define the external API
+surface before implementation. These serve as machine-readable interface contracts
+independent of any single backend implementation.
+
+== Contents
+
+* `v/stapeln.v` — V-language API surface definition for the stapeln backend.
+
+== Relationship to Backend
+
+The `api/` tree defines *what* the API does; `backend/` contains the Elixir/Phoenix
+implementation of *how* it does it. Changes to `api/stapeln.v` should be reflected
+in the corresponding Phoenix controllers and GraphQL schema (`backend/schema.graphql`).
+
+== Note on V-lang
+
+V-lang files here are interface definitions retained for documentation purposes.
+Per estate policy (2026-04-10), new V-lang code is not introduced; migration to
+Zig/Rust interface tooling is planned. See the root `ROADMAP.adoc`.

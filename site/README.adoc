@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= site/
+Static website source for the stapeln public project page.
+
+This directory contains the content rendered at https://svalinnproject.org and
+published via GitHub Pages.
+
+== Contents
+
+* `index.md` — Project landing page: one-paragraph summary, links to source,
+  docs, and quickstart guides.
+
+== Publishing
+
+The site is built and deployed automatically by the `jekyll-gh-pages.yml` workflow
+on every push to `main`. No manual steps are required.
+
+To preview locally:
+
+[source,bash]
+----
+bundle exec jekyll serve --source site/
+----
+
+== Scope
+
+This directory contains only the *public web presence* — marketing-level prose
+and navigation links. Full technical documentation lives in `docs/` and inline
+in the source tree.

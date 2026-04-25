@@ -1,0 +1,17 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= docs/
+Project-level documentation for stapeln that does not belong in the root.
+
+Includes governance materials, product vision, readiness assessments, audit reports,
+session notes, and periodic reports.
+
+== Key Files
+
+* `READINESS.adoc` — Deployment readiness criteria, current state, and known production blockers.
+* `READINESS-CHECKLIST.md` — Automated pass/fail gates (run via `scripts/readiness-check.sh`).
+* `PRODUCT-VISION.md` — Long-form product vision and design rationale.
+* `CITATIONS.adoc` — Academic and standards references.
+* `ACCESSIBILITY-AUDIT-2026-03-29.adoc` — WCAG 2.3 AAA audit findings.
+* `governance/` — Project governance documents (maintainership, decision records).
+* `reports/` — Periodic analysis and audit reports.
+* `sessions/` — Session pickup notes and continuation documents.
