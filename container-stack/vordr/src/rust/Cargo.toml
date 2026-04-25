@@ -79,6 +79,11 @@ log = "0.4"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
+# Security: pin rustls-webpki minimum to safe version (CVE-2023-44487 / name-constraint bypass).
+# < 0.103.13 has DoS via malformed CRL and name-constraint bypass.
+# Declared directly so Cargo's resolver enforces >= 0.103.13 (Cargo.lock is gitignored for library crates).
+rustls-webpki = "0.103.13"
+
 # eBPF Monitoring (Aya framework)
 aya = { version = "0.12", optional = true }
 aya-log = { version = "0.2", optional = true }
