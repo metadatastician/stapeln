@@ -27,8 +27,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         make \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Alire
-RUN curl -fsSL https://github.com/alire-project/alire/releases/latest/download/alr-2.0.2-bin-x86_64-linux.zip \
+# Install Alire — use the explicit-version download URL (not /latest/download/),
+# because GitHub's /latest/download/<filename> redirect requires <filename>
+# to be an asset of the *current* latest release. Alire's asset filenames
+# embed the version (alr-X.Y.Z-bin-...), so a hardcoded version in the URL
+# silently breaks the moment a new Alire release ships.
+ARG ALIRE_VERSION=2.1.0
+RUN curl -fsSL "https://github.com/alire-project/alire/releases/download/v${ALIRE_VERSION}/alr-${ALIRE_VERSION}-bin-x86_64-linux.zip" \
         -o /tmp/alr.zip \
     && unzip /tmp/alr.zip -d /usr/local/bin \
     && rm /tmp/alr.zip \
