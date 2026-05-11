@@ -26,8 +26,10 @@ COPY src/ ./src/
 COPY spec/ ./spec/
 COPY config/ ./config/
 
-# Compile ReScript to JavaScript
-RUN cd src && ./node_modules/.bin/rescript build
+# Compile ReScript to JavaScript via Deno's task runner. `deno task` prepends
+# node_modules/.bin/ to PATH (deno.json sets nodeModulesDir=auto), so the
+# rescript CLI resolves correctly from the workspace-root node_modules.
+RUN deno task res:build
 
 # ---------------------------------------------------------------------------
 # Stage 2: Runtime
