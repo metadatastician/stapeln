@@ -6,6 +6,7 @@ K9!
 
 {
   pedigree = {
+    name = "k9-template/hunt",
     schema_version = "1.0.0",
     component_type = "TODO: describe component type (e.g., 'deployment', 'setup-script')",
     security = {

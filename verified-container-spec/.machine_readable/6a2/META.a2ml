@@ -3,6 +3,7 @@
 #
 # META.a2ml — Verified Container Spec meta-level information
 [metadata]
+name = "verified-container-spec/META"
 version = "0.1.0"
 last-updated = "2026-04-11"
 
