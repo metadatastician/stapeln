@@ -7,7 +7,10 @@
 # artefacts and are NOT shipped in the container image.
 
 # ── Stage 1: Build ────────────────────────────────────────────────
-FROM rust:1.83-slim AS rust-builder
+# Rust >= 1.86 is required: the pinned Cargo.lock resolves icu_* 2.2.0 /
+# idna_adapter 1.2.2 (MSRV 1.86) and indexmap 2.14.0 (Cargo edition2024,
+# needs Cargo >= 1.85). Older toolchains fail at manifest parse time.
+FROM rust:1.86-slim AS rust-builder
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         pkg-config libsqlite3-dev ca-certificates \

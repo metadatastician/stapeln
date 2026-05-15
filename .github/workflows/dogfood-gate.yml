@@ -45,16 +45,16 @@ jobs:
       # recognises the clade/anchor/agent-instruction identity shapes.
       - name: Validate A2ML manifests
         if: steps.detect.outputs.count > 0
-        uses: hyperpolymath/a2ml-validate-action@fd7b2d840449568867f88cc93f64a9b3db1e2153 # contractile-shape carve-out (#9)
-        with:
-          path: '.'
-          strict: 'false'
-          # Defaults (pinned action fd7b2d8 has no built-in default for this
-          # input) plus two files that declare their identity in a non-TOML
-          # A2ML dialect the pinned validator's `key =` regex cannot see:
-          # ANCHOR.a2ml uses `id: "..."` and Bustfile.a2ml a curly block
-          # with `name: "..."`. They are valid, just a different doc shape.
-          paths-ignore: |
+        shell: bash
+        env:
+          INPUT_PATH: '.'
+          INPUT_STRICT: 'false'
+          # Default carve-outs plus stapeln's legitimately distinct A2ML
+          # doc-types whose identity is structural, not a TOML name/version
+          # pair: clade declarations, YAML anchor files, and agent-instruction
+          # session configs. Same rationale as the action's built-in defaults
+          # (hyperpolymath/hypatia#243 — distinguish doc type from target).
+          INPUT_PATHS_IGNORE: |
             vendor/
             vendored/
             verified-container-spec/
@@ -62,8 +62,10 @@ jobs:
             integration/fixtures/
             test/fixtures/
             tests/fixtures/
-            anchors/ANCHOR.a2ml
-            contractiles/bust/Bustfile.a2ml
+            .machine_readable/agent_instructions/
+            .machine_readable/CLADE.a2ml
+            .machine_readable/anchors/
+        run: .github/scripts/validate-a2ml.sh
 
       - name: Write summary
         run: |

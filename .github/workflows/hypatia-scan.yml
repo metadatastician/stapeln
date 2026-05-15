@@ -45,8 +45,12 @@ jobs:
         continue-on-error: true
         uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.18.2
         with:
-          elixir-version: '1.19.4'
-          otp-version: '28.3'
+          # Hypatia's mix.exs requires `elixir ~> 1.14`. The previous pins
+          # (Elixir 1.19.4 / OTP 28.3) are not in setup-beam's version index,
+          # so the step failed in ~15s before any scan ran. Use known-good
+          # stable lines; major.minor lets setup-beam pick the latest patch.
+          elixir-version: '1.17'
+          otp-version: '27'
 
       - name: Clone Hypatia
         continue-on-error: true
@@ -59,12 +63,13 @@ jobs:
         continue-on-error: true
         working-directory: ${{ env.HOME }}/hypatia
         run: |
-          if [ ! -f hypatia-v2 ]; then
-            echo "Building hypatia-v2 scanner..."
-            cd scanner
+          # The Hypatia mix project lives at the repo root (there is no
+          # scanner/ subdirectory). escript.build emits ./hypatia, which
+          # hypatia-cli.sh prefers (hypatia-v2 is only a legacy fallback).
+          if [ ! -x hypatia ] && [ ! -x hypatia-v2 ]; then
+            echo "Building hypatia escript..."
             mix deps.get
             mix escript.build
-            mv hypatia ../hypatia-v2
           fi
 
       # No explicit build step: hypatia-cli.sh self-builds the escript

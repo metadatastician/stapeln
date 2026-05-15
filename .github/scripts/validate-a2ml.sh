@@ -2,6 +2,13 @@
 # SPDX-License-Identifier: PMPL-1.0-or-later
 # Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 #
+# Vendored from hyperpolymath/a2ml-validate-action @ 86c6da6 (#8), with one
+# repair: upstream had a stray newline splitting a comment ("# own \name/...")
+# so `ame/project` ran as a command and aborted the script under `set -e`.
+# The action SHA this repo previously pinned predated the typed-manifest /
+# contractile-shape identity exemptions. Re-adopt the upstream action once
+# its HEAD is fixed.
+#
 # validate-a2ml.sh — A2ML manifest validation script
 #
 # Scans for .a2ml files and validates:
@@ -127,14 +134,12 @@ validate_a2ml() {
     while IFS= read -r line; do
         line_num=$((line_num + 1))
 
-        # Check for identity fields (various A2ML patterns). Accept TOML
-        # (`key = …`) and YAML-flavoured (`key: …`) forms, and the
-        # canonical-/prefixed-name + id keys used by clade/anchor docs.
-        if [[ "$line" =~ ^[[:space:]]*(agent[-_]id|name|project|id|canonical-name|prefixed-name)[[:space:]]*[=:] ]]; then
+        # Check for identity fields (various A2ML patterns)
+        if [[ "$line" =~ ^[[:space:]]*(agent[-_]id|name|project)[[:space:]]*= ]]; then
             has_identity=true
         fi
-        # Check for version field (TOML or YAML form)
-        if [[ "$line" =~ ^[[:space:]]*(version|schema_version)[[:space:]]*[=:] ]]; then
+        # Check for version field
+        if [[ "$line" =~ ^[[:space:]]*(version|schema_version)[[:space:]]*= ]]; then
             has_version=true
         fi
     done < "$file"
@@ -158,15 +163,6 @@ validate_a2ml() {
         # Dockerfile-style top-level typed manifests (Intentfile, Trustfile, …)
         # use markdown-flavoured A2ML; identity is carried by the parent repo.
         *file.a2ml)
-            is_manifest=true
-            ;;
-    esac
-
-    # Path-identified instruction docs under .machine_readable/agent_instructions/
-    # (coverage/debt/methodology…) derive identity from directory + filename,
-    # like the 6a2 typed manifests, and carry only a [metadata] version block.
-    case "$file" in
-        */.machine_readable/agent_instructions/*.a2ml)
             is_manifest=true
             ;;
     esac
