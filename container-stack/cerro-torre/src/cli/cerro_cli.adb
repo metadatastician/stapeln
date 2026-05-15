@@ -949,7 +949,10 @@ package body Cerro_CLI is
          --  available on PATH.
          declare
             use GNAT.OS_Lib;
-            CT_Sign_Path : String_Access :=
+            --  Qualify String_Access: both GNAT.OS_Lib and the unit-level
+            --  use of Ada.Strings.Unbounded make it use-visible here, which
+            --  is an ambiguity error under GNAT 14/15.
+            CT_Sign_Path : GNAT.OS_Lib.String_Access :=
                Locate_Exec_On_Path ("ct-sign");
          begin
             if CT_Sign_Path /= null then

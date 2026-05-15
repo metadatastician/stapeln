@@ -17,23 +17,30 @@ tags = ["security", "supply-chain", "linux", "containers", "provenance"]
 # CLI binary is named "ct" (short for Cerro Torre)
 executables = ["ct"]
 
-# Dependencies - start minimal, add as needed
-# Pin to gnatcoll 25 due to project file resolution issue in 26
-[[depends-on]]
-gnatcoll = "~25.0.0"
-
-# For TOML parsing (manifest files)
-[[depends-on]]
-ada_toml = "*"
-
-# For JSON handling (provenance, SBOM output)
-[[depends-on]]
-json = "*"
+# Dependencies - start minimal, add as needed.
+#
+# gnatcoll / ada_toml / json are currently NOT referenced by any source
+# (the code uses the in-tree CT_JSON package; nothing `with`s GNATCOLL,
+# TOML or JSON). Resolving them dragged in libgpr/xmlada, which fail to
+# compile against the build toolchain and broke the full container build
+# (stapeln#17 canary). They are disabled until actually consumed; re-enable
+# the relevant block when the corresponding `with` is introduced.
+#
+# [[depends-on]]
+# gnatcoll = "~25.0.0"
+#
+# [[depends-on]]
+# ada_toml = "*"
+#
+# [[depends-on]]
+# json = "*"
 
 # For formally verified primitives (registry parsing, digest ops, HTTP utils)
-# Version omitted - using local pin (see [[pins]] section below)
-[[depends-on]]
-proven = "*"
+# Temporarily disabled: the upstream `proven` library is not yet vendored
+# into this repo, all `with Proven.*` uses are commented out, and the local
+# pin below pointed at a path absent from a clean checkout (stapeln#17 canary).
+# [[depends-on]]
+# proven = "*"
 
 # For HTTP client (source fetching, registry, transparency) - v0.2
 # Temporarily disabled due to dependency conflicts with gnatcoll 25
@@ -51,6 +58,5 @@ CERRO_BUILD_MODE = ["Development", "Release", "Proof"]
 [gpr-set-externals]
 CERRO_BUILD_MODE = "Development"
 
-# Pin proven to local path (formally verified primitives)
-[[pins]]
-proven = { path = "../proven/bindings/ada" }
+# Pin for proven removed alongside the disabled dependency above; restore
+# both together once the upstream `proven` library is vendored.

@@ -90,7 +90,7 @@ package body Cerro_Export_OCI is
       Config_Digest : Unbounded_String;
 
       function Execute_Command (Cmd : String; Args : Argument_List) return Boolean is
-         Exe_Path : String_Access := Locate_Exec_On_Path (Cmd);
+         Exe_Path : GNAT.OS_Lib.String_Access := Locate_Exec_On_Path (Cmd);
          Exit_Status : Integer;
       begin
          if Exe_Path = null then
@@ -228,7 +228,7 @@ package body Cerro_Export_OCI is
          LF : constant Character := Character'Val (10);
          Manifest : Unbounded_String;
          Image_Name : constant String := To_String (M.Metadata.Name);
-         Image_Version : constant String := To_String (M.Metadata.Version);
+         Image_Version : constant String := To_String (M.Metadata.Version.Upstream);
          Config_File : constant String := To_String (Config_Digest) (8 .. Length (Config_Digest)) & ".json";
       begin
          Append (Manifest, "[" & LF);
@@ -293,7 +293,7 @@ package body Cerro_Export_OCI is
       --  Populate result
       Result.Status := Success;
       Result.Image_Ref := To_Unbounded_String (
-         "cerro-torre/" & To_String (M.Metadata.Name) & ":" & To_String (M.Metadata.Version));
+         "cerro-torre/" & To_String (M.Metadata.Name) & ":" & To_String (M.Metadata.Version.Upstream));
       Result.Digest := Config_Digest;
       Result.Layers := 1;
 
@@ -373,7 +373,8 @@ package body Cerro_Export_OCI is
             (Cmd : String; Args : GNAT.OS_Lib.Argument_List) return Boolean
          is
             use GNAT.OS_Lib;
-            Exe_Path    : String_Access := Locate_Exec_On_Path (Cmd);
+            Exe_Path    : GNAT.OS_Lib.String_Access :=
+               Locate_Exec_On_Path (Cmd);
             Exit_Status : Integer;
          begin
             if Exe_Path = null then
@@ -647,7 +648,7 @@ package body Cerro_Export_OCI is
          Create (Marker_File, Out_File, Marker_Path);
          Put_Line (Marker_File, "# Cerro Torre rootfs");
          Put_Line (Marker_File, "# Package: " & To_String (M.Metadata.Name));
-         Put_Line (Marker_File, "# Version: " & To_String (M.Metadata.Version));
+         Put_Line (Marker_File, "# Version: " & To_String (M.Metadata.Version.Upstream));
          Close (Marker_File);
       end;
 
@@ -757,7 +758,9 @@ package body Cerro_Export_OCI is
 
       --  Extract source hash as hex string for the attestation
       Source_Digest_Hex : constant String :=
-         Cerro_Crypto.Bytes_To_Hex (M.Provenance.Upstream_Hash.Digest);
+         To_String (M.Provenance.Upstream_Hash.Digest);
+         --  Upstream_Hash.Digest is stored already hex-encoded (see
+         --  Cerro_Manifest.Hash_Value); it is not a raw SHA256_Digest.
 
       --  Compute manifest content hash for the subject
       Manifest_Content : constant String := Cerro_Manifest.To_String (M);
@@ -892,7 +895,9 @@ package body Cerro_Export_OCI is
 
       --  Upstream source hash
       Source_Hash_Hex : constant String :=
-         Cerro_Crypto.Bytes_To_Hex (M.Provenance.Upstream_Hash.Digest);
+         To_String (M.Provenance.Upstream_Hash.Digest);
+         --  Upstream_Hash.Digest is stored already hex-encoded (see
+         --  Cerro_Manifest.Hash_Value); it is not a raw SHA256_Digest.
 
       File : File_Type;
 

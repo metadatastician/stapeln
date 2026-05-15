@@ -183,7 +183,7 @@ package body Cerro_Import_Debian is
 
             --  Add to result if non-empty
             if Length (Pkg_Name) > 0 then
-               Result.Append ((
+               Result.Append (Dependency_Reference'(
                   Name       => Pkg_Name,
                   Constraint => (Kind => Any)));
             end if;
@@ -722,7 +722,8 @@ package body Cerro_Import_Debian is
          --  Decompress Sources.gz
          declare
             use GNAT.OS_Lib;
-            Gunzip : String_Access := Locate_Exec_On_Path ("gunzip");
+            Gunzip : GNAT.OS_Lib.String_Access :=
+               Locate_Exec_On_Path ("gunzip");
             Args : Argument_List := (new String'("-f"), new String'(Sources_GZ));
             Exit_Status : Integer;
          begin
