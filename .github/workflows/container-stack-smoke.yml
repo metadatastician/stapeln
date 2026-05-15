@@ -1,13 +1,20 @@
 # SPDX-License-Identifier: PMPL-1.0-or-later
-# Smoke-builds every container-stack/ Containerfile with `podman build`.
+# Smoke-builds every container-stack/ Containerfile.
 #
 # Rationale (stapeln#17): the container-stack/ subdirectories are advertised
 # as the canonical Containerfiles for each component, yet four of five shipped
 # a Containerfile that failed on a clean build (stale Alire URL, uncommitted
 # Cargo.lock, npm/rescript-vs-Deno layout mismatch, un-parseable Deno install
 # script). Every one of those bugs lives in an early build step, so a real
-# `podman build` on each Containerfile is the durable guard that keeps the
-# whole class from regressing.
+# image build of each Containerfile is the durable guard that keeps the whole
+# class from regressing.
+#
+# Engine choice: the pass/fail gate uses `docker build` because Docker is
+# preinstalled and reliable on GitHub's ubuntu-latest runner, and the
+# Containerfiles are Dockerfile-syntax-compatible. stapeln#17 specifically
+# recommends podman, so a non-blocking `podman build` is also attempted on
+# every run to keep that signal visible without making the unreliable
+# apt-podman-on-GHA stack a merge blocker.
 name: container-stack smoke build
 on:
   push:
@@ -24,7 +31,7 @@ permissions:
 
 jobs:
   build:
-    name: podman build (${{ matrix.component }})
+    name: build (${{ matrix.component }})
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
@@ -46,18 +53,21 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
-      # podman is no longer preinstalled on GitHub's ubuntu-latest runner
-      # image, so install it explicitly (the smoke build is podman-based
-      # per stapeln#17's recommendation).
-      - name: Install podman
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends podman
-
-      - name: podman version
-        run: podman version
-
-      - name: podman build ${{ matrix.component }}
+      # Hard gate: docker is preinstalled on ubuntu-latest and builds the
+      # Dockerfile-compatible Containerfiles reliably.
+      - name: docker build ${{ matrix.component }}
         continue-on-error: ${{ matrix.continue-on-error == true }}
         working-directory: container-stack/${{ matrix.component }}
-        run: podman build -f Containerfile -t "stapeln-smoke/${{ matrix.component }}:ci" .
+        run: docker build -f Containerfile -t "stapeln-smoke/${{ matrix.component }}:ci" .
+
+      # Non-blocking: also attempt the build with podman per stapeln#17's
+      # recommendation. apt-podman's rootless stack is unreliable on the
+      # GHA runner, so this never blocks merge — it only surfaces whether
+      # podman can build the same Containerfile.
+      - name: podman build ${{ matrix.component }} (non-blocking)
+        continue-on-error: true
+        working-directory: container-stack/${{ matrix.component }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y podman containers-common crun
+          sudo podman build -f Containerfile -t "stapeln-smoke/${{ matrix.component }}:podman" .
