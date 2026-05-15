@@ -76,10 +76,27 @@ RUN cargo build --release
 # ---------------------------------------------------------------------------
 # Stage 2 -- runtime
 # ---------------------------------------------------------------------------
-FROM cgr.dev/chainguard/wolfi-base:latest AS runtime
+# Reuse ubuntu:24.04 (the ada-builder base) for the runtime image. Rationale:
+#   * ct/cerro-sign are GNAT/Rust binaries dynamically linked against this
+#     stage's glibc (2.39). A musl base (alpine/wolfi-static) cannot run
+#     them, and an older-glibc base (debian-slim = 2.36) breaks on the
+#     GLIBC_2.3x symbols GNAT 15 emits. Matching the builder's libc is the
+#     only base guaranteed to run the artefacts.
+#   * Removes the hard dependency on cgr.dev/chainguard/wolfi-base:latest,
+#     whose free tier is unpinnable (:latest only) and frequently 403s from
+#     restricted networks, making the smoke build flaky.
+#   * ubuntu:24.04 is already pulled for the builder stage, so the runtime
+#     stage adds no extra base image to fetch.
+FROM ubuntu:24.04 AS runtime
 
-# Install libcurl runtime for HTTP/TLS operations
-RUN apk add --no-cache libcurl-openssl4
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install the libcurl runtime (OpenSSL flavour) for HTTP/TLS operations,
+# plus CA roots for TLS verification.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        libcurl4 \
+        ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy the Ada ct binary from the builder stage
 COPY --from=ada-builder /build/bin/ct /usr/local/bin/ct
@@ -87,8 +104,9 @@ COPY --from=ada-builder /build/bin/ct /usr/local/bin/ct
 # Copy the Rust ct-sign binary from the builder stage
 COPY --from=ada-builder /build/target/release/cerro-sign /usr/local/bin/ct-sign
 
-# Non-root user for runtime
-RUN addgroup -S cerro && adduser -S cerro -G cerro
+# Non-root user for runtime (Debian/Ubuntu adduser syntax)
+RUN groupadd --system cerro \
+    && useradd --system --gid cerro --no-create-home --shell /usr/sbin/nologin cerro
 USER cerro
 
 ENTRYPOINT ["ct"]
