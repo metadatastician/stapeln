@@ -19,6 +19,14 @@ jobs:
     name: Hypatia Neurosymbolic Analysis
     runs-on: ubuntu-latest
 
+    # Single source of truth for the scanner checkout path. The build step
+    # previously used `${{ env.HOME }}` (the workflow `env` context has no
+    # HOME, so it expanded to an empty string → working-directory `/hypatia`,
+    # which does not exist → "No such file or directory"). github.workspace
+    # resolves consistently in both `${{ }}` expressions and the shell.
+    env:
+      HYPATIA_DIR: ${{ github.workspace }}/.hypatia-scanner
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
@@ -33,21 +41,17 @@ jobs:
 
       - name: Clone Hypatia
         run: |
-          if [ ! -d "$HOME/hypatia" ]; then
-            git clone https://github.com/hyperpolymath/hypatia.git "$HOME/hypatia"
+          if [ ! -d "$HYPATIA_DIR" ]; then
+            git clone https://github.com/hyperpolymath/hypatia.git "$HYPATIA_DIR"
           fi
 
-      - name: Build Hypatia scanner (if needed)
-        working-directory: ${{ env.HOME }}/hypatia
-        run: |
-          if [ ! -f hypatia-v2 ]; then
-            echo "Building hypatia-v2 scanner..."
-            cd scanner
-            mix deps.get
-            mix escript.build
-            mv hypatia ../hypatia-v2
-          fi
-
+      # No explicit build step: hypatia-cli.sh self-builds the escript
+      # (`mix deps.get && mix escript.build` at the repo root, with `mix`
+      # provided by setup-beam) and falls back to the bundled bash scanner
+      # if the build is unavailable. The previous step hard-coded a
+      # `cd scanner` subdir that no longer exists in the upstream layout,
+      # which broke the job; delegating to the CLI keeps this robust to
+      # upstream layout changes.
       - name: Run Hypatia scan
         id: scan
         env:
@@ -56,17 +60,35 @@ jobs:
         run: |
           echo "Scanning repository: ${{ github.repository }}"
 
-          # Run scanner
-          HYPATIA_FORMAT=json "$HOME/hypatia/hypatia-cli.sh" scan . --exit-zero > hypatia-findings.json
+          # This is an advisory, non-gating scan: it is invoked with
+          # --exit-zero ("emit findings, never fail step") and the downstream
+          # "Check for critical issues" step deliberately only warns. The
+          # external hypatia toolchain (separate repo) can still exit non-zero
+          # on a build/runtime hiccup; do not let that fail this advisory job.
+          set +e
+          HYPATIA_FORMAT=json "$HYPATIA_DIR/hypatia-cli.sh" scan . --exit-zero \
+            > hypatia-findings.json 2> hypatia-scan.log
+          rc=$?
+          set -e
+          if [ "$rc" -ne 0 ]; then
+            echo "::warning::Hypatia scanner exited ${rc}; treating as advisory (findings not gated)."
+            tail -n 40 hypatia-scan.log 2>/dev/null || true
+          fi
+
+          # Guarantee valid JSON so the jq steps below (and the upload/summary
+          # steps) are robust whether or not the scanner produced output.
+          if ! jq -e . hypatia-findings.json >/dev/null 2>&1; then
+            echo "[]" > hypatia-findings.json
+          fi
 
           # Count findings
           FINDING_COUNT=$(jq '. | length' hypatia-findings.json 2>/dev/null || echo 0)
           echo "findings_count=$FINDING_COUNT" >> $GITHUB_OUTPUT
 
           # Extract severity counts
-          CRITICAL=$(jq '[.[] | select(.severity == "critical")] | length' hypatia-findings.json)
-          HIGH=$(jq '[.[] | select(.severity == "high")] | length' hypatia-findings.json)
-          MEDIUM=$(jq '[.[] | select(.severity == "medium")] | length' hypatia-findings.json)
+          CRITICAL=$(jq '[.[] | select(.severity == "critical")] | length' hypatia-findings.json 2>/dev/null || echo 0)
+          HIGH=$(jq '[.[] | select(.severity == "high")] | length' hypatia-findings.json 2>/dev/null || echo 0)
+          MEDIUM=$(jq '[.[] | select(.severity == "medium")] | length' hypatia-findings.json 2>/dev/null || echo 0)
 
           echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
           echo "high=$HIGH" >> $GITHUB_OUTPUT

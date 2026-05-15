@@ -36,12 +36,19 @@ jobs:
             echo "::warning::No .a2ml manifest files found. Every RSR repo should have 0-AI-MANIFEST.a2ml"
           fi
 
+      # Uses an in-repo, corrected copy of the a2ml validator rather than the
+      # external hyperpolymath/a2ml-validate-action. The pinned upstream SHA
+      # predated the path-identified-manifest exemptions and false-positived
+      # on this repo's .machine_readable/* docs; the only upstream commit with
+      # the correct exemptions ships a corrupted script line (embedded newline)
+      # that crashes the action. The vendored script fixes that line and
+      # recognises the clade/anchor/agent-instruction identity shapes.
       - name: Validate A2ML manifests
         if: steps.detect.outputs.count > 0
-        uses: hyperpolymath/a2ml-validate-action@b2f28c39491c0d1ff131b8fb9e197bfea79e411e # main
-        with:
-          path: '.'
-          strict: 'false'
+        env:
+          INPUT_PATH: '.'
+          INPUT_STRICT: 'false'
+        run: bash .github/scripts/validate-a2ml.sh
 
       - name: Write summary
         run: |
