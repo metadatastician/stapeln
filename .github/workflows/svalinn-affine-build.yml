@@ -1,0 +1,89 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# svalinn AffineScript build/verify gate.
+#
+# The ReScript→AffineScript migration (PR #46) cannot be validated in the
+# Claude sandbox (no OCaml/opam toolchain, opam repo off the network
+# allowlist). This workflow IS the verification path: it builds the
+# upstream affinescript compiler and compiles every svalinn .affine
+# module to WebAssembly. A failure here is a real defect in the ports or
+# the compiler pin — this is the gate that makes "verified" meaningful.
+#
+# This is intentionally a blocking check (no continue-on-error): the
+# point is to verify, not to advise.
+name: svalinn AffineScript build
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'container-stack/svalinn/src/**/*.affine'
+      - '.github/workflows/svalinn-affine-build.yml'
+  pull_request:
+    paths:
+      - 'container-stack/svalinn/src/**/*.affine'
+      - '.github/workflows/svalinn-affine-build.yml'
+
+permissions:
+  contents: read
+
+env:
+  # Pinned to the same commit the svalinn Containerfile uses.
+  AFFINESCRIPT_REF: d2875a552f1d389b4a60c4adfdc02ae53e36aca3
+
+jobs:
+  affine-build:
+    name: compile svalinn .affine -> wasm
+    runs-on: ubuntu-latest
+    container:
+      image: ocaml/opam:debian-12-ocaml-5.1
+
+    steps:
+      - name: Install git/m4
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends git m4
+
+      - name: Checkout stapeln
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Build the affinescript compiler
+        run: |
+          set -euxo pipefail
+          git clone https://github.com/hyperpolymath/affinescript.git /tmp/affinescript
+          cd /tmp/affinescript
+          git checkout "${AFFINESCRIPT_REF}"
+          opam update -y
+          opam install --deps-only -y .
+          eval "$(opam env)"
+          dune build --release
+          cp _build/install/default/bin/affinescript /tmp/affinescript-bin
+          /tmp/affinescript-bin --version || true
+
+      - name: Compile every svalinn .affine module
+        run: |
+          set -euxo pipefail
+          cd "${GITHUB_WORKSPACE}/container-stack/svalinn"
+          mkdir -p dist/wasm
+          fail=0
+          while IFS= read -r -d '' f; do
+            base="$(basename "$f" .affine)"
+            echo "::group::compile $f"
+            if /tmp/affinescript-bin compile "$f" -o "dist/wasm/${base}.wasm"; then
+              echo "ok: $f"
+            else
+              echo "::error file=$f::affinescript compile failed"
+              fail=1
+            fi
+            echo "::endgroup::"
+          done < <(find src -name '*.affine' -print0 | sort -z)
+          if [ "$fail" -ne 0 ]; then
+            echo "::error::one or more svalinn .affine modules failed to compile"
+            exit 1
+          fi
+          ls -l dist/wasm
+
+      - name: Upload compiled wasm
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: svalinn-wasm
+          path: container-stack/svalinn/dist/wasm/
+          if-no-files-found: ignore

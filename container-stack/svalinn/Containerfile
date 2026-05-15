@@ -1,67 +1,90 @@
 # SPDX-License-Identifier: PMPL-1.0-or-later
-# Containerfile — Two-stage build for Svalinn Edge Gateway
+# Containerfile — Svalinn Edge Gateway (AffineScript / typed-wasm build)
 #
-# Stage 1: ReScript compilation (needs node for the rescript compiler + deno)
-# Stage 2: Minimal runtime with Deno only (wolfi-base)
+# Migration: svalinn's application code moved from ReScript→JS to
+# AffineScript→typed-WasmGC (see PR / src/*.affine). The build now needs an
+# OCaml toolchain (the affinescript compiler) and a Rust+Idris2 toolchain
+# (typed-wasm: the verified cross-language WasmGC ABI), then Deno at runtime
+# to host the WASM modules via the @hyperpolymath/affine-js bridge.
+#
+#   Stage A  build the affinescript compiler   (OCaml / opam / dune)
+#   Stage B  build typed-wasm                   (Rust / cargo / Idris2 ABI)
+#   Stage C  compile every src/*.affine -> .wasm
+#   Stage D  minimal Deno runtime + host bridge
+#
+# Upstream tool repos are pinned by commit for reproducibility.
+
+ARG AFFINESCRIPT_REF=d2875a552f1d389b4a60c4adfdc02ae53e36aca3
+ARG TYPED_WASM_REF=e90e2d1a307c33d594d54065c902500da327977c
 
 # ---------------------------------------------------------------------------
-# Stage 1: Build
+# Stage A: build the AffineScript compiler
 # ---------------------------------------------------------------------------
-FROM cgr.dev/chainguard/wolfi-base:latest AS build
+FROM ocaml/opam:debian-12-ocaml-5.1 AS affinescript-build
+ARG AFFINESCRIPT_REF
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends git m4 \
+ && rm -rf /var/lib/apt/lists/*
+USER opam
+WORKDIR /opt
+RUN git clone https://github.com/hyperpolymath/affinescript.git \
+ && cd affinescript && git checkout "${AFFINESCRIPT_REF}"
+WORKDIR /opt/affinescript
+RUN opam install --deps-only -y . \
+ && eval "$(opam env)" \
+ && dune build --release \
+ && cp _build/install/default/bin/affinescript /opt/affinescript-bin
 
-# Install build-time dependencies: deno (runtime) + node (rescript compiler)
-RUN apk add --no-cache deno nodejs
+# ---------------------------------------------------------------------------
+# Stage B: build typed-wasm (verified WasmGC ABI / conventions)
+# ---------------------------------------------------------------------------
+FROM rust:1-bookworm AS typed-wasm-build
+ARG TYPED_WASM_REF
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+ && rm -rf /var/lib/apt/lists/*
+WORKDIR /opt
+RUN git clone https://github.com/hyperpolymath/typed-wasm.git \
+ && cd typed-wasm && git checkout "${TYPED_WASM_REF}"
+WORKDIR /opt/typed-wasm
+RUN cargo build --release --locked
 
+# ---------------------------------------------------------------------------
+# Stage C: compile AffineScript sources to typed-WasmGC
+# ---------------------------------------------------------------------------
+FROM debian:12-slim AS wasm-build
+COPY --from=affinescript-build /opt/affinescript-bin /usr/local/bin/affinescript
+COPY --from=typed-wasm-build  /opt/typed-wasm/target/release /opt/typed-wasm
+ENV TYPED_WASM_HOME=/opt/typed-wasm
 WORKDIR /build
-
-# Copy dependency manifests first for layer caching
-COPY deno.json deno.lock package.json ./
-COPY src/deno.json src/deno.lock src/rescript.json ./src/
-
-# Install JS dependencies (node_modules for rescript compiler)
-RUN deno install
-
-# Copy source tree
 COPY src/ ./src/
-COPY spec/ ./spec/
-COPY config/ ./config/
-
-# Compile ReScript to JavaScript via Deno's task runner. `deno task` prepends
-# node_modules/.bin/ to PATH (deno.json sets nodeModulesDir=auto), so the
-# rescript CLI resolves correctly from the workspace-root node_modules.
-RUN deno task res:build
+RUN mkdir -p dist/wasm \
+ && find src -name '*.affine' -print0 | while IFS= read -r -d '' f; do \
+      base="$(basename "$f" .affine)"; \
+      echo "compiling $f -> dist/wasm/${base}.wasm"; \
+      affinescript compile "$f" -o "dist/wasm/${base}.wasm"; \
+    done
 
 # ---------------------------------------------------------------------------
-# Stage 2: Runtime
+# Stage D: runtime (Deno hosts the WASM modules)
 # ---------------------------------------------------------------------------
 FROM cgr.dev/chainguard/wolfi-base:latest AS runtime
-
 RUN apk add --no-cache deno
-
-# Non-root user for defence in depth
 RUN adduser -D -u 1000 svalinn
 USER svalinn
-
 WORKDIR /app
 
-# Copy compiled .res.js files and runtime config
-COPY --from=build --chown=svalinn:svalinn /build/src/ ./src/
-COPY --from=build --chown=svalinn:svalinn /build/deno.json ./deno.json
-COPY --from=build --chown=svalinn:svalinn /build/deno.lock ./deno.lock
-COPY --from=build --chown=svalinn:svalinn /build/node_modules/ ./node_modules/
-COPY --from=build --chown=svalinn:svalinn /build/spec/ ./spec/
-COPY --from=build --chown=svalinn:svalinn /build/config/ ./config/
+COPY --from=wasm-build --chown=svalinn:svalinn /build/dist/ ./dist/
+COPY --chown=svalinn:svalinn src/host/ ./src/host/
+COPY --chown=svalinn:svalinn deno.json deno.lock ./
+COPY --chown=svalinn:svalinn spec/ ./spec/
+COPY --chown=svalinn:svalinn config/ ./config/
 
-# Expose the default gateway port
 EXPOSE 8000
-
-# Health check against the /healthz endpoint
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
   CMD deno eval "const r = await fetch('http://localhost:8000/healthz'); Deno.exit(r.ok ? 0 : 1)"
 
-# Run with minimal Deno permissions
 ENTRYPOINT ["deno", "run", \
   "--allow-net", \
   "--allow-env", \
   "--allow-read", \
-  "src/Main.res.js"]
+  "src/host/affine_host.js"]

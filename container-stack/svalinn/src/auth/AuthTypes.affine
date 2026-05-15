@@ -1,0 +1,162 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// AuthTypes.affine — authentication/authorization data types.
+// Faithful port of AuthTypes.res. ReScript variants → nominal enums;
+// records → structs; Belt.Map defaults → builder functions.
+
+module AuthTypes;
+
+pub enum AuthMethod {
+  OAuth2,
+  OIDC,
+  ApiKey,
+  MTLS,
+  NoAuth        // ReScript `None` (renamed: Option::None collision)
+}
+
+pub fn auth_method_to_string(m: AuthMethod) -> String {
+  match m {
+    OAuth2 => "oauth2",
+    OIDC   => "oidc",
+    ApiKey => "api-key",
+    MTLS   => "mtls",
+    NoAuth => "none"
+  }
+}
+
+pub fn auth_method_from_string(s: String) -> Option<AuthMethod> {
+  match s {
+    "oauth2"  => Some(OAuth2),
+    "oidc"    => Some(OIDC),
+    "api-key" => Some(ApiKey),
+    "mtls"    => Some(MTLS),
+    "none"    => Some(NoAuth),
+    _         => None
+  }
+}
+
+pub enum PermissionAction {
+  Create,
+  Read,
+  Update,
+  Delete,
+  Execute
+}
+
+pub fn permission_action_to_string(a: PermissionAction) -> String {
+  match a {
+    Create  => "create",
+    Read    => "read",
+    Update  => "update",
+    Delete  => "delete",
+    Execute => "execute"
+  }
+}
+
+pub fn permission_action_from_string(s: String) -> Option<PermissionAction> {
+  match s {
+    "create"  => Some(Create),
+    "read"    => Some(Read),
+    "update"  => Some(Update),
+    "delete"  => Some(Delete),
+    "execute" => Some(Execute),
+    _         => None
+  }
+}
+
+pub struct Permission {
+  resource: String,
+  actions: [PermissionAction]
+}
+
+pub struct Role {
+  name: String,
+  permissions: [Permission],
+  description: Option<String>
+}
+
+pub struct ApiKeyInfo {
+  id: String,
+  name: String,
+  scopes: [String],
+  created_at: String,
+  expires_at: Option<String>,
+  rate_limit: Option<Int>
+}
+
+// Decoded JWT payload (claims kept as a host Json handle).
+pub struct TokenPayload {
+  sub: String,
+  iss: String,
+  exp: Int,
+  iat: Int,
+  scope: Option<String>,
+  email: Option<String>,
+  name: Option<String>,
+  groups: [String],
+  claims: Int            // host Json arena handle
+}
+
+pub struct AuthResult {
+  authenticated: Bool,
+  method: AuthMethod,
+  subject: Option<String>,
+  scopes: [String],
+  error: Option<String>
+}
+
+pub struct UserContext {
+  id: String,
+  email: Option<String>,
+  name: Option<String>,
+  groups: [String],
+  scopes: [String],
+  method: AuthMethod,
+  issued_at: Int,
+  expires_at: Option<Int>
+}
+
+fn perm(resource: String, actions: [PermissionAction]) -> Permission {
+  Permission { resource: resource, actions: actions }
+}
+
+// Default RBAC roles (== AuthTypes.res defaultRoles).
+pub fn default_roles() -> [Role] {
+  [
+    Role {
+      name: "admin",
+      description: Some("Full access to all resources"),
+      permissions: [perm("*", [Create, Read, Update, Delete, Execute])]
+    },
+    Role {
+      name: "operator",
+      description: Some("Can manage containers but not policies"),
+      permissions: [
+        perm("containers", [Create, Read, Update, Delete, Execute]),
+        perm("images", [Read]),
+        perm("policies", [Read])
+      ]
+    },
+    Role {
+      name: "viewer",
+      description: Some("Read-only access"),
+      permissions: [
+        perm("containers", [Read]),
+        perm("images", [Read]),
+        perm("policies", [Read])
+      ]
+    },
+    Role {
+      name: "auditor",
+      description: Some("Can view logs and audit trail"),
+      permissions: [
+        perm("containers", [Read]),
+        perm("logs", [Read]),
+        perm("audit", [Read])
+      ]
+    }
+  ]
+}
+
+pub fn default_excluded_paths() -> [String] {
+  ["/healthz", "/health", "/ready", "/metrics", "/.well-known/"]
+}

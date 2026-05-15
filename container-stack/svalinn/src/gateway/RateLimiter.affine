@@ -1,0 +1,75 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// RateLimiter.affine — sliding-window rate-limit decision core.
+//
+// Faithful port of RateLimiter.res. The ReScript version held per-IP
+// mutable state in a Js.Dict and read wall-clock time via Js.Date.now().
+// Under the WASM/host split the host owns the per-IP map and the clock;
+// this module is the pure decision given a client's current window state.
+
+module RateLimiter;
+
+pub struct Config {
+  window_ms: Int,
+  max_requests: Int
+}
+
+pub fn default_config() -> Config {
+  Config { window_ms: 60000, max_requests: 100 }
+}
+
+// Outcome of a check. `count`/`window_start` are the values the host must
+// persist back into its per-IP map for the next request.
+pub struct Decision {
+  allowed: Bool,
+  count: Int,
+  window_start: Int,
+  remaining: Int,
+  retry_after: Int
+}
+
+fn ceil_div(a: Int, b: Int) -> Int {
+  if a <= 0 { 0 } else { (a + b - 1) / b }
+}
+
+// `count`/`window_start` are the stored state for this IP (0/0 if new).
+// `now_ms` is supplied by the host (epoch milliseconds).
+pub fn check(cfg: Config, count: Int, window_start: Int, now_ms: Int) -> Decision {
+  // New client, or expired window → start a fresh window.
+  if window_start == 0 || now_ms - window_start > cfg.window_ms {
+    return Decision {
+      allowed: true,
+      count: 1,
+      window_start: now_ms,
+      remaining: cfg.max_requests - 1,
+      retry_after: 0
+    };
+  }
+
+  if count < cfg.max_requests {
+    let new_count = count + 1;
+    let rem = cfg.max_requests - new_count;
+    return Decision {
+      allowed: true,
+      count: new_count,
+      window_start: window_start,
+      remaining: if rem < 0 { 0 } else { rem },
+      retry_after: 0
+    };
+  }
+
+  // Limited.
+  let reset_at = window_start + cfg.window_ms;
+  let ms_left = reset_at - now_ms;
+  Decision {
+    allowed: false,
+    count: count,
+    window_start: window_start,
+    remaining: 0,
+    retry_after: if ms_left > 0 { ceil_div(ms_left, 1000) } else { 0 }
+  }
+}
+
+// Whether the host should evict this IP's entry (older than 2× window).
+pub fn is_stale(cfg: Config, window_start: Int, now_ms: Int) -> Bool {
+  window_start != 0 && now_ms - window_start > cfg.window_ms * 2
+}

@@ -1,19 +1,14 @@
 {
-  "nodeModulesDir": "auto",
   "imports": {
-    "rescript/lib/es6/": "./node_modules/rescript/lib/es6/",
-    "hono": "npm:hono@^4.6.10",
+    "@hyperpolymath/affine-js": "jsr:@hyperpolymath/affine-js@^0.2.0",
     "ajv": "npm:ajv@^8.12.0",
-    "ajv-formats": "npm:ajv-formats@^3.0.1",
-    "rescript": "^12.0.0",
-    "@rescript/core": "npm:@rescript/core@^1.0.0"
+    "ajv-formats": "npm:ajv-formats@^3.0.1"
   },
   "tasks": {
-    "dev": "deno run --allow-net --allow-read --allow-env --watch src/Main.res.js",
-    "start": "deno run --allow-net --allow-read --allow-env src/Main.res.js",
-    "res:build": "cd src && rescript build",
-    "res:clean": "cd src && rescript clean",
-    "res:watch": "cd src && rescript build -w"
+    "dev": "deno run --allow-net --allow-read --allow-env --watch src/host/affine_host.js",
+    "start": "deno run --allow-net --allow-read --allow-env src/host/affine_host.js",
+    "affine:build": "bash scripts/affine-build.sh",
+    "affine:clean": "rm -rf dist/wasm"
   },
   "compilerOptions": {
     "allowJs": true,

@@ -108,6 +108,10 @@ htmlcov/
 /src/dist/
 /src/**/*.js
 /src/**/*.js.map
+# ...but the AffineScript/typed-wasm migration's host bridge is
+# hand-written JS (Deno-API glue), not compiler output — keep it tracked.
+!/src/host/
+!/src/host/*.js
 
 # --- PhD Research ---
 /data/

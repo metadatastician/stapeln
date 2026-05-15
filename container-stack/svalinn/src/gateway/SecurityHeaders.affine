@@ -1,0 +1,64 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// SecurityHeaders.affine — OWASP security/CORS/rate-limit response headers.
+//
+// Faithful port of SecurityHeaders.res. The ReScript version threaded a
+// Hono context; here the headers are pure data the Deno host applies to
+// every outgoing Response. Each builder returns a JSON object handle of
+// { headerName: value, ... } via the host Json arena.
+
+module SecurityHeaders;
+
+use Json;
+
+fn put_header(obj: Int, name: String, value: String) -> () {
+  json_set(obj, name, json_of_string(value));
+}
+
+// OWASP baseline applied to every response.
+pub fn security_headers() -> Int {
+  let h = json_new_object();
+  put_header(h, "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains; preload");
+  put_header(h, "X-Frame-Options", "DENY");
+  put_header(h, "X-Content-Type-Options", "nosniff");
+  put_header(h, "X-XSS-Protection", "1; mode=block");
+  put_header(h, "Content-Security-Policy",
+    "default-src 'self'; script-src 'self'; style-src 'self'; "
+    + "img-src 'self' data:; font-src 'self'; connect-src 'self'; "
+    + "frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
+  put_header(h, "Referrer-Policy", "strict-origin-when-cross-origin");
+  put_header(h, "Permissions-Policy",
+    "geolocation=(), microphone=(), camera=(), payment=(), usb=()");
+  h
+}
+
+// CORS headers for API endpoints (specific origin, never wildcard).
+pub fn cors_headers(allowed_origin: String) -> Int {
+  let h = json_new_object();
+  put_header(h, "Access-Control-Allow-Origin", allowed_origin);
+  put_header(h, "Access-Control-Allow-Credentials", "true");
+  put_header(h, "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS");
+  put_header(h, "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Request-ID");
+  put_header(h, "Access-Control-Max-Age", "3600");
+  h
+}
+
+// Rate-limit headers (values computed by RateLimiter / host).
+pub fn rate_limit_headers(limit: Int, remaining: Int, reset_at: Int) -> Int {
+  let h = json_new_object();
+  put_header(h, "X-RateLimit-Limit", int_to_string(limit));
+  put_header(h, "X-RateLimit-Remaining", int_to_string(remaining));
+  put_header(h, "X-RateLimit-Reset", int_to_string(reset_at));
+  h
+}
+
+// Security headers + no-store cache directives for error responses.
+pub fn error_headers() -> Int {
+  let h = security_headers();
+  put_header(h, "Cache-Control", "no-store, no-cache, must-revalidate");
+  put_header(h, "Pragma", "no-cache");
+  put_header(h, "Expires", "0");
+  h
+}

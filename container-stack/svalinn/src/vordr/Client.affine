@@ -1,0 +1,137 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+// Client.affine — pure Vörðr MCP JSON-RPC shaping.
+//
+// Faithful port of the pure parts of Client.res. The transport
+// (Fetch POST to the Vörðr endpoint, /health ping) is inherently host
+// I/O and stays in affine_host.js; this module builds the JSON-RPC
+// request envelope, parses the MCP response, and constructs the
+// per-tool argument objects — the parts worth verifying.
+
+module Client;
+
+use Json;
+use VordrTypes;
+
+pub fn default_endpoint() -> String { "http://localhost:8080" }
+pub fn default_timeout() -> Int { 30000 }
+
+// Monotonic request id. The host owns the counter and passes the prior
+// value; this returns the next (Client.res nextId semantics).
+pub fn next_id(prev: Int) -> Int { prev + 1 }
+
+// Build the `tools/call` JSON-RPC request envelope (Client.res callTool).
+pub fn build_call_request(tool_name: String, args: Int, id: Int) -> Int {
+  let params = json_new_object();
+  json_set(params, "name", json_of_string(tool_name));
+  json_set(params, "arguments", args);
+
+  let req = json_new_object();
+  json_set(req, "jsonrpc", json_of_string("2.0"));
+  json_set(req, "method", json_of_string("tools/call"));
+  json_set(req, "params", params);
+  json_set(req, "id", json_of_int(id));
+  req
+}
+
+// Parsed MCP response. `error_message` is "" when there is no error;
+// `result` is a host Json handle (0 == null/absent).
+pub struct McpOutcome {
+  error_message: String,
+  result: Int
+}
+
+// Parse + validate an MCP response object (Client.res mcpResponse decode
+// + the error/result unwrap that followed it).
+pub fn parse_mcp_response(resp: Int) -> McpOutcome {
+  if json_kind(resp) != 5 {
+    return McpOutcome { error_message: "Invalid MCP response: expected JSON object", result: 0 };
+  }
+
+  let err = json_get(resp, "error");
+  if err != 0 && json_kind(err) == 5 {
+    let msg_h = json_get(err, "message");
+    let msg = if msg_h != 0 && json_kind(msg_h) == 3 {
+      json_as_string(msg_h)
+    } else {
+      "Unknown error"
+    };
+    return McpOutcome { error_message: msg, result: 0 };
+  }
+
+  let res = json_get(resp, "result");
+  McpOutcome { error_message: "", result: res }
+}
+
+// ---- per-tool argument builders (Client.res arg objects) ----
+
+fn obj1_str(k: String, v: String) -> Int {
+  let o = json_new_object();
+  json_set(o, k, json_of_string(v));
+  o
+}
+
+pub fn args_container_id(container_id: String) -> Int {
+  obj1_str("containerId", container_id)
+}
+
+pub fn args_create(image: String, name: Option<String>) -> Int {
+  let cfg = json_new_object();
+  json_set(cfg, "privileged", json_of_bool(false));
+  json_set(cfg, "readOnlyRoot", json_of_bool(true));
+
+  let o = json_new_object();
+  json_set(o, "image", json_of_string(image));
+  match name {
+    Some(n) => { json_set(o, "name", json_of_string(n)); },
+    None    => {}
+  }
+  json_set(o, "config", cfg);
+  o
+}
+
+pub fn args_verify_image(image: String) -> Int {
+  let o = json_new_object();
+  json_set(o, "image", json_of_string(image));
+  json_set(o, "checkSbom", json_of_bool(true));
+  json_set(o, "checkSignature", json_of_bool(true));
+  o
+}
+
+pub fn args_request_auth(operation: String, threshold: Int, signers: Int) -> Int {
+  let o = json_new_object();
+  json_set(o, "operation", json_of_string(operation));
+  json_set(o, "threshold", json_of_int(threshold));
+  json_set(o, "signers", json_of_int(signers));
+  o
+}
+
+pub fn args_submit_signature(s: SignatureShare) -> Int {
+  let o = json_new_object();
+  json_set(o, "requestId", json_of_string(s.request_id));
+  json_set(o, "signature", json_of_string(s.signature));
+  json_set(o, "signerId", json_of_string(s.signer_id));
+  o
+}
+
+pub fn args_monitor(c: MonitorConfig) -> Int {
+  let o = json_new_object();
+  json_set(o, "containerId", json_of_string(c.container_id));
+  json_set(o, "syscalls", json_of_bool(c.syscalls));
+  json_set(o, "network", json_of_bool(c.network));
+  json_set(o, "filesystem", json_of_bool(c.filesystem));
+  o
+}
+
+pub fn args_anomalies(container_id: String, severity: String) -> Int {
+  let o = json_new_object();
+  json_set(o, "containerId", json_of_string(container_id));
+  json_set(o, "severity", json_of_string(severity));
+  o
+}
+
+pub fn args_rollback(container_id: String, steps: Int) -> Int {
+  let o = json_new_object();
+  json_set(o, "containerId", json_of_string(container_id));
+  json_set(o, "steps", json_of_int(steps));
+  o
+}
