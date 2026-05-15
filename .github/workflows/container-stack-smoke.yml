@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: PMPL-1.0-or-later
+# Smoke-builds every container-stack/ Containerfile with `podman build`.
+#
+# Rationale (stapeln#17): the container-stack/ subdirectories are advertised
+# as the canonical Containerfiles for each component, yet four of five shipped
+# a Containerfile that failed on a clean build (stale Alire URL, uncommitted
+# Cargo.lock, npm/rescript-vs-Deno layout mismatch, un-parseable Deno install
+# script). Every one of those bugs lives in an early build step, so a real
+# `podman build` on each Containerfile is the durable guard that keeps the
+# whole class from regressing.
+name: container-stack smoke build
+on:
+  push:
+    paths:
+      - 'container-stack/**'
+      - '.github/workflows/container-stack-smoke.yml'
+  pull_request:
+    paths:
+      - 'container-stack/**'
+      - '.github/workflows/container-stack-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: podman build (${{ matrix.component }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - component: vordr
+          - component: svalinn
+          - component: rokur
+          - component: selur
+          # cerro-torre's full `alr build` depends on the upstream `proven`
+          # Ada library, which is not vendored into this snapshot and is
+          # tracked separately from stapeln#17. The Containerfile is still
+          # built every run so the Alire-download step (stapeln#13) and the
+          # rest of the early steps stay exercised and visible in the log;
+          # the deeper Ada link is non-blocking until `proven` is available.
+          - component: cerro-torre
+            continue-on-error: true
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      # podman is no longer preinstalled on GitHub's ubuntu-latest runner
+      # image, so install it explicitly (the smoke build is podman-based
+      # per stapeln#17's recommendation).
+      - name: Install podman
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends podman
+
+      - name: podman version
+        run: podman version
+
+      - name: podman build ${{ matrix.component }}
+        continue-on-error: ${{ matrix.continue-on-error == true }}
+        working-directory: container-stack/${{ matrix.component }}
+        run: podman build -f Containerfile -t "stapeln-smoke/${{ matrix.component }}:ci" .

@@ -48,8 +48,11 @@ ENV PATH="/root/.cargo/bin:${PATH}"
 WORKDIR /build
 COPY alire.toml cerro_torre.gpr ./
 COPY src/ src/
-COPY config/ config/
 
+# config/ is intentionally NOT copied: Alire generates
+# config/cerro_torre_config.gpr (referenced by cerro_torre.gpr) during
+# `alr build`. The directory is gitignored and absent on a clean checkout,
+# so `COPY config/ config/` broke builds from a fresh clone (stapeln#17).
 RUN alr build
 
 # Build the Rust signing utility

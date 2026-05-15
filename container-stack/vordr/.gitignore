@@ -12,7 +12,9 @@ build/
 build/
 
 # Rust
-Cargo.lock
+# Cargo.lock is intentionally tracked: vordr ships a binary crate and the
+# Containerfile builds with `cargo build --locked`. Ignoring it caused the
+# clean-build failure tracked in stapeln#17.
 debug/
 *.rlib
 *.rmeta
