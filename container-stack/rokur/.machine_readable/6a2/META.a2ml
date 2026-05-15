@@ -3,6 +3,7 @@
 #
 # META.a2ml — Rokur meta-level information
 [metadata]
+project = "rokur"
 version = "1.0.0"
 last-updated = "2026-04-11"
 

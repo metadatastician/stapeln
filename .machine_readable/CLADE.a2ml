@@ -3,6 +3,7 @@
 # See: https://github.com/hyperpolymath/gv-clade-index
 
 [identity]
+project = "stapeln"
 uuid = "a6bd9705-f4d2-5bfb-8975-5fc5be8a56da"
 primary-forge = "github"
 primary-owner = "hyperpolymath"

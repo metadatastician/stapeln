@@ -5,6 +5,7 @@
 # Runbooks, incident response, deployment procedures.
 
 [metadata]
+project = "stapeln"
 version = "0.1.0"
 last-updated = "2026-03-16"
 

@@ -2,6 +2,7 @@
 # Dustfile — Cleanup and Hygiene Contract
 
 [dustfile]
+project = "stapeln"
 version = "1.0.0"
 format = "a2ml"
 

@@ -3,6 +3,7 @@
 #
 # META.a2ml — Docs meta-level information
 [metadata]
+project = "dom-mounter"
 version = "1.0"
 last-updated = "2026-02-05"
 

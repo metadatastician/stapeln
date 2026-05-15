@@ -3,6 +3,7 @@
 #
 # META.a2ml — Cerro Torre Stack meta-level information
 [metadata]
+project = "cerro-torre"
 version = "1.0.0"
 last-updated = "2026-04-11"
 

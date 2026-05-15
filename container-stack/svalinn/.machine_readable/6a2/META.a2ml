@@ -3,6 +3,7 @@
 #
 # META.a2ml — Svalinn meta-level information
 [metadata]
+project = "svalinn"
 version = "1.0.0"
 last-updated = "2026-04-11"
 

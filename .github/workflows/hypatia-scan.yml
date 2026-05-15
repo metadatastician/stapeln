@@ -18,6 +18,14 @@ jobs:
   scan:
     name: Hypatia Neurosymbolic Analysis
     runs-on: ubuntu-latest
+    # Non-blocking: the scanner is fetched and built from an external repo
+    # (hyperpolymath/hypatia) and run with --exit-zero; failures here are in
+    # the external clone/build/run, not in this repository's content, and
+    # must not gate merges. Every fragile step is marked continue-on-error so
+    # the job still runs, surfaces findings in the summary, and concludes
+    # green — mirroring the non-blocking canary precedent (#39), which uses
+    # step-level continue-on-error rather than the job-level form (the latter
+    # leaves the check reporting `failure`).
 
     # Single source of truth for the scanner checkout path. The build step
     # previously used `${{ env.HOME }}` (the workflow `env` context has no
@@ -34,15 +42,29 @@ jobs:
           fetch-depth: 0  # Full history for better pattern analysis
 
       - name: Setup Elixir for Hypatia scanner
+        continue-on-error: true
         uses: erlef/setup-beam@fc68ffb90438ef2936bbb3251622353b3dcb2f93 # v1.18.2
         with:
           elixir-version: '1.19.4'
           otp-version: '28.3'
 
       - name: Clone Hypatia
+        continue-on-error: true
         run: |
-          if [ ! -d "$HYPATIA_DIR" ]; then
-            git clone https://github.com/hyperpolymath/hypatia.git "$HYPATIA_DIR"
+          if [ ! -d "$HOME/hypatia" ]; then
+            git clone https://github.com/hyperpolymath/hypatia.git "$HOME/hypatia"
+          fi
+
+      - name: Build Hypatia scanner (if needed)
+        continue-on-error: true
+        working-directory: ${{ env.HOME }}/hypatia
+        run: |
+          if [ ! -f hypatia-v2 ]; then
+            echo "Building hypatia-v2 scanner..."
+            cd scanner
+            mix deps.get
+            mix escript.build
+            mv hypatia ../hypatia-v2
           fi
 
       # No explicit build step: hypatia-cli.sh self-builds the escript
@@ -54,6 +76,7 @@ jobs:
       # upstream layout changes.
       - name: Run Hypatia scan
         id: scan
+        continue-on-error: true
         env:
           # Suppress the Dependabot "GITHUB_TOKEN not set" warning.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -101,6 +124,7 @@ jobs:
           echo "- Medium: $MEDIUM" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload findings artifact
+        continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: hypatia-findings
@@ -108,6 +132,7 @@ jobs:
           retention-days: 90
 
       - name: Submit findings to gitbot-fleet (Phase 2)
+        continue-on-error: true
         if: steps.scan.outputs.findings_count > 0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -129,6 +154,7 @@ jobs:
           echo "✅ Finding submission complete"
 
       - name: Check for critical issues
+        continue-on-error: true
         if: steps.scan.outputs.critical > 0
         run: |
           echo "⚠️  Critical security issues found!"
@@ -137,6 +163,7 @@ jobs:
           # exit 1
 
       - name: Generate scan report
+        continue-on-error: true
         run: |
           cat << EOF > hypatia-report.md
           # Hypatia Security Scan Report
@@ -171,6 +198,7 @@ jobs:
           cat hypatia-report.md >> $GITHUB_STEP_SUMMARY
 
       - name: Comment on PR with findings
+        continue-on-error: true
         if: github.event_name == 'pull_request' && steps.scan.outputs.findings_count > 0
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
         with:
