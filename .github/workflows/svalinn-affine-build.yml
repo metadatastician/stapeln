@@ -33,16 +33,26 @@ env:
 jobs:
   affine-build:
     name: compile svalinn .affine -> wasm
+    # NOTE: deliberately NOT a `container: ocaml/opam:*` job. That image
+    # runs as the non-root `opam` user (uid 1000) while the Actions runner
+    # mounts /__w/_temp root-owned, so actions/checkout's Node saveState
+    # dies with EACCES before any compile runs. ocaml/setup-ocaml on a
+    # plain runner is the canonical pattern and avoids the uid mismatch.
+    # The reproducibility contract that must match the Containerfile is the
+    # affinescript commit pin (AFFINESCRIPT_REF) and OCaml 5.1 — both kept.
     runs-on: ubuntu-latest
-    container:
-      image: ocaml/opam:debian-12-ocaml-5.1
 
     steps:
-      - name: Install git/m4
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends git m4
-
       - name: Checkout stapeln
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Install m4
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends m4
+
+      - name: Set up OCaml 5.1
+        uses: ocaml/setup-ocaml@e32b06a3e831ff2fbc6f08cf35be2085e3918014 # v3.6.1
+        with:
+          ocaml-compiler: "5.1"
 
       - name: Build the affinescript compiler
         run: |
@@ -50,7 +60,6 @@ jobs:
           git clone https://github.com/hyperpolymath/affinescript.git /tmp/affinescript
           cd /tmp/affinescript
           git checkout "${AFFINESCRIPT_REF}"
-          opam update -y
           opam install --deps-only -y .
           eval "$(opam env)"
           dune build --release
