@@ -36,25 +36,23 @@ jobs:
             echo "::warning::No .a2ml manifest files found. Every RSR repo should have 0-AI-MANIFEST.a2ml"
           fi
 
-      # Uses an in-repo, corrected copy of the a2ml validator rather than the
-      # external hyperpolymath/a2ml-validate-action. The pinned upstream SHA
-      # predated the path-identified-manifest exemptions and false-positived
-      # on this repo's .machine_readable/* docs; the only upstream commit with
-      # the correct exemptions ships a corrupted script line (embedded newline)
-      # that crashes the action. The vendored script fixes that line and
-      # recognises the clade/anchor/agent-instruction identity shapes.
+      # Re-adopted the external action: the comment-newline corruption that
+      # forced the vendored copy was repaired upstream in
+      # hyperpolymath/a2ml-validate-action#11 (f8517bb). That HEAD is now
+      # byte-equivalent in logic to the vendored script (verified by diff),
+      # and the same paths-ignore carve-out keeps stapeln green. Resolves #44.
       - name: Validate A2ML manifests
         if: steps.detect.outputs.count > 0
-        shell: bash
-        env:
-          INPUT_PATH: '.'
-          INPUT_STRICT: 'false'
+        uses: hyperpolymath/a2ml-validate-action@f8517bb894de68a5954db8127b1002cb64c4cdb7 # comment-bug fixed in #11
+        with:
+          path: '.'
+          strict: 'false'
           # Default carve-outs plus stapeln's legitimately distinct A2ML
           # doc-types whose identity is structural, not a TOML name/version
           # pair: clade declarations, YAML anchor files, and agent-instruction
           # session configs. Same rationale as the action's built-in defaults
           # (hyperpolymath/hypatia#243 — distinguish doc type from target).
-          INPUT_PATHS_IGNORE: |
+          paths-ignore: |
             vendor/
             vendored/
             verified-container-spec/
@@ -65,7 +63,6 @@ jobs:
             .machine_readable/agent_instructions/
             .machine_readable/CLADE.a2ml
             .machine_readable/anchors/
-        run: .github/scripts/validate-a2ml.sh
 
       - name: Write summary
         run: |
