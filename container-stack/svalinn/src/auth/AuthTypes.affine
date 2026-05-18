@@ -116,18 +116,18 @@ pub struct UserContext {
 }
 
 fn perm(resource: String, actions: [PermissionAction]) -> Permission {
-  Permission { resource: resource, actions: actions }
+  Permission #{ resource: resource, actions: actions }
 }
 
 // Default RBAC roles (== AuthTypes.res defaultRoles).
 pub fn default_roles() -> [Role] {
   [
-    Role {
+    Role #{
       name: "admin",
       description: Some("Full access to all resources"),
       permissions: [perm("*", [Create, Read, Update, Delete, Execute])]
     },
-    Role {
+    Role #{
       name: "operator",
       description: Some("Can manage containers but not policies"),
       permissions: [
@@ -136,7 +136,7 @@ pub fn default_roles() -> [Role] {
         perm("policies", [Read])
       ]
     },
-    Role {
+    Role #{
       name: "viewer",
       description: Some("Read-only access"),
       permissions: [
@@ -145,7 +145,7 @@ pub fn default_roles() -> [Role] {
         perm("policies", [Read])
       ]
     },
-    Role {
+    Role #{
       name: "auditor",
       description: Some("Can view logs and audit trail"),
       permissions: [

@@ -14,7 +14,7 @@ pub struct Config {
 }
 
 pub fn default_config() -> Config {
-  Config { window_ms: 60000, max_requests: 100 }
+  Config #{ window_ms: 60000, max_requests: 100 }
 }
 
 // Outcome of a check. `count`/`window_start` are the values the host must
@@ -36,7 +36,7 @@ fn ceil_div(a: Int, b: Int) -> Int {
 pub fn check(cfg: Config, count: Int, window_start: Int, now_ms: Int) -> Decision {
   // New client, or expired window → start a fresh window.
   if window_start == 0 || now_ms - window_start > cfg.window_ms {
-    return Decision {
+    return Decision #{
       allowed: true,
       count: 1,
       window_start: now_ms,
@@ -48,7 +48,7 @@ pub fn check(cfg: Config, count: Int, window_start: Int, now_ms: Int) -> Decisio
   if count < cfg.max_requests {
     let new_count = count + 1;
     let rem = cfg.max_requests - new_count;
-    return Decision {
+    return Decision #{
       allowed: true,
       count: new_count,
       window_start: window_start,
@@ -60,7 +60,7 @@ pub fn check(cfg: Config, count: Int, window_start: Int, now_ms: Int) -> Decisio
   // Limited.
   let reset_at = window_start + cfg.window_ms;
   let ms_left = reset_at - now_ms;
-  Decision {
+  Decision #{
     allowed: false,
     count: count,
     window_start: window_start,
