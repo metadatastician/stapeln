@@ -6,7 +6,7 @@
 - **LOC**: ~60,900
 - **Languages**: Elixir, ReScript, Idris2, Zig, Rust
 - **Postulates before**: 26 across 5 files + 2 `assert_total` (spec crash stubs)
-- **Postulates after**: 13 (one reintroduced; see §"chainCommutative regression")
+- **Postulates after**: 12 (chainCommutative regression RESOLVED 2026-05-18 — see §)
 - **Proven**: 13 postulates eliminated with genuine proofs
 - **New infrastructure**: IsElem type, chainHead/chainTail helpers, StringLemmas module
 - **Vordr proofs**: 0 postulates (all proven structurally)
@@ -20,18 +20,24 @@ explicit. As of this pass every spec-stub caller carries an explicit `partial`
 marker — the proof content is unchanged, but the modules once again
 type-check cleanly under `%default total`.
 
-### chainCommutative regression
+### chainCommutative regression — RESOLVED 2026-05-18
 
-Previously listed as "proven". The with-block proof
-(`chainCommutative ... | True | True = Refl` × 4 cases) doesn't type-check
-because Idris2's `with`-abstraction is syntactic: the goal
-`verifyChain hash [a,b] = verifyChain hash [b,a]` doesn't contain
-`verifyEd25519 …` as a subterm at abstraction time, and Idris2 won't reduce
-`verifyChain [n]` past an opaque `verifyEd25519` head. Demoted to a
-postulate. The clean fix — refactor `verifyChain = allValid ∘ map verifyPair`
-so `allValid` pattern-matches on `(True::_)`/`(False::_)` and reduces — is
-deferred; it touches `chainHeadValid`/`chainTailValid`/`chainImpliesIndividual`
-together.
+History: the with-block proof (`chainCommutative ... | True | True = Refl`
+× 4 cases) failed to type-check. Sharpened root cause: the blocker was not
+merely the `if` — `verifyChain` was *recursive + `partial`*, so Idris2
+would not reduce **any** of its clauses in conversion checking (not even
+`verifyChain h [] = True`), leaving every unfold stuck.
+
+Fix applied: `verifyChain` refactored to the NON-RECURSIVE alias
+`verifyChain h chain = allValid (map (verifyPair h) chain)`, moving all
+recursion into the total `allValid`/`map`. `verifyChain h chain` now
+reduces structurally on a concrete chain (the opaque `verifyEd25519`
+results remain as `&&` operands). `chainCommutative` is proven by the
+total 4-case Bool lemma `boolCommTrue : a && (b && True) = b && (a &&
+True)`. `chainHeadValid`/`chainTailValid`/`chainImpliesIndividual`/
+`chainExtension` were **not** modified — they still type-check (full
+`cerro-torre.ipkg` build green under idris2 0.8.0). No `believe_me`,
+`assert_total`, or `cast Refl` introduced.
 
 ## What Was Proven (2026-03-30)
 
@@ -59,7 +65,7 @@ together.
 |-----------|----------------|-------|
 | `chainExtension` | `rewrite validSig in validChain` | Substitutes True into if-condition |
 | `chainImpliesIndividual` | Induction on `IsElem` + chainHead/chainTail helpers | Replaced boolean `elem` with type-level `IsElem` |
-| ~~`chainCommutative`~~ | — | **Regressed to postulate 2026-04-19.** See header notes. |
+| `chainCommutative` | `verifyChain` → `allValid ∘ map verifyPair` refactor; total `boolCommTrue` Bool lemma | **PROVEN 2026-05-18** (regression resolved; idris2 0.8.0 ipkg-verified) |
 
 New helper lemmas added:
 - `chainHeadValid` — extracts head signature validity via `with`-block

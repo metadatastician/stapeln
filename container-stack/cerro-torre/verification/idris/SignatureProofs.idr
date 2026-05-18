@@ -108,14 +108,36 @@ SignatureChain = List (Ed25519PublicKey, Ed25519Signature)
 ||| keyword, so partiality propagates through any caller of the spec
 ||| function. Using this chain at runtime would crash; the chain exists
 ||| only to state proof obligations at the type level.
+||| Verify one (publicKey, signature) pair against the bundle hash.
+||| Partiality is isolated here (the `verifyEd25519` spec stub); all
+||| structural recursion now lives in the total `allValid` / `map`.
+partial
+public export
+verifyPair : SHA256Hash -> (Ed25519PublicKey, Ed25519Signature) -> Bool
+verifyPair hash (pk, sig) = verifyEd25519 pk (cast hash) sig
+
+||| Conjunction over a Bool list. Total and structural, so it reduces
+||| in conversion checking even when its elements are opaque.
+public export
+allValid : List Bool -> Bool
+allValid []        = True
+allValid (b :: bs) = b && allValid bs
+
+||| Verify that all signatures in a chain are valid for a given bundle
+||| hash. Refactored 2026-05-18 from an `if`-recursive definition to a
+||| NON-RECURSIVE alias `allValid . map verifyPair`. The old form could
+||| not be unfolded in conversion (recursive + `partial`), which forced
+||| `chainCommutative` to be postulated. With recursion moved into the
+||| total `allValid`/`map`, `verifyChain h chain` reduces structurally
+||| on a concrete chain (the opaque `verifyEd25519` results stay as
+||| `&&` operands), so order-independence is now provable.
+|||
+||| Still `partial` because `verifyPair` transitively calls the
+||| `verifyEd25519` spec stub; runtime impl is CryptoFFI.verifyEd25519IO.
 partial
 export
 verifyChain : SHA256Hash -> SignatureChain -> Bool
-verifyChain hash [] = True
-verifyChain hash ((pk, sig) :: rest) =
-  if verifyEd25519 pk (cast hash) sig
-    then verifyChain hash rest
-    else False
+verifyChain hash chain = allValid (map (verifyPair hash) chain)
 
 -- ============================================================================
 -- Chain Decomposition Helpers (proven by with-block on opaque verifyEd25519)
@@ -233,34 +255,20 @@ chainExtension
 chainExtension hash chain pk sig validChain validSig =
   rewrite validSig in validChain
 
-||| POSTULATE: Chain Commutativity
+||| PROVEN: Chain Commutativity (2026-05-18, no longer postulated)
 |||
 ||| Signature verification order doesn't matter — verifying [A, B]
 ||| gives the same result as verifying [B, A].
 |||
-||| PROOF STATUS: Postulated, pending `verifyChain` refactor.
-|||
-||| Why the obvious with-block proof fails:
-|||   The proof attempt
-|||     chainCommutative ... | True | True = Refl  (etc. for 4 cases)
-|||   fails because Idris2's `with`-abstraction is syntactic: it
-|||   substitutes matched expressions only where they appear in the
-|||   current goal. The goal
-|||     verifyChain hash [(pk1,sig1),(pk2,sig2)]
-|||       = verifyChain hash [(pk2,sig2),(pk1,sig1)]
-|||   doesn't syntactically contain `verifyEd25519 pk1 (cast hash) sig1`
-|||   at the point of with-abstraction — those occurrences are inside
-|||   unfolded `verifyChain` calls. Idris2 also refuses to reduce
-|||   `verifyChain [n]` past the opaque `verifyEd25519` head, so even
-|||   after the outer substitution the inner if-expressions stay stuck
-|||   as `if verifyEd25519 ... then myChain [] else False`.
-|||
-|||   The clean fix is to refactor `verifyChain` as
-|||     verifyChain hash chain = allValid (map (verifyPair hash) chain)
-|||   where `allValid` pattern-matches on `(True :: _)` / `(False :: _)`
-|||   (rather than using `if`). Commutativity then reduces structurally
-|||   to a two-argument Bool lemma. Deferred to a follow-up that touches
-|||   chainHeadValid / chainTailValid / chainImpliesIndividual together.
+||| Enabled by the `verifyChain = allValid . map verifyPair` refactor:
+||| `verifyChain h [a,b]` now reduces structurally (total `allValid`/
+||| `map`) to `vA && (vB && True)` with the opaque `verifyEd25519`
+||| results as `&&` operands. Order-independence is then the pure Bool
+||| identity `a && (b && True) = b && (a && True)`, proven by the total
+||| 4-case `boolCommTrue`. No `verifyChain` recursion is unfolded by the
+||| proof, so chainHeadValid/chainTailValid/chainImpliesIndividual are
+||| untouched. `partial` retained only because the type mentions
+||| `verifyChain` (spec-stub lineage); the proof term is total.
 partial
 export
 chainCommutative
@@ -271,5 +279,12 @@ chainCommutative
   -> (sig2 : Ed25519Signature)
   -> verifyChain hash [(pk1, sig1), (pk2, sig2)]
    = verifyChain hash [(pk2, sig2), (pk1, sig1)]
-chainCommutative _ _ _ _ _ =
-  idris_crash "chainCommutative: postulated pending verifyChain refactor (see PROOF-NEEDS.md)"
+chainCommutative hash pk1 sig1 pk2 sig2 =
+  boolCommTrue (verifyEd25519 pk1 (cast hash) sig1)
+               (verifyEd25519 pk2 (cast hash) sig2)
+  where
+    boolCommTrue : (a, b : Bool) -> a && (b && True) = b && (a && True)
+    boolCommTrue True  True  = Refl
+    boolCommTrue True  False = Refl
+    boolCommTrue False True  = Refl
+    boolCommTrue False False = Refl
