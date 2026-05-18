@@ -100,25 +100,38 @@ These encode computational hardness assumptions unprovable in any formal system.
 | `tamperEvidence` | Theorems.idr | sha256CollisionResistant + signatureNonReplayable + list concat non-injectivity |
 | `replayPrevention` | Theorems.idr | signatureNonReplayable (different record type) |
 
-### String Primitive Limitations (6) — INFRASTRUCTURE BUILT
+### String Primitive Limitations — 3 of 6 ELIMINATED 2026-05-18
 
-`isPrefixOf` and `isInfixOf` are C primitives with no reduction rules. Proven List Char equivalents exist in `StringLemmas.idr` (`charsPrefixOf`, `charsInfixOf`, `charsPrefixOfAppend`). To eliminate these postulates, add a bridge postulate connecting String operations to their List Char equivalents.
+`isPrefixOf` is a C primitive with no reduction rules. The bridge is now
+in place (`StringLemmas.idr`): two minimal documented axioms
+`isPrefixOfBridge` (`isPrefixOf s1 s2 = charsPrefixOf (unpack s1)
+(unpack s2)`) and `unpackAppend` (`unpack (a ++ b) = unpack a ++ unpack
+b`). Via these + the already-proven `charsPrefixOfAppend`, three
+postulates are now **real proofs** (full `cerro-torre.ipkg` green under
+idris2 0.8.0). Net: 3 ad-hoc string postulates → 2 fundamental,
+well-understood ones (same justified category as estate backend
+string-primitive axioms, e.g. boj-server SafetyLemmas).
 
-| Postulate | File | Proven equivalent in StringLemmas.idr |
-|-----------|------|--------------------------------------|
-| `extractionSafety` | ImporterProofs.idr | `charsPrefixOfAppend` |
-| `symlinkSafety` | ImporterProofs.idr | `charsPrefixOfAppend` |
-| `zipSlipPrevention` | ImporterProofs.idr | `charsPrefixOfAppend` |
-| `normalizedIsSafe` | ImporterProofs.idr | `dotDotNotInfix` (partial) |
-| `absolutePathRejection` | ImporterProofs.idr | Needs SafePath definition over List Char |
-| `ociLayoutEnforcement` | ImporterProofs.idr | Needs DecEq on TarEntry paths |
+| Postulate | File | Status |
+|-----------|------|--------|
+| `extractionSafety` | ImporterProofs.idr | **PROVEN** (isPrefixOfBridge + unpackAppend + charsPrefixOfAppend) |
+| `symlinkSafety` | ImporterProofs.idr | **PROVEN** (idem) |
+| `zipSlipPrevention` | ImporterProofs.idr | **PROVEN** (idem) |
+| `normalizedIsSafe` | ImporterProofs.idr | postulate — needs `dotDotNotInfix` + infix bridge |
+| `absolutePathRejection` | ImporterProofs.idr | postulate — needs SafePath over List Char |
+| `ociLayoutEnforcement` | ImporterProofs.idr | postulate — needs DecEq on TarEntry paths |
 
-### Path to eliminating String postulates
+Remaining bridge axioms (minimal trusted base): `isPrefixOfBridge`,
+`unpackAppend` in `StringLemmas.idr`.
 
-1. Add bridge postulate: `isPrefixOf s1 s2 = charsPrefixOf (unpack s1) (unpack s2)` (1 postulate)
-2. Prove `unpack` distributes over `++`: `unpack (a ++ b) = unpack a ++ unpack b` (may need 1 more postulate)
-3. Derive extractionSafety, symlinkSafety, zipSlipPrevention from bridge + `charsPrefixOfAppend`
-4. Net: 3 postulates → 1-2 bridge postulates (improvement)
+### Path to eliminating remaining String postulates
+
+1. ~~Add `isPrefixOfBridge` + `unpackAppend`~~ — DONE 2026-05-18.
+2. ~~Derive extractionSafety / symlinkSafety / zipSlipPrevention~~ — DONE.
+3. `normalizedIsSafe`: add an `isInfixOf` bridge analogous to
+   `isPrefixOfBridge`, then derive from `dotDotNotInfix`.
+4. `absolutePathRejection`: define `SafePath` semantics over `List Char`.
+5. `ociLayoutEnforcement`: add `DecEq` on `TarEntry` paths.
 
 ## assert_total Usage (2) — ACCEPTABLE
 

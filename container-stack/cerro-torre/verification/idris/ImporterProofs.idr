@@ -19,6 +19,7 @@ import Data.List
 import Data.List1
 import Data.Nat
 import Decidable.Equality
+import StringLemmas
 
 %default total
 
@@ -160,7 +161,10 @@ extractionSafety : (root : Path)
                 -> (entry : TarEntry)
                 -> SafePath (entry.path)
                 -> isPrefixOf root (root ++ "/" ++ entry.path) = True
-extractionSafety _ _ _ = idris_crash "extractionSafety: string-primitive postulate — type-level use only"
+extractionSafety root entry _ =
+  rewrite isPrefixOfBridge root (root ++ "/" ++ entry.path) in
+  rewrite unpackAppend root ("/" ++ entry.path) in
+  charsPrefixOfAppend (unpack root) (unpack ("/" ++ entry.path))
 
 ||| POSTULATE: Symlink Safety
 |||
@@ -178,7 +182,10 @@ symlinkSafety : (root : Path)
              -> entry.symlinkTarget = Just target
              -> SafePath target
              -> isPrefixOf root (root ++ "/" ++ target) = True
-symlinkSafety _ _ _ _ _ _ = idris_crash "symlinkSafety: string-primitive postulate — type-level use only"
+symlinkSafety root _ target _ _ _ =
+  rewrite isPrefixOfBridge root (root ++ "/" ++ target) in
+  rewrite unpackAppend root ("/" ++ target) in
+  charsPrefixOfAppend (unpack root) (unpack ("/" ++ target))
 
 ||| POSTULATE: Absolute Path Rejection
 |||
@@ -278,4 +285,7 @@ zipSlipPrevention : (root : Path)
                  -> (entry : TarEntry)
                  -> SafePath (normalizePath entry.path)
                  -> isPrefixOf root (root ++ "/" ++ normalizePath entry.path) = True
-zipSlipPrevention _ _ _ = idris_crash "zipSlipPrevention: string-primitive postulate — type-level use only"
+zipSlipPrevention root entry _ =
+  rewrite isPrefixOfBridge root (root ++ "/" ++ normalizePath entry.path) in
+  rewrite unpackAppend root ("/" ++ normalizePath entry.path) in
+  charsPrefixOfAppend (unpack root) (unpack ("/" ++ normalizePath entry.path))

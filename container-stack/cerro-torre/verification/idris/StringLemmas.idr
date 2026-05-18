@@ -14,6 +14,7 @@
 
 module StringLemmas
 
+import Data.String
 import Data.List
 import Decidable.Equality
 
@@ -74,3 +75,39 @@ dotDotNotInfix : (xs : List Char)
               -> charsInfixOf ['.', '.'] xs = False
               -> Not (charsInfixOf ['.', '.'] xs = True)
 dotDotNotInfix xs prf contra = absurd (trans (sym prf) contra)
+
+-- ============================================================================
+-- Bridge Axioms (string-primitive postulates)
+-- ============================================================================
+--
+-- These two are the *minimal* trusted base connecting Idris2's opaque C
+-- String primitives to the proven List-Char operations above. They are
+-- the same justified category as backend string-primitive axioms
+-- elsewhere in the estate (cf. boj-server SafetyLemmas charEqSound/
+-- unpackLength): not provable in Idris2 (no reduction rules for the C
+-- prims), minimal, isolated, documented. Per the repo idiom (Idris2 0.8
+-- has no `postulate` keyword) they are `partial`+`idris_crash` stubs.
+--
+-- NET EFFECT: they let ImporterProofs.idr discharge `extractionSafety`,
+-- `symlinkSafety`, `zipSlipPrevention` with real proofs — replacing 3
+-- ad-hoc string postulates with 2 fundamental, well-understood ones.
+
+||| BRIDGE AXIOM: String.isPrefixOf agrees with the proven List-Char
+||| `charsPrefixOf` under `unpack`. `isPrefixOf` is a C primitive with
+||| no reduction rules; this equivalence is a backend-semantics fact.
+partial
+public export
+isPrefixOfBridge : (s1, s2 : String)
+                -> isPrefixOf s1 s2 = charsPrefixOf (unpack s1) (unpack s2)
+isPrefixOfBridge _ _ =
+  idris_crash "isPrefixOfBridge: string-primitive axiom — type-level use only"
+
+||| BRIDGE AXIOM: `unpack` distributes over String `++`. Backend
+||| primitive guarantee (`prim__strAppend` / `prim__strToCharList`),
+||| not reducible at the Idris2 type level.
+partial
+public export
+unpackAppend : (a, b : String)
+            -> unpack (a ++ b) = unpack a ++ unpack b
+unpackAppend _ _ =
+  idris_crash "unpackAppend: string-primitive axiom — type-level use only"
