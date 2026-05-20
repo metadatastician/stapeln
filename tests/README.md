@@ -2,6 +2,17 @@
 
 Comprehensive test coverage for validation, generation, and end-to-end workflows.
 
+Two runtimes:
+
+- **Idris2 (canonical, estate-aligned)** — `tests/idris2/` — 107 tests
+  ported from the 5 Deno + 1 JS suites below; see
+  `tests/idris2/README.adoc`. This is the single source of truth as
+  of the 2026-05-20 estate port (8/11). Build:
+  `idris2 --build stapeln-tests.ipkg && ./build/exec/stapeln-tests`.
+- **Deno / Node (legacy, retained for cross-check)** — the TS/JS suites
+  documented below remain runnable while the estate migration
+  completes.
+
 ## Running Tests
 
 ### All Tests

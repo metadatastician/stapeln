@@ -5,7 +5,7 @@
 [metadata]
 project = "stapeln"
 version = "0.1.0"
-last-updated = "2026-04-25"
+last-updated = "2026-05-20"
 status = "active"
 
 [project-context]
@@ -80,6 +80,16 @@ priority-4 = "WebSocket live events"
 # 2026-04-25: D→C blocker sweep. docs/READINESS.adoc created; 9 implementation-subtree
 #             README.adoc files added (api/ container-stack/ docs/ examples/ ffi/
 #             generated/ scripts/ site/ src/).
+# 2026-05-20: Estate test rollout — port 8 of 11. Ported all 5 Deno test files
+#             (unit/container_types_test.ts, property/nickel_config_properties_test.ts,
+#             property/layer_invariants_test.ts, e2e/container_lifecycle_test.ts,
+#             aspect/security_test.ts) + 1 JS test file (tests/stapeln.test.js) to
+#             Idris2 0.8.0. Lives in tests/idris2/ behind stapeln-tests.ipkg, uses
+#             the shared estate Test.Spec harness. 107 / 107 tests pass.
+#             Module → source map: ContainerTypesTest (26), NickelConfigPropertiesTest (15),
+#             SecurityAspectTest (16), LayerInvariantsTest (27), ContainerLifecycleTest (7),
+#             StapelnTest (16). TS sources retained side-by-side for cross-check until
+#             all 11 estate repos are green; they will be retired then.
 # 2026-04-19: Idris2 proof build restored in cerro-torre/verification/idris. After the assert_total
 #             spec-stub removal the modules had stopped type-checking: `chainCommutative` had a real
 #             type error, and five other proofs (verifyChain, chainHeadValid, chainTailValid,

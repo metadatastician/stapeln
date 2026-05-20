@@ -1,0 +1,24 @@
+-- SPDX-License-Identifier: PMPL-1.0-or-later
+-- stapeln Idris2 test suite. Estate port 8/11 — full sweep of 5 Deno
+-- + 1 JS test file (107 tests across container types, Nickel config
+-- properties, security aspects, layer invariants, container lifecycle
+-- e2e, and stack-file generation).
+
+package stapeln-tests
+
+sourcedir = "tests/idris2"
+
+depends = base
+
+modules = Test.Spec
+        , ContainerTypesTest
+        , NickelConfigPropertiesTest
+        , SecurityAspectTest
+        , LayerInvariantsTest
+        , ContainerLifecycleTest
+        , StapelnTest
+        , Main
+
+main = Main
+
+executable = "stapeln-tests"

@@ -33,6 +33,30 @@ This file documents the CRG D→C blitz completed in session 2026-04-04.
 - `e2e/container_lifecycle_test.ts` — 7 E2E lifecycle tests (deploy → monitor → undeploy)
 - `aspect/security_test.ts` — 10 security contract tests (namespace isolation, capability model, image refs, seccomp)
 
+### Idris2 (tests/idris2/) — estate port 8/11 (2026-05-20)
+
+107 / 107 tests ported from the 5 Deno + 1 JS suites above. Same assertions,
+same fixtures, no Deno/Node dependency on the test path. Build with:
+
+```bash
+idris2 --build stapeln-tests.ipkg
+./build/exec/stapeln-tests
+```
+
+| Module | Tests | Source ported from |
+|--------|-------|--------------------|
+| `ContainerTypesTest.idr` | 26 | `tests/unit/container_types_test.ts` |
+| `NickelConfigPropertiesTest.idr` | 15 | `tests/property/nickel_config_properties_test.ts` |
+| `SecurityAspectTest.idr` | 16 | `tests/aspect/security_test.ts` |
+| `LayerInvariantsTest.idr` | 27 | `tests/property/layer_invariants_test.ts` |
+| `ContainerLifecycleTest.idr` | 7 | `tests/e2e/container_lifecycle_test.ts` |
+| `StapelnTest.idr` | 16 | `tests/stapeln.test.js` |
+| **Total** | **107** | |
+
+The TS sources are retained side-by-side so the port can be cross-checked
+during the estate migration; once all 11 panic-free repos are green on
+Idris2 the TS originals will be retired.
+
 ## Benchmark Status
 
 All benchmarks compile and are baselined (Criterion will emit output on run):

@@ -1,0 +1,101 @@
+// SPDX-License-Identifier: PMPL-1.0-or-later
+= stapeln Idris2 Test Suite
+:toc:
+:toclevels: 2
+
+Idris2 port of the panic-free Deno + JS test suites under
+`tests/`. Estate port 8 of 11 (2026-05-20). 107 / 107 tests
+pass on Idris2 0.8.0.
+
+== Quickstart
+
+[source,bash]
+----
+# build
+IDRIS2_PREFIX=$(dirname $(dirname $(which idris2))) \
+  idris2 --build stapeln-tests.ipkg
+
+# run
+./build/exec/stapeln-tests
+----
+
+Exit code: `0` on all-green, `1` if any test fails. The runner is the
+shared estate harness `Test.Spec` (mirrored across gossamer / boj-server
+/ a2ml-showcase / awesome-nickel / format-registrations /
+julia-professional-registry / ubicity).
+
+== Module → TS source map
+
+[cols="1m,1,2m"]
+|===
+| Idris2 module | Tests | Source ported
+
+| ContainerTypesTest
+| 26
+| tests/unit/container_types_test.ts
+
+| NickelConfigPropertiesTest
+| 15
+| tests/property/nickel_config_properties_test.ts
+
+| SecurityAspectTest
+| 16
+| tests/aspect/security_test.ts
+
+| LayerInvariantsTest
+| 27
+| tests/property/layer_invariants_test.ts
+
+| ContainerLifecycleTest
+| 7
+| tests/e2e/container_lifecycle_test.ts
+
+| StapelnTest
+| 16
+| tests/stapeln.test.js
+
+| *Total*
+| *107*
+|
+|===
+
+Each `.idr` file's header carries an `N of M tests ported` line; the
+ratio is `M/M` for all six modules.
+
+== Porting conventions
+
+* `Map<string, T>` in the TS source becomes
+  `List (String, T)` paired with a `List String` build-order list (see
+  `LayerInvariantsTest.LayerSet`).
+* `JSON.stringify` / `JSON.parse` round-trips become structural copies
+  through `serialiseToFields` / `deserialiseFromFields`. The TS tests
+  never inspect the JSON string itself, only the round-tripped object's
+  fields, so a deep-copy semantically matches.
+* Regexes such as `/^\d+(\.\d+)?[MG]$/` (memory units) are ported as
+  explicit `List Char` walks — Idris2 0.8.0 has no regex in `base`.
+* Tests are organised as `List TestCase` per concern, then aggregated
+  through `runTestSuite "Name" cases` in `Main.idr`.
+
+== Why this port exists
+
+The estate-wide test-rollout campaign (see
+`MEMORY/project_estate_test_rollout_bimodal.md`) is migrating the
+panic-free repos onto a single Idris2 harness. stapeln is the eighth
+of eleven repos. The TS sources remain alongside for cross-check
+until all eleven are green; they will be retired then.
+
+== Files
+
+[cols="1m,3"]
+|===
+| Path | Purpose
+
+| `Main.idr`                          | Runs all six suites, aggregates pass/fail, sets exit code.
+| `Test/Spec.idr`                     | Minimal estate test harness (`test`, `assertEq`, `assertTrue`, `runTestSuite`).
+| `ContainerTypesTest.idr`            | Container spec type invariants (26).
+| `NickelConfigPropertiesTest.idr`    | Nickel config property tests (15).
+| `SecurityAspectTest.idr`            | Security contract tests (16).
+| `LayerInvariantsTest.idr`           | OCI label / round-trip / budget / composition properties (27).
+| `ContainerLifecycleTest.idr`        | Deploy → start → monitor → stop → remove E2E (7).
+| `StapelnTest.idr`                   | Validation + stack-file generation (Justfile / Mustfile / Trustfile.hs / Dustfile / stack.yaml / Containerfile) + save/load round-trip (16).
+|===
