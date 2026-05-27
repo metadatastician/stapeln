@@ -140,3 +140,84 @@ Both in `CryptoProofs.idr`, used as crash stubs for spec-only functions. Runtime
 ## Dangerous Patterns
 
 - Zero `believe_me`, zero `cast Refl`, zero `unsafePerformIO` in proof code.
+
+## Escape-Hatch Enumeration (2026-05-27 — `check-trusted-base.sh` site list)
+
+Per [standards#203](https://github.com/hyperpolymath/standards/blob/main/docs/TRUSTED-BASE-REDUCTION-POLICY.adoc),
+each `partial` site reported by `bash scripts/check-trusted-base.sh .` is
+enumerated below with classification. Sites are listed with full
+file:line so the script's per-site documentation check passes. The
+symbolic-postulate breakdown in §"What Remains Postulated (12 total)"
+above remains the substantive narrative; this section is the
+mechanical CI-gate index.
+
+Classification taxonomy:
+
+- **AXIOM-STUB** — spec-stub `partial`+`idris_crash` that IS the trusted-base
+  entry. Runtime impl lives elsewhere (e.g., `CryptoFFI.*IO`). Type-level use only.
+- **AXIOM-TRANSITIVE** — proof term itself is total (`Refl`, `()`, `sym`, `rewrite`,
+  structural induction); `partial` inherited only because the type signature
+  references a partial spec stub. Adds nothing new to trusted base.
+- **DISCHARGE-PENDING** — currently `idris_crash` postulate, but a tractable
+  proof path is documented in §"Path to eliminating remaining String postulates"
+  above. Targeted for future elimination.
+
+### CryptoProofs.idr (7)
+
+| File:line | Symbol | Class | Notes |
+|---|---|---|---|
+| `container-stack/cerro-torre/verification/idris/CryptoProofs.idr:71` | `verifyEd25519` | AXIOM-STUB | Opaque spec; runtime = `CryptoFFI.verifyEd25519IO` |
+| `container-stack/cerro-torre/verification/idris/CryptoProofs.idr:81` | `sha256` | AXIOM-STUB | Opaque spec; runtime = `CryptoFFI.sha256IO` |
+| `container-stack/cerro-torre/verification/idris/CryptoProofs.idr:95` | `sha256Deterministic` | AXIOM-TRANSITIVE | Proof = `Refl` |
+| `container-stack/cerro-torre/verification/idris/CryptoProofs.idr:102` | `sha256Pure` | AXIOM-TRANSITIVE | Proof = `Refl` |
+| `container-stack/cerro-torre/verification/idris/CryptoProofs.idr:109` | `ed25519Deterministic` | AXIOM-TRANSITIVE | Proof = `Refl` |
+| `container-stack/cerro-torre/verification/idris/CryptoProofs.idr:151` | `ed25519Correctness` | AXIOM-STUB | RFC 8032 §5.1.7 Edwards curve correctness |
+| `container-stack/cerro-torre/verification/idris/CryptoProofs.idr:174` | `sha256CollisionResistant` | AXIOM-STUB | NIST SP 800-107 collision resistance |
+
+### SignatureProofs.idr (9)
+
+| File:line | Symbol | Class | Notes |
+|---|---|---|---|
+| `container-stack/cerro-torre/verification/idris/SignatureProofs.idr:60` | `signatureNonReplayable` | AXIOM-STUB | Ed25519 EUF-CMA (reduces to DL on Curve25519) |
+| `container-stack/cerro-torre/verification/idris/SignatureProofs.idr:80` | `signatureNonMalleable` | AXIOM-STUB | RFC 8032 §8 cofactored verification |
+| `container-stack/cerro-torre/verification/idris/SignatureProofs.idr:114` | `verifyPair` | AXIOM-TRANSITIVE | Calls `verifyEd25519` |
+| `container-stack/cerro-torre/verification/idris/SignatureProofs.idr:137` | `verifyChain` | AXIOM-TRANSITIVE | Calls `verifyPair` |
+| `container-stack/cerro-torre/verification/idris/SignatureProofs.idr:153` | `chainHeadValid` | AXIOM-TRANSITIVE | Proof = with-block case-split (total) |
+| `container-stack/cerro-torre/verification/idris/SignatureProofs.idr:167` | `chainTailValid` | AXIOM-TRANSITIVE | Proof = with-block case-split (total) |
+| `container-stack/cerro-torre/verification/idris/SignatureProofs.idr:218` | `chainImpliesIndividual` | AXIOM-TRANSITIVE | Proof = induction on `IsElem` (total) |
+| `container-stack/cerro-torre/verification/idris/SignatureProofs.idr:245` | `chainExtension` | AXIOM-TRANSITIVE | Proof = `rewrite validSig in validChain` (total) |
+| `container-stack/cerro-torre/verification/idris/SignatureProofs.idr:272` | `chainCommutative` | AXIOM-TRANSITIVE | Proof = `boolCommTrue` 4-case Bool lemma (total, see 2026-05-18 regression resolution above) |
+
+### ImporterProofs.idr (6)
+
+| File:line | Symbol | Class | Notes |
+|---|---|---|---|
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:137` | `normalizedIsSafe` | DISCHARGE-PENDING | Needs `isInfixOf` bridge + `dotDotNotInfix` lemma |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:158` | `extractionSafety` | AXIOM-TRANSITIVE | Proof = `isPrefixOfBridge` + `unpackAppend` + `charsPrefixOfAppend` (total via StringLemmas) |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:176` | `symlinkSafety` | AXIOM-TRANSITIVE | Same proof pattern as `extractionSafety` |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:208` | `absolutePathRejection` | DISCHARGE-PENDING | Needs `SafePath` semantics over `List Char` |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:242` | `ociLayoutEnforcement` | DISCHARGE-PENDING | Needs `DecEq` on `TarEntry` paths |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:282` | `zipSlipPrevention` | AXIOM-TRANSITIVE | Same proof pattern as `extractionSafety` |
+
+### Theorems.idr (10)
+
+| File:line | Symbol | Class | Notes |
+|---|---|---|---|
+| `container-stack/cerro-torre/verification/idris/Theorems.idr:42` | `computeBundleHash` | AXIOM-TRANSITIVE | Calls `sha256` spec |
+| `container-stack/cerro-torre/verification/idris/Theorems.idr:50` | `WellFormed` | AXIOM-TRANSITIVE | Type references `computeBundleHash` |
+| `container-stack/cerro-torre/verification/idris/Theorems.idr:57` | `ProperlySigned` | AXIOM-TRANSITIVE | Type references `verifyChain` |
+| `container-stack/cerro-torre/verification/idris/Theorems.idr:76` | `bundleIntegrity` | AXIOM-TRANSITIVE | Proof = `sym wellFormed` (total) |
+| `container-stack/cerro-torre/verification/idris/Theorems.idr:93` | `signatureChainSoundness` | AXIOM-TRANSITIVE | Delegates to `chainImpliesIndividual` |
+| `container-stack/cerro-torre/verification/idris/Theorems.idr:123` | `supplyChainIntegrity` | AXIOM-TRANSITIVE | Proof = two `rewrite` + `wf1` (total) |
+| `container-stack/cerro-torre/verification/idris/Theorems.idr:161` | `tamperEvidence` | AXIOM-STUB | Composition of `sha256CollisionResistant` + `signatureNonReplayable` |
+| `container-stack/cerro-torre/verification/idris/Theorems.idr:186` | `thresholdSatisfaction` | AXIOM-TRANSITIVE | Proof = `()` (trivial; security in premises) |
+| `container-stack/cerro-torre/verification/idris/Theorems.idr:206` | `replayPrevention` | AXIOM-STUB | Direct consequence of `signatureNonReplayable` |
+| `container-stack/cerro-torre/verification/idris/Theorems.idr:230` | `nonRepudiation` | AXIOM-TRANSITIVE | Proof = `()` (trivial; security in premises) |
+
+### Summary
+
+- **AXIOM-STUB** (8): `verifyEd25519`, `sha256`, `ed25519Correctness`, `sha256CollisionResistant`, `signatureNonReplayable`, `signatureNonMalleable`, `tamperEvidence`, `replayPrevention`. These are the genuine trusted-base entries.
+- **AXIOM-TRANSITIVE** (21): Type-signature partiality inherited from AXIOM-STUB references. Every proof term is total; the only reason these are `partial` is Idris2 0.8's lack of a `postulate` keyword forcing partiality propagation through any caller of a spec stub.
+- **DISCHARGE-PENDING** (3): `normalizedIsSafe`, `absolutePathRejection`, `ociLayoutEnforcement` — tractable proofs documented in §"Path to eliminating remaining String postulates" above.
+
+Total: 32 sites enumerated. The remaining 2 of 34 markers reported by the script are the two `assert_total` documented in §"assert_total Usage (2) — ACCEPTABLE" above.
