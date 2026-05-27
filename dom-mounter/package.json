@@ -2,7 +2,7 @@
   "name": "@hyperpolymath/stapeln-frontend",
   "version": "1.0.0",
   "description": "Formally verified, security-hardened DOM mounting library with framework-agnostic architecture",
-  "license": "PMPL-1.0-or-later",
+  "license": "MPL-2.0",
   "author": "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>",
   "homepage": "https://github.com/hyperpolymath/stapeln-frontend#readme",
   "repository": {

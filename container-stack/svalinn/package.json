@@ -2,7 +2,7 @@
   "name": "@svalinn/gateway",
   "version": "0.2.0",
   "description": "Svalinn Edge Shield - Type-safe HTTP gateway for verified container operations",
-  "license": "PMPL-1.0-or-later",
+  "license": "MPL-2.0",
   "author": "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>",
   "type": "module",
   "scripts": {
