@@ -1,0 +1,75 @@
+;; SPDX-License-Identifier: MPL-2.0
+;; Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+;;
+;; Assail Classifications — stapeln
+;; See panic-attack/.claude/CLAUDE.md § "User-Classification Registry".
+
+(assail-classifications
+  (metadata
+    (version "1.0.0")
+    (project "stapeln")
+    (last-updated "2026-05-26")
+    (entries 10)
+    (status "active"))
+
+  (classification
+    (file "container-stack/vordr/src/rust/engine/state.rs")
+    (category "UnsafeCode")
+    (classification "legitimate-ffi")
+    (audit "audits/audit-ffi-2026-05-26.md")
+    (rationale "vordr is an eBPF + Zig + Rust container runtime; selur is a Zig sandbox; cerro-torre is an Ada post-quantum component binding liboqs via Ada's pragma Convention/Unchecked_Conversion. All 10 findings are at the Rust↔eBPF kernel boundary, Zig FFI to libc/libcontainer, or Ada↔C bindings to liboqs."))
+  (classification
+    (file "container-stack/vordr/src/rust/engine/config.rs")
+    (category "UnsafeCode")
+    (classification "legitimate-ffi")
+    (audit "audits/audit-ffi-2026-05-26.md")
+    (rationale "vordr is an eBPF + Zig + Rust container runtime; selur is a Zig sandbox; cerro-torre is an Ada post-quantum component binding liboqs via Ada's pragma Convention/Unchecked_Conversion. All 10 findings are at the Rust↔eBPF kernel boundary, Zig FFI to libc/libcontainer, or Ada↔C bindings to liboqs."))
+  (classification
+    (file "container-stack/vordr/src/rust/engine/lifecycle.rs")
+    (category "UnsafeCode")
+    (classification "legitimate-ffi")
+    (audit "audits/audit-ffi-2026-05-26.md")
+    (rationale "vordr is an eBPF + Zig + Rust container runtime; selur is a Zig sandbox; cerro-torre is an Ada post-quantum component binding liboqs via Ada's pragma Convention/Unchecked_Conversion. All 10 findings are at the Rust↔eBPF kernel boundary, Zig FFI to libc/libcontainer, or Ada↔C bindings to liboqs."))
+  (classification
+    (file "container-stack/vordr/src/rust/ebpf/bpf/sched_exec.rs")
+    (category "UnsafeCode")
+    (classification "legitimate-ffi")
+    (audit "audits/audit-ffi-2026-05-26.md")
+    (rationale "vordr is an eBPF + Zig + Rust container runtime; selur is a Zig sandbox; cerro-torre is an Ada post-quantum component binding liboqs via Ada's pragma Convention/Unchecked_Conversion. All 10 findings are at the Rust↔eBPF kernel boundary, Zig FFI to libc/libcontainer, or Ada↔C bindings to liboqs."))
+  (classification
+    (file "container-stack/vordr/src/rust/ebpf/bpf/sched_exec.rs")
+    (category "UnsafeCode")
+    (classification "legitimate-ffi")
+    (audit "audits/audit-ffi-2026-05-26.md")
+    (rationale "vordr is an eBPF + Zig + Rust container runtime; selur is a Zig sandbox; cerro-torre is an Ada post-quantum component binding liboqs via Ada's pragma Convention/Unchecked_Conversion. All 10 findings are at the Rust↔eBPF kernel boundary, Zig FFI to libc/libcontainer, or Ada↔C bindings to liboqs."))
+  (classification
+    (file "container-stack/vordr/src/rust/ebpf/bpf/sys_enter.rs")
+    (category "UnsafeCode")
+    (classification "legitimate-ffi")
+    (audit "audits/audit-ffi-2026-05-26.md")
+    (rationale "vordr is an eBPF + Zig + Rust container runtime; selur is a Zig sandbox; cerro-torre is an Ada post-quantum component binding liboqs via Ada's pragma Convention/Unchecked_Conversion. All 10 findings are at the Rust↔eBPF kernel boundary, Zig FFI to libc/libcontainer, or Ada↔C bindings to liboqs."))
+  (classification
+    (file "container-stack/vordr/ffi/zig/src/main.zig")
+    (category "UnsafeCode")
+    (classification "legitimate-ffi")
+    (audit "audits/audit-ffi-2026-05-26.md")
+    (rationale "vordr is an eBPF + Zig + Rust container runtime; selur is a Zig sandbox; cerro-torre is an Ada post-quantum component binding liboqs via Ada's pragma Convention/Unchecked_Conversion. All 10 findings are at the Rust↔eBPF kernel boundary, Zig FFI to libc/libcontainer, or Ada↔C bindings to liboqs."))
+  (classification
+    (file "container-stack/selur/zig/runtime.zig")
+    (category "UnsafeCode")
+    (classification "legitimate-ffi")
+    (audit "audits/audit-ffi-2026-05-26.md")
+    (rationale "vordr is an eBPF + Zig + Rust container runtime; selur is a Zig sandbox; cerro-torre is an Ada post-quantum component binding liboqs via Ada's pragma Convention/Unchecked_Conversion. All 10 findings are at the Rust↔eBPF kernel boundary, Zig FFI to libc/libcontainer, or Ada↔C bindings to liboqs."))
+  (classification
+    (file "container-stack/cerro-torre/src/core/cerro_crypto.adb")
+    (category "UnsafeCode")
+    (classification "legitimate-ffi")
+    (audit "audits/audit-ffi-2026-05-26.md")
+    (rationale "vordr is an eBPF + Zig + Rust container runtime; selur is a Zig sandbox; cerro-torre is an Ada post-quantum component binding liboqs via Ada's pragma Convention/Unchecked_Conversion. All 10 findings are at the Rust↔eBPF kernel boundary, Zig FFI to libc/libcontainer, or Ada↔C bindings to liboqs."))
+  (classification
+    (file "container-stack/cerro-torre/src/bindings/liboqs.adb")
+    (category "UnsafeCode")
+    (classification "legitimate-ffi")
+    (audit "audits/audit-ffi-2026-05-26.md")
+    (rationale "vordr is an eBPF + Zig + Rust container runtime; selur is a Zig sandbox; cerro-torre is an Ada post-quantum component binding liboqs via Ada's pragma Convention/Unchecked_Conversion. All 10 findings are at the Rust↔eBPF kernel boundary, Zig FFI to libc/libcontainer, or Ada↔C bindings to liboqs."))
+)
