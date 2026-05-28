@@ -18,7 +18,7 @@
 #   container-stack/rokur/    — Deno secrets management gate
 #   dom-mounter/ — ReScript DOM mounting library
 #   ephapax-modules/ — Ephapax linear type modules
-#   api/v/       — V-lang API bindings
+#   ffi/zig/     — Zig FFI (canonical API surface; Idris2 owns ABI)
 
 # ╔═══════════════════════════════════════════════════════════════════════════╗
 # ║  Metadata                                                               ║
