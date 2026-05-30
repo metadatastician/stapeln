@@ -13,12 +13,13 @@ The README makes claims. This file backs them up with evidence from real code.
 ____
 All state transitions are **pure functions**:
 
-```rescript
+[source,rescript]
+----
 type model = { /* app state */ }
 type msg = AddComponent | DragMove | Deploy | Simulate | ...
 let update: (model, msg) => (model, effect<msg>)
 let view: model => React.element
-```
+----
 
 Time-travel debugging. Fully testable. Predictable.
 ____
@@ -48,7 +49,8 @@ ____
 
 **From README** (lines 237-260):
 ____
-```elixir
+[source,elixir]
+----
 # Store stack with multiple modalities
 VeriSim.insert(%{
   uuid: "stack-abc123",
@@ -67,7 +69,7 @@ VeriSim.sparql_query("""
     ?component stapeln:exposesPort 22 .
   }
 """)
-```
+----
 ____
 
 **Evidence**: `/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/backend/lib/verisimdb_integration.ex` integrates VeriSimDB graph, semantic (RDF), and temporal modalities. Stack data stored via `VeriSim.insert/1` with structured UUID and metadata at `/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/backend/lib/components/stack.ex`.
