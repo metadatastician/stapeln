@@ -1,4 +1,4 @@
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
 ;; Guix channel configuration for ProvenCrypto.jl container
 ;;
 ;; This ensures reproducible builds by pinning package versions.
