@@ -1,5 +1,5 @@
 --  Cerro Torre CTP Lexer - Tokenizer for CTP manifest format
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --  Palimpsest-Covenant: 1.0
 --
 --  This package provides tokenization for CTP (Cerro Torre Package) manifests.

@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-net --allow-read --allow-env
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // dev-server.js - Deno development server with hot reload
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";

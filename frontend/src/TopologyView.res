@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // TopologyView.res - Network topology designer with Cisco Packet Tracer-style layout
 // Features: snap-to-grid, connection drawing, delete confirmation, undo support
 

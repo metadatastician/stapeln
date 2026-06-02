@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Fjord Secrets Manager — Linear Mode
 // Guarantees: Secrets used exactly once, no leaks, no double-use
 

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # stapeln.toml — Stapeln dogfooding its own layer-based container build.
 #
 # This is the canonical example of a stapeln.toml — Stapeln building itself.

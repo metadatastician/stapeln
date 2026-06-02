@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Svalinn MCP server implementation
 // Exposes Svalinn edge operations to MCP clients (AI agents) via JSON-RPC 2.0.
 // Delegates container/image operations to Vordr through McpClient.

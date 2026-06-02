@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 
 import { addQ16, isAddWasmActive, isWasmActive, lerpQ16 } from "../frontend/src/PacketMathWasm.js";
 import { isBatchWasmActive, stepPacketsBatch } from "../frontend/src/PacketBatchKernel.js";

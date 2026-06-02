@@ -1,5 +1,5 @@
 --  Cerro_Pack - Signing using Rust cerro-sign binary
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --  Replacement for shell script signing
 
 with Ada.Text_IO;

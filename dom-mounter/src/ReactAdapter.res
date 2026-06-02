@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // ReactAdapter.res - React hooks for DOM Mounter (Phase 3)
 
 open DomMounterEnhanced

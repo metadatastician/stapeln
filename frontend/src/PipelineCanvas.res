@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // PipelineCanvas.res - Interactive SVG node-graph canvas for the assembly pipeline designer
 //
 // Center panel of the PanLL-style three-panel layout. Users construct container

@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- Cryptographic Correctness Proofs
 --
 -- Type definitions and correctness properties for SHA-256 and Ed25519.

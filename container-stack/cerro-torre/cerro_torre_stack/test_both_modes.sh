@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 #
 # Test script for Cerro Torre snap-in architecture
 # Demonstrates separate vs snapped deployment modes

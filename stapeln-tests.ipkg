@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- stapeln Idris2 test suite. Estate port 8/11 — full sweep of 5 Deno
 -- + 1 JS test file (107 tests across container types, Nickel config
 -- properties, security aspects, layer invariants, container lifecycle

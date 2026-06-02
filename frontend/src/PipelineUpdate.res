@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // PipelineUpdate.res - Pure state transitions for the assembly pipeline designer
 //
 // All pipeline designer messages are handled here, keeping the main Update.res

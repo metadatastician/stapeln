@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // LoginPage.res - Authentication login form
 //
 // Renders email/password inputs and dispatches LoginRequested through the

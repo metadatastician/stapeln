@@ -48,12 +48,12 @@ The following files in `.machine_readable/` contain structured project metadata:
 ### Idris2
 - Dependent types are documentation — name them clearly
 - Proofs in `src/idris2/proofs/` with literate comments
-- SPDX header: `-- SPDX-License-Identifier: PMPL-1.0-or-later`
+- SPDX header: `-- SPDX-License-Identifier: MPL-2.0`
 
 ### Rust
 - `rustfmt` + `clippy` mandatory
 - No `unsafe` except in eBPF bindings (document why)
-- SPDX header: `// SPDX-License-Identifier: PMPL-1.0-or-later`
+- SPDX header: `// SPDX-License-Identifier: MPL-2.0`
 
 ### Elixir
 - `mix format` mandatory

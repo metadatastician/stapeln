@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # svalinn AffineScript build/verify gate.
 #
 # The ReScript→AffineScript migration (PR #46) cannot be validated in the

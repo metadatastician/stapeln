@@ -1,5 +1,5 @@
 --  Cerro Torre CLI - Command implementations
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --  Palimpsest-Covenant: 1.0
 --
 --  "Ship containers safely" - the distribution complement to Svalinn's

@@ -149,5 +149,5 @@ cerro-torre/
 
 ## License
 
-All Rust code: `SPDX-License-Identifier: PMPL-1.0-or-later`
+All Rust code: `SPDX-License-Identifier: MPL-2.0`
 Author: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>

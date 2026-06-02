@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 //! eBPF tracepoint program for raw_syscalls/sys_enter
 //!
 //! This program attaches to the sys_enter tracepoint and captures

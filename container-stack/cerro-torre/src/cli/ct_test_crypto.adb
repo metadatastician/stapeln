@@ -1,5 +1,5 @@
 --  ct_test_crypto - Test program for crypto implementation
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --
 --  Verifies SHA-256 and SHA-512 implementations against known test vectors
 

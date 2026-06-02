@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Rokur rate limiter — sliding window per-IP throttle for token brute-force protection.
 
 const DEFAULT_WINDOW_MS = 60_000;

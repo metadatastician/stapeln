@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // ConversationalError.res - User-friendly error messages with [Fix It] buttons
 //
 // Implements UX Manifesto Rule 4 ("One-Click Fix Rule") and the Error Message

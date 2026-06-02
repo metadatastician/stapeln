@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 //! Build script to compile Ada/SPARK and link with Rust
 //!
 //! This build script handles:

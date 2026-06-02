@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- Cerro Torre A2ML Policy Integration
 --
 -- This package integrates A2ML (Attested Markup Language) for policy definitions

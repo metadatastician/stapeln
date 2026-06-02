@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // GatewayTypes.affine — Gateway data types for the Svalinn edge shield.
 // Ported from GatewayTypes.res. ReScript polymorphic-variant string tags
 // (@as("running") etc.) become an explicit enum plus string conversions,

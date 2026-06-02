@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 //! FFI bindings to the Ada/SPARK Gatekeeper
 //!
 //! This module provides safe Rust wrappers around the formally verified

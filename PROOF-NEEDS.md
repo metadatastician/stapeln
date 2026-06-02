@@ -1,5 +1,5 @@
 # PROOF-NEEDS.md
-<!-- SPDX-License-Identifier: PMPL-1.0-or-later -->
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 
 ## Current State (2026-04-19 update — compile-clean after assert_total removal)
 

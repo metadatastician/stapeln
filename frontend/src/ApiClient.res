@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // ApiClient.res - Centralized API client for stapeln backend
 //
 // Uses the existing WebAPI.fetch bindings from WebAPI.res for all HTTP

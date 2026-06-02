@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Client.affine — pure Vörðr MCP JSON-RPC shaping.
 //
 // Faithful port of the pure parts of Client.res. The transport

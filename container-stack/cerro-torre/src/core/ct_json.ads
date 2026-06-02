@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 --  CT_JSON - Minimal JSON parser for OCI registry operations
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --
 --  Provides lightweight JSON parsing/serialization tailored to:
 --  - OAuth2 token responses

@@ -1,5 +1,5 @@
 --  Cerro_Trust_Store - Key and trust management
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --  Palimpsest-Covenant: 1.0
 --
 --  Manages trusted public keys for bundle verification.

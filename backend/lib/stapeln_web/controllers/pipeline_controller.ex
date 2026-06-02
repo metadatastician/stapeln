@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # StapelnWeb.PipelineController - API controller for assembly pipeline operations.
 
 defmodule StapelnWeb.PipelineController do

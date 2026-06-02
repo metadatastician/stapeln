@@ -28,7 +28,7 @@ stapeln implements defense-in-depth security with:
 
 ```nginx
 # svalinn/modsecurity.conf
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 
 SecRuleEngine On
 SecRequestBodyAccess On
@@ -105,7 +105,7 @@ SecRule ARGS "@rx \\.\\./|/proc/|/sys/|/dev/" \
 
 ```bash
 # stapeln-firewall-setup.sh
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 
 #!/bin/bash
 set -euo pipefail
@@ -146,7 +146,7 @@ firewall-cmd --reload
 
 ```nft
 # /etc/nftables/stapeln.nft
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 
 table inet stapeln {
   # Default-deny policy
@@ -231,7 +231,7 @@ curl -v http://localhost:8000  # Should succeed (with auth)
 
 ```elixir
 # backend/lib/stapeln/ephemeral_pinhole.ex
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 
 defmodule Stapeln.EphemeralPinhole do
   @moduledoc """
@@ -487,7 +487,7 @@ end
 
 ```elixir
 # backend/lib/stapeln/schema/pinhole.ex
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 
 defmodule Stapeln.Schema.Pinhole do
   use Ecto.Schema
@@ -510,7 +510,7 @@ end
 
 ```elixir
 # backend/priv/repo/migrations/20260205000001_create_ephemeral_pinholes.exs
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 
 defmodule Stapeln.Repo.Migrations.CreateEphemeralPinholes do
   use Ecto.Migration
@@ -538,7 +538,7 @@ end
 
 ```graphql
 # backend/schema/firewall.graphql
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 
 type EphemeralPinhole {
   id: ID!
@@ -583,7 +583,7 @@ type Query {
 
 ```elixir
 # backend/lib/stapeln/auth.ex
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 
 defmodule Stapeln.Auth do
   @moduledoc """
@@ -645,7 +645,7 @@ end
 
 ```
 # /etc/pam.d/stapeln
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 
 auth    required    pam_unix.so
 account required    pam_unix.so
@@ -655,7 +655,7 @@ account required    pam_unix.so
 
 ```rescript
 // frontend/src/Auth.res
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 
 type authState =
   | NotAuthenticated
@@ -812,7 +812,7 @@ let renderLogin = (state: authState, dispatch: loginMsg => unit) => {
 
 ```rescript
 // frontend/src/PortConfigPanel.res
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 
 type portState = Closed | Open | Ephemeral({duration: int, expiresAt: DateTime.t})
 
@@ -970,7 +970,7 @@ let useCountdownEffect = (ports: array<port>) => {
 
 ```rescript
 // frontend/src/SecurityInspector.res
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 
 type securityLevel = Critical | High | Medium | Low | Safe
 
@@ -1122,7 +1122,7 @@ let renderRiskBadge = (level: securityLevel) => {
 
 ```elixir
 # backend/lib/stapeln/security_scanner.ex
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 
 defmodule Stapeln.SecurityScanner do
   @moduledoc """
@@ -1339,7 +1339,7 @@ docker stop myapp
 
 ```elixir
 # backend/lib/stapeln/audit_log.ex
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 
 defmodule Stapeln.AuditLog do
   @moduledoc """
@@ -1388,7 +1388,7 @@ end
 
 ```rescript
 // frontend/src/AuditTrail.res
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 
 let renderAuditTrail = (entries: array<auditEntry>) => {
   <section className="audit-trail" role="region" ariaLabel="Security audit trail">
@@ -1428,7 +1428,7 @@ let renderAuditTrail = (entries: array<auditEntry>) => {
 
 ```bash
 # tests/firewall-test.sh
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 
 #!/bin/bash
 set -euo pipefail

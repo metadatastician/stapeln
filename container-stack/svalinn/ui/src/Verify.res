@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Image verification UI for Svalinn Web UI
 //
 // Allows users to submit an image digest for attestation verification.

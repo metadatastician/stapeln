@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # ct-a: Attestation variant (signing + transparency logs)
 
 FROM ghcr.io/alire-project/alire:latest AS builder

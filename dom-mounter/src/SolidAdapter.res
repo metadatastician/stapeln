@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // SolidAdapter.res - Solid.js integration (Phase 5)
 
 // Note: This would be compiled to JavaScript and used with Solid.js

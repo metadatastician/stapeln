@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # Containerfile -- Multi-stage build for Cerro Torre (ct)
 #
 # Stage 1: Build Ada/SPARK binary and Rust signing utility

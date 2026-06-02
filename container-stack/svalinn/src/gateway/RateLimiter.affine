@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // RateLimiter.affine — sliding-window rate-limit decision core.
 //
 // Faithful port of RateLimiter.res. The ReScript version held per-IP

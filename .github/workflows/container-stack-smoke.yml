@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # Informational smoke build of every container-stack/ Containerfile.
 #
 # Rationale (stapeln#17): the container-stack/ subdirectories are advertised

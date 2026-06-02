@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Shadow Verifier for Cerro Torre eXtreme (X-) Variants
 //
 // This is a parallel verifier written in ATS2 that uses linear types

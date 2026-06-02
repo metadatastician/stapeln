@@ -1,5 +1,5 @@
 --  Cerro Torre CTP Lexer - Implementation
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 
 pragma SPARK_Mode (On);
 

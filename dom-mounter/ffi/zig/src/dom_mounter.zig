@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // dom_mounter.zig - C-compatible FFI implementation for DOM mounting
 
 const std = @import("std");

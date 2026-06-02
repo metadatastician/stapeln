@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // AppRouter.res - Application routing with URL integration
 
 // Route definitions matching App.res pages

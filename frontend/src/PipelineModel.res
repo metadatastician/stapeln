@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // PipelineModel.res - Types and helpers for the visual assembly pipeline designer
 //
 // A node-graph editor where users construct container build workflows visually.

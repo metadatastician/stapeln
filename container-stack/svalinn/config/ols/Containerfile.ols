@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # OpenLiteSpeed reverse proxy for Svalinn HTTP/3 support
 FROM litespeedtech/openlitespeed:1.8.2
 

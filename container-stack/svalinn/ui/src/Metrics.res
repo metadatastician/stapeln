@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Metrics dashboard component for Svalinn Web UI
 //
 // Parses Prometheus text-format metrics from /metrics endpoint and renders

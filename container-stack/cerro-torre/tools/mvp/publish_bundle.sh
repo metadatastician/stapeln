@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: PMPL-1.0-or-later OR PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0 OR PMPL-1.0-or-later
 set -euo pipefail
 
 if [[ $# -lt 3 ]]; then

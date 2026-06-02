@@ -1,5 +1,5 @@
 #!/usr/bin/env julia
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 #
 # ct_pack.jl — Cerro Torre MVP pack (wrap an existing OCI image).
 # Fetches the image digest via `oras`, then delegates to ct_mvp.jl for

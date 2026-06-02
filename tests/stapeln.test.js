@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno test --allow-read --allow-write
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // stapeln Test Suite - Comprehensive validation and generation tests
 
 import { assert, assertEquals, assertExists } from "./test_assert.js";
@@ -192,7 +192,7 @@ Deno.test("Validation: Acyclic Topology", () => {
 Deno.test("Generation: Justfile Format", () => {
     const justfile = generateTestJustfile(sampleNodes);
 
-    assert(justfile.includes('# SPDX-License-Identifier: PMPL-1.0-or-later'), "Should have SPDX header");
+    assert(justfile.includes('# SPDX-License-Identifier: MPL-2.0'), "Should have SPDX header");
     assert(justfile.includes('build:'), "Should have build target");
     assert(justfile.includes('deploy:'), "Should have deploy target");
     assert(justfile.includes('podman build'), "Should use Podman");
@@ -208,7 +208,7 @@ Deno.test("Generation: Justfile Format", () => {
 Deno.test("Generation: Mustfile Format", () => {
     const mustfile = generateTestMustfile(sampleNodes, sampleConnections, mustfileRules);
 
-    assert(mustfile.includes('# SPDX-License-Identifier: PMPL-1.0-or-later'), "Should have SPDX header");
+    assert(mustfile.includes('# SPDX-License-Identifier: MPL-2.0'), "Should have SPDX header");
     assert(mustfile.includes('metadata:'), "Should have metadata section");
     assert(mustfile.includes('component_count:'), "Should include component count");
     assert(mustfile.includes('connection_count:'), "Should include connection count");
@@ -223,7 +223,7 @@ Deno.test("Generation: Mustfile Format", () => {
 Deno.test("Generation: Trustfile.hs Format", () => {
     const trustfile = generateTestTrustfile(sampleNodes);
 
-    assert(trustfile.includes('-- SPDX-License-Identifier: PMPL-1.0-or-later'), "Should have SPDX header");
+    assert(trustfile.includes('-- SPDX-License-Identifier: MPL-2.0'), "Should have SPDX header");
     assert(trustfile.includes('module Trustfile where'), "Should be valid Haskell module");
     assert(trustfile.includes('images :: [String]'), "Should declare images list");
     assert(trustfile.includes('main :: IO ()'), "Should have main function");
@@ -240,7 +240,7 @@ Deno.test("Generation: Trustfile.hs Format", () => {
 Deno.test("Generation: Dustfile Format", () => {
     const dustfile = generateTestDustfile(sampleNodes);
 
-    assert(dustfile.includes('# SPDX-License-Identifier: PMPL-1.0-or-later'), "Should have SPDX header");
+    assert(dustfile.includes('# SPDX-License-Identifier: MPL-2.0'), "Should have SPDX header");
     assert(dustfile.includes('recovery:'), "Should have recovery section");
     assert(dustfile.includes('strategy:'), "Should specify recovery strategy");
     assert(dustfile.includes('health_checks:'), "Should have health checks section");
@@ -255,7 +255,7 @@ Deno.test("Generation: Dustfile Format", () => {
 Deno.test("Generation: stack.yaml Format", () => {
     const stackyaml = generateTestStackYaml(sampleNodes, sampleConnections);
 
-    assert(stackyaml.includes('# SPDX-License-Identifier: PMPL-1.0-or-later'), "Should have SPDX header");
+    assert(stackyaml.includes('# SPDX-License-Identifier: MPL-2.0'), "Should have SPDX header");
     assert(stackyaml.includes("version: '3.8'"), "Should have compose version");
     assert(stackyaml.includes('services:'), "Should have services section");
     assert(stackyaml.includes('networks:'), "Should have networks section");
@@ -271,7 +271,7 @@ Deno.test("Generation: stack.yaml Format", () => {
 Deno.test("Generation: Containerfile Format", () => {
     const containerfile = generateTestContainerfile('nginx', 'nginx:alpine');
 
-    assert(containerfile.includes('# SPDX-License-Identifier: PMPL-1.0-or-later'), "Should have SPDX header");
+    assert(containerfile.includes('# SPDX-License-Identifier: MPL-2.0'), "Should have SPDX header");
     assert(containerfile.includes('FROM nginx:alpine'), "Should have FROM instruction");
     assert(containerfile.includes('LABEL'), "Should have labels");
     assert(!containerfile.includes('Dockerfile'), "Should NOT reference Dockerfile (use Containerfile)");
@@ -331,7 +331,7 @@ Deno.test("E2E: Save and Load Design", () => {
 
 function generateTestJustfile(nodes) {
     const timestamp = new Date().toISOString().split('T')[0];
-    return `# SPDX-License-Identifier: PMPL-1.0-or-later
+    return `# SPDX-License-Identifier: MPL-2.0
 # Justfile - Generated: ${timestamp}
 
 build:
@@ -349,7 +349,7 @@ deploy: build
 
 function generateTestMustfile(nodes, connections, rules) {
     const timestamp = new Date().toISOString().split('T')[0];
-    return `# SPDX-License-Identifier: PMPL-1.0-or-later
+    return `# SPDX-License-Identifier: MPL-2.0
 # Mustfile - Generated: ${timestamp}
 
 metadata:
@@ -364,7 +364,7 @@ ${rules.map(r => `  - name: ${r.name}
 }
 
 function generateTestTrustfile(nodes) {
-    return `-- SPDX-License-Identifier: PMPL-1.0-or-later
+    return `-- SPDX-License-Identifier: MPL-2.0
 -- Trustfile.hs
 
 module Trustfile where
@@ -380,7 +380,7 @@ main = putStrLn "✓ Verification complete"
 }
 
 function generateTestDustfile(nodes) {
-    return `# SPDX-License-Identifier: PMPL-1.0-or-later
+    return `# SPDX-License-Identifier: MPL-2.0
 # Dustfile
 
 recovery:
@@ -393,7 +393,7 @@ ${nodes.map(n => `  - component: ${n.name.toLowerCase().replace(/\s+/g, '-')}
 }
 
 function generateTestStackYaml(nodes, connections) {
-    return `# SPDX-License-Identifier: PMPL-1.0-or-later
+    return `# SPDX-License-Identifier: MPL-2.0
 # stack.yaml
 
 version: '3.8'
@@ -416,7 +416,7 @@ networks:
 }
 
 function generateTestContainerfile(name, baseImage) {
-    return `# SPDX-License-Identifier: PMPL-1.0-or-later
+    return `# SPDX-License-Identifier: MPL-2.0
 FROM ${baseImage}
 LABEL org.opencontainers.image.title="${name}"
 CMD ["/bin/sh"]

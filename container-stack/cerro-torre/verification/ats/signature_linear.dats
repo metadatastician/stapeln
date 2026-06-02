@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Linear Signature Chain Verification
 //
 // Uses linear types to ensure all signatures in a chain are verified

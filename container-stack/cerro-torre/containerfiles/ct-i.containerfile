@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # ct-i: Infrastructure variant (registry + basic packing)
 
 FROM ghcr.io/alire-project/alire:latest AS builder

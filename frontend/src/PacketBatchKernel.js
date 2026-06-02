@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // PacketBatchKernel.js - batched packet stepping with WASM kernel and JS fallback
 
 const Q16_ONE = 65536;

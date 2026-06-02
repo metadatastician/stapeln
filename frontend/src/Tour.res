@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Tour.res - Interactive guided tour of the Stapeln UI
 //
 // Provides a step-by-step walkthrough highlighting key UI areas with tooltip

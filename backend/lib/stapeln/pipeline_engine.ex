@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # Stapeln.PipelineEngine - Assembly pipeline validation, optimization, and execution
 # planning for visual node-graph container pipelines.
 

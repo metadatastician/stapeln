@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # Containerfile — Multi-stage build for Rokur secrets management gate.
 # Runtime: Deno on Chainguard Wolfi base.
 

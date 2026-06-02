@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # UserSocket - Phoenix WebSocket entry point for real-time validation
 #
 # Clients connect via `ws://<host>/socket/websocket` and can then join

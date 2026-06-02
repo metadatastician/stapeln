@@ -314,7 +314,7 @@ extend type Mutation {
 
 ```elixir
 # backend/lib/stapeln/lago_grey.ex
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 
 defmodule Stapeln.LagoGrey do
   @moduledoc """
@@ -377,7 +377,7 @@ Add base image security rules:
 
 ```scheme
 ;; security-rules/base-image.scm
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
 
 (define (insecure-base-imageo component)
   "Rule: Components should use minimal, secure base images"

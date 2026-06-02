@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // VordrTypes.affine — types for the Vörðr MCP client.
 // Faithful port of VordrTypes.res. JSON-RPC param/result payloads that
 // were Js.Json.t become host Json arena handles (Int).

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Loading.res - Loading states and skeletons with WCAG AAA accessibility
 
 // Loading spinner

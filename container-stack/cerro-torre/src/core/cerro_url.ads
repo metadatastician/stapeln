@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 --  Cerro_URL - URL Encoding Operations
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --
 --  RFC 3986 percent encoding for URL query parameters and paths.
 --  Inspired by formally verified Proven.SafeHTTP module.

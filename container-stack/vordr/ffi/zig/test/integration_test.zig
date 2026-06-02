@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Vordr Integration Tests
 //
 // These tests verify that the Zig FFI correctly implements the Idris2 ABI

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 //! Direct container runtime execution via crun/youki subprocess
 //!
 //! Wraps an OCI-compatible low-level runtime (crun or youki) as an async

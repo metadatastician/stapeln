@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # settings_store.ex - In-memory settings storage for stapeln
 
 defmodule Stapeln.SettingsStore do

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // PipelinePalette.res - Left panel for the Assembly Pipeline Designer
 //
 // Provides three tabs: Components (draggable node types by category),

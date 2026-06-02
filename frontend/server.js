@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // server.js - Deno development server with API proxy to Phoenix backend
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";

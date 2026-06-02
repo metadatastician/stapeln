@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 --
 -- Port of tests/stapeln.test.js to Idris2.
@@ -208,7 +208,7 @@ generateJustfile : List Node -> String
 generateJustfile nodes =
   let buildLines = map mkBuild (filter (\n => n.nodeType /= "secrets") nodes)
   in
-    "# SPDX-License-Identifier: PMPL-1.0-or-later\n" ++
+    "# SPDX-License-Identifier: MPL-2.0\n" ++
     "# Justfile - Generated: GENERATED\n" ++
     "\n" ++
     "build:\n" ++
@@ -226,7 +226,7 @@ generateJustfile nodes =
 
 generateMustfile : List Node -> List Conn -> List MustRule -> String
 generateMustfile nodes conns rules =
-  "# SPDX-License-Identifier: PMPL-1.0-or-later\n" ++
+  "# SPDX-License-Identifier: MPL-2.0\n" ++
   "# Mustfile - Generated: GENERATED\n" ++
   "\n" ++
   "metadata:\n" ++
@@ -247,7 +247,7 @@ generateTrustfile nodes =
   let quoted = map (\n => "\"" ++ kebabify n.nodeName ++ "\"")
                    (filter (\n => n.nodeType /= "secrets") nodes)
   in
-    "-- SPDX-License-Identifier: PMPL-1.0-or-later\n" ++
+    "-- SPDX-License-Identifier: MPL-2.0\n" ++
     "-- Trustfile.hs\n" ++
     "\n" ++
     "module Trustfile where\n" ++
@@ -260,7 +260,7 @@ generateTrustfile nodes =
 
 generateDustfile : List Node -> String
 generateDustfile nodes =
-  "# SPDX-License-Identifier: PMPL-1.0-or-later\n" ++
+  "# SPDX-License-Identifier: MPL-2.0\n" ++
   "# Dustfile\n" ++
   "\n" ++
   "recovery:\n" ++
@@ -276,7 +276,7 @@ generateDustfile nodes =
 
 generateStackYaml : List Node -> List Conn -> String
 generateStackYaml nodes _ =
-  "# SPDX-License-Identifier: PMPL-1.0-or-later\n" ++
+  "# SPDX-License-Identifier: MPL-2.0\n" ++
   "# stack.yaml\n" ++
   "\n" ++
   "version: '3.8'\n" ++
@@ -300,7 +300,7 @@ generateStackYaml nodes _ =
 
 generateContainerfile : String -> String -> String
 generateContainerfile name baseImage =
-  "# SPDX-License-Identifier: PMPL-1.0-or-later\n" ++
+  "# SPDX-License-Identifier: MPL-2.0\n" ++
   "FROM " ++ baseImage ++ "\n" ++
   "LABEL org.opencontainers.image.title=\"" ++ name ++ "\"\n" ++
   "CMD [\"/bin/sh\"]\n"
@@ -357,7 +357,7 @@ allSuites =
                                     && n.nodeType /= "firewall")
                              sampleNodes
       allPass
-        [ assertTrue "SPDX header" (isInfixOf "# SPDX-License-Identifier: PMPL-1.0-or-later" j)
+        [ assertTrue "SPDX header" (isInfixOf "# SPDX-License-Identifier: MPL-2.0" j)
         , assertTrue "build target"   (isInfixOf "build:" j)
         , assertTrue "deploy target"  (isInfixOf "deploy:" j)
         , assertTrue "uses podman"    (isInfixOf "podman build" j)
@@ -368,7 +368,7 @@ allSuites =
   , test "Generation: Mustfile Format" $ do
       let m = generateMustfile sampleNodes sampleConnections mustfileRules
       allPass
-        [ assertTrue "SPDX header"        (isInfixOf "# SPDX-License-Identifier: PMPL-1.0-or-later" m)
+        [ assertTrue "SPDX header"        (isInfixOf "# SPDX-License-Identifier: MPL-2.0" m)
         , assertTrue "metadata section"   (isInfixOf "metadata:" m)
         , assertTrue "component_count"    (isInfixOf "component_count:" m)
         , assertTrue "connection_count"   (isInfixOf "connection_count:" m)
@@ -381,7 +381,7 @@ allSuites =
       let t = generateTrustfile sampleNodes
           nonSecret = filter (\n => n.nodeType /= "secrets") sampleNodes
       allPass
-        [ assertTrue "SPDX header"    (isInfixOf "-- SPDX-License-Identifier: PMPL-1.0-or-later" t)
+        [ assertTrue "SPDX header"    (isInfixOf "-- SPDX-License-Identifier: MPL-2.0" t)
         , assertTrue "module decl"    (isInfixOf "module Trustfile where" t)
         , assertTrue "images list"    (isInfixOf "images :: [String]" t)
         , assertTrue "main function"  (isInfixOf "main :: IO ()" t)
@@ -392,7 +392,7 @@ allSuites =
   , test "Generation: Dustfile Format" $ do
       let d = generateDustfile sampleNodes
       allPass
-        [ assertTrue "SPDX header"      (isInfixOf "# SPDX-License-Identifier: PMPL-1.0-or-later" d)
+        [ assertTrue "SPDX header"      (isInfixOf "# SPDX-License-Identifier: MPL-2.0" d)
         , assertTrue "recovery section" (isInfixOf "recovery:" d)
         , assertTrue "strategy field"   (isInfixOf "strategy:" d)
         , assertTrue "health_checks"    (isInfixOf "health_checks:" d)
@@ -403,7 +403,7 @@ allSuites =
   , test "Generation: stack.yaml Format" $ do
       let s = generateStackYaml sampleNodes sampleConnections
       allPass
-        [ assertTrue "SPDX header"      (isInfixOf "# SPDX-License-Identifier: PMPL-1.0-or-later" s)
+        [ assertTrue "SPDX header"      (isInfixOf "# SPDX-License-Identifier: MPL-2.0" s)
         , assertTrue "compose version"  (isInfixOf "version: '3.8'" s)
         , assertTrue "services section" (isInfixOf "services:" s)
         , assertTrue "networks section" (isInfixOf "networks:" s)
@@ -416,7 +416,7 @@ allSuites =
   , test "Generation: Containerfile Format" $ do
       let c = generateContainerfile "nginx" "nginx:alpine"
       allPass
-        [ assertTrue "SPDX header"      (isInfixOf "# SPDX-License-Identifier: PMPL-1.0-or-later" c)
+        [ assertTrue "SPDX header"      (isInfixOf "# SPDX-License-Identifier: MPL-2.0" c)
         , assertTrue "FROM instruction" (isInfixOf "FROM nginx:alpine" c)
         , assertTrue "LABEL present"    (isInfixOf "LABEL" c)
         , assertTrue "no Dockerfile ref" (not (isInfixOf "Dockerfile" c))

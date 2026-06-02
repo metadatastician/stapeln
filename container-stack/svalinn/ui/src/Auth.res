@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Authentication UI for Svalinn Web UI
 //
 // Stores API key in memory only (not localStorage) for security.

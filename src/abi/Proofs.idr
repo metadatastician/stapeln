@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- Proofs.idr - Formal verification proofs for stapeln ABI contracts
 --
 -- All proofs are genuine case analysis or structural recursion.

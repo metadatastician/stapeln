@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 --  Cerro_Import_Debian - Implementation
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --  Palimpsest-Covenant: 1.0
 -------------------------------------------------------------------------------
 

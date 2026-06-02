@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Vörðr MCP Adapter - Type definitions
 
 // Container lifecycle states matching Idris2 types

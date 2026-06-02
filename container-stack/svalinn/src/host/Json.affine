@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Json.affine — host-boundary JSON access for Svalinn.
 //
 // AffineScript compiles to typed WasmGC; it has no in-language JSON value

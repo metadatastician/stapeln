@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // VueAdapter.res - Vue 3 composition API integration (Phase 5)
 
 open DomMounterEnhanced

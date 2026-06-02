@@ -1,5 +1,5 @@
 --  Cerro_CLI - Keygen using Rust cerro-sign binary
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --  Replacement for shell script keygen
 
 with Ada.Text_IO;

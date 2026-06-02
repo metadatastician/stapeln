@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # Containerfile — Svalinn Edge Gateway (AffineScript / typed-wasm build)
 #
 # Migration: svalinn's application code moved from ReScript→JS to

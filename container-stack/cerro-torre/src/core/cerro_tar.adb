@@ -1,5 +1,5 @@
 --  Cerro_Tar - Implementation
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 
 with Ada.Streams.Stream_IO;
 with Ada.Directories;

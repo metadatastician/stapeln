@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 //! MCP HTTP Server for Vörðr
 //!
 //! Handles JSON-RPC 2.0 requests from Svalinn and other MCP clients.

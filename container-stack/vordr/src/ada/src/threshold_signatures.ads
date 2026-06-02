@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- Vörðr Gatekeeper - Threshold Signature Scheme
 -- SPARK-proved (k,n) threshold authorization
 

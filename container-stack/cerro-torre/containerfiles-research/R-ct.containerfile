@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # R-ct: Research complete variant (Idris2 + Ada/SPARK verification)
 
 FROM ghcr.io/alire-project/alire:latest AS builder

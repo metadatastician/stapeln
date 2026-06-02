@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Main.res - Application entry point (simplified, no TEA dependency)
 
 // Mount the App component to the DOM

@@ -1,5 +1,5 @@
 #!/usr/bin/env julia
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 #
 # ct_build.jl — Cerro Torre MVP build from .ctp manifest.
 # Parses a .ctp manifest, downloads the upstream source, verifies its

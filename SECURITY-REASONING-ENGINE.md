@@ -68,7 +68,7 @@
 
 ```scheme
 ;; security-rules/ssh-exposure.scm
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
 
 (use-modules (minikanren))
 
@@ -108,7 +108,7 @@
 
 ```scheme
 ;; security-rules/root-user.scm
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
 
 (define (running-as-rooto component)
   "Rule: Containers must not run as root"
@@ -145,7 +145,7 @@
 
 ```scheme
 ;; security-rules/unencrypted-traffic.scm
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
 
 (define (unencrypted-traffico component)
   "Rule: All public traffic must use TLS"
@@ -188,7 +188,7 @@
 
 ```scheme
 ;; security-rules/health-checks.scm
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
 
 (define (missing-health-checko component)
   "Rule: All long-running services must have health checks"
@@ -228,7 +228,7 @@
 
 ```scheme
 ;; knowledge-base/security-kb.scm
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
 
 ;; Component model
 (define (componento c)
@@ -293,7 +293,7 @@
 
 ```scheme
 ;; updater/cve-feed-sync.scm
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
 
 (define (sync-cve-feed)
   "Fetch latest CVE database and generate miniKanren rules"
@@ -340,7 +340,7 @@
 
 ```scheme
 ;; updater/owasp-sync.scm
-;; SPDX-License-Identifier: PMPL-1.0-or-later
+;; SPDX-License-Identifier: MPL-2.0
 
 (define (sync-owasp-top-10)
   "Update rules from OWASP Top 10"
@@ -369,7 +369,7 @@
 
 ```elixir
 # backend/lib/stapeln/security_reasoner.ex
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 
 defmodule Stapeln.SecurityReasoner do
   @moduledoc """

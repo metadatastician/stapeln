@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 //! Registry authentication commands (login, logout)
 
 use anyhow::{Context, Result};

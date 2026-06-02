@@ -1,5 +1,5 @@
 --  Cerro_Runtime - Container runtime execution
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --
 --  Manages container runtime detection and execution for ct run.
 --  Supports: svalinn, podman, nerdctl, docker (in preference order)

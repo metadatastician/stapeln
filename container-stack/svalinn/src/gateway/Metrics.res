@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Prometheus-compatible metrics collection for Svalinn Edge Gateway
 //
 // Provides in-memory counters, gauges, and simplified histograms.

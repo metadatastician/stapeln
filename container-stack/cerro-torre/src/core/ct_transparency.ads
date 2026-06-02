@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 --  CT_Transparency - Transparency Log Integration
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --  Palimpsest-Covenant: 1.0
 --
 --  Implements transparency log integration for Cerro Torre signatures.

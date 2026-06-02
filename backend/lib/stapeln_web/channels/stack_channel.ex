@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # StackChannel - Real-time validation, security scanning, and gap analysis
 #
 # Clients join "stack:lobby" for general broadcasts or "stack:<id>" for

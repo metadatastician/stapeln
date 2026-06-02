@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // AuthTypes.affine — authentication/authorization data types.
 // Faithful port of AuthTypes.res. ReScript variants → nominal enums;
 // records → structs; Belt.Map defaults → builder functions.

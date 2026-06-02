@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 --  LibOQS - Implementation of Ada FFI Bindings
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --  Palimpsest-Covenant: 1.0
 --
 --  This implementation provides:

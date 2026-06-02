@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Sx.res - ReactDOM.Style.make compatibility shim for @rescript/react 0.14
 //
 // In @rescript/react 0.14, ReactDOMStyle.make was removed. This module

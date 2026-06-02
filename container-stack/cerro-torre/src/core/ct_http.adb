@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 --  CT_HTTP - Implementation using curl (MVP version)
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --  Palimpsest-Covenant: 1.0
 --
 --  Implements HTTP operations using curl subprocess calls.

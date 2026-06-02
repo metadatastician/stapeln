@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // FileIO.res - High-assurance file I/O with Idris2 proofs
 
 // FFI bindings to Zig layer

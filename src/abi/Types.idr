@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- Stapeln ABI type definitions (Idris2) with dependent types and proofs
 
 module Stapeln.ABI.Types

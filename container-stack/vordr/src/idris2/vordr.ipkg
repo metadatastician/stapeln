@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- vordr.ipkg — Idris2 package definition for Vörðr verification core
 
 package vordr

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # settings_controller.ex - User settings endpoints for stapeln
 
 defmodule StapelnWeb.SettingsController do

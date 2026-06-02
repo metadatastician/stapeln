@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Index.res - Application entry point with high-assurance DOM mounting
 
 // Use the proven DOM mounter (backed by Idris2 proofs)

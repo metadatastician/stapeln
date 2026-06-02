@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # db_store.ex - VeriSimDB-backed persistence layer for stapeln
 #
 # VeriSimDB octads persistence (port 8093).

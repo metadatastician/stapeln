@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 //! Expanded integration tests for all Vörðr CLI commands
 //!
 //! Tests cover all 16 core commands with a mix of:

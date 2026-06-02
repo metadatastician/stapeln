@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- Importer Safety Proofs
 --
 -- Properties ensuring that OCI image importers cannot perform path

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // SecurityInspector.res - Attack surface analysis with security scoring
 
 // Severity levels

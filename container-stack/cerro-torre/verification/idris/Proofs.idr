@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- Cerro Torre Formal Verification - Top-level Proofs Module
 --
 -- This module imports and re-exports all formal proofs for the research (R-) variants.

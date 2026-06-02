@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # affine-build.sh — compile every src/*.affine to dist/wasm/*.wasm.
 #
 # Requires the affinescript compiler. Set AFFINESCRIPT_BIN to its path, or

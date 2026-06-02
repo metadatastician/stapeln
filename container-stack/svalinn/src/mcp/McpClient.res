@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // MCP (Model Context Protocol) client for Vörðr integration
 
 // MCP request/response types

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # X-ct-i: eXtreme security infrastructure variant (ATS2 + Ada/SPARK verification)
 
 FROM ghcr.io/alire-project/alire:latest AS builder

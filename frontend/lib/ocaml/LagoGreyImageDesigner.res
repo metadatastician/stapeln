@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // LagoGreyImageDesigner.res - Interactive visual designer for Lago Grey images
 // Features: base image selection, formation catalog, drag reorder, custom formations,
 // security indicators, multiple export formats, size visualization

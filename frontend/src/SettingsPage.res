@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // SettingsPage.res - Settings page with backend persistence
 //
 // Wraps the existing Settings.res view function with controlled-input

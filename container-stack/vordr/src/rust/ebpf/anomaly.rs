@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 //! Statistical anomaly detection for container behavior
 //!
 //! This module provides baseline-based anomaly detection using

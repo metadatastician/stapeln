@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 //! MCP server for AI-assisted container management
 //!
 //! This module provides Model Context Protocol tool definitions

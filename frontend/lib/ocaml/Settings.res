@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Settings.res - Settings and preferences page (Page 3)
 
 type runtimeEngine = Podman | Docker | Nerdctl

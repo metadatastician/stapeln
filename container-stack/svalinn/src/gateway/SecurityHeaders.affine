@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // SecurityHeaders.affine — OWASP security/CORS/rate-limit response headers.
 //
 // Faithful port of SecurityHeaders.res. The ReScript version threaded a

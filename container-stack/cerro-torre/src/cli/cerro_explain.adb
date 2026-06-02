@@ -1,5 +1,5 @@
 --  Cerro_Explain - Implementation
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 
 with Ada.Text_IO;
 with Ada.Command_Line;

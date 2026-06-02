@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- Signature Chain Verification Proofs
 --
 -- Properties of Ed25519 signature chains for multi-party bundle signing.

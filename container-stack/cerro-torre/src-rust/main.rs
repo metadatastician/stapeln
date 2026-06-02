@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Cerro Torre Cryptographic Signing CLI
 // Replaces shell scripts with native Ed25519 operations
 

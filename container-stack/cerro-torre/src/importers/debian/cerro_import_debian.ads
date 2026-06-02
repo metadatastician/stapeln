@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 --  Cerro_Import_Debian - Debian Source Package Importer
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --  Palimpsest-Covenant: 1.0
 --
 --  Imports Debian source packages (.dsc) and converts them to Cerro Torre

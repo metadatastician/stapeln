@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # token.ex - JWT token generation and verification for stapeln auth
 
 defmodule Stapeln.Auth.Token do

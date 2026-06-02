@@ -1,4 +1,4 @@
---  SPDX-License-Identifier: PMPL-1.0-or-later OR PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0 OR PMPL-1.0-or-later
 --  MVP build pipeline (Ada orchestration with external tools)
 
 with Ada.Text_IO;

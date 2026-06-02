@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- Vörðr Gatekeeper - Main Authorization Implementation
 -- SPARK-proved container authorization with threshold signatures
 

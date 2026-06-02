@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 defmodule Stapeln.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications

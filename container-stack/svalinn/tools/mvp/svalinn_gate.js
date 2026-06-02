@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-read --allow-run=openssl
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Svalinn MVP policy gate — verify container bundles against policy and trust store
 // Replaces svalinn_gate.py (Python is a banned language per hyperpolymath standards)
 

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # Stapeln.PipelineStore - In-memory persistence for assembly pipelines.
 #
 # Mirrors the GenServer pattern from StackStore. Persists to a JSONL file

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // PacketMathWasm.js - small WASM-backed packet math kernel with JS fallback
 
 const Q16_ONE = 65536;

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 //! Vordr - High-Assurance Daemonless Container Engine
 //!
 //! The Warden component of the Svalinn ecosystem.

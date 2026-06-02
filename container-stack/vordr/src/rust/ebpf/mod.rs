@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 //! eBPF-based runtime monitoring for container security
 //!
 //! This module provides syscall-level monitoring using eBPF probes.

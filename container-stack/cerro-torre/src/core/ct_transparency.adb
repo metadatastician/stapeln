@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 --  CT_Transparency - Implementation of Transparency Log Integration
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --
 --  Implements transparency log operations per Sigstore/Rekor API.
 --

@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- Attestation.idr — Attestation parsing and validation
 --
 -- This module handles parsing and validating attestation envelopes

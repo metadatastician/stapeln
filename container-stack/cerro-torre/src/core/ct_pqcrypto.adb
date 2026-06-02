@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 --  CT_PQCrypto - Implementation of post-quantum cryptographic primitives
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --
 --  Implements ML-DSA-87 (FIPS 204) and CT-SIG-02 hybrid signatures.
 --

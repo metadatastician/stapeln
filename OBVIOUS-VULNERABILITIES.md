@@ -378,7 +378,7 @@ type settings = {
 
 ```rescript
 // settings/defaults.res
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 
 let secureDefaults: settings = {
   defaultRuntime: Podman,  // ✅ Rootless by default

@@ -1,5 +1,5 @@
 #!/usr/bin/env julia
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 #
 # ct_mvp.jl — Cerro Torre MVP bundle helper.
 # Provides three sub-commands:

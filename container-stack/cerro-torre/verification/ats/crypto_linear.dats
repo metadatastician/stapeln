@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Linear Cryptographic Operations
 //
 // This module uses ATS2 linear types to ensure that:

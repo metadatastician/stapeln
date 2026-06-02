@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 //! eBPF tracepoint program for sched/sched_process_exec
 //!
 //! This program captures process execution events — every time a new

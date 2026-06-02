@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- Cryptographic spec stubs for Idris2 proof layer.
 --
 -- The actual cryptographic runtime (SHA-256, Ed25519) lives entirely in

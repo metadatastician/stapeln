@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-net
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // Svalinn load test — measures throughput and latency under concurrent load
 //
 // Usage:

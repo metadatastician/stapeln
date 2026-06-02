@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // AttackSurfacePage.res - Attack Surface Analyzer panel
 //
 // Displays a comprehensive view of the stack's attack surface: exposed ports,

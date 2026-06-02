@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // In-memory sliding window rate limiter for Svalinn Edge Gateway
 //
 // Tracks request counts per client IP within a configurable time window.

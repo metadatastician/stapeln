@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 # engine.ex - High-level miniKanren security reasoning API for stapeln
 
 defmodule Stapeln.Kanren.Engine do

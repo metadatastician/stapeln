@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- High-Level Security Theorems
 --
 -- Top-level theorems combining crypto, signatures, and importer safety

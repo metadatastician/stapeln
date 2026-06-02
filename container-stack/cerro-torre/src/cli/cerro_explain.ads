@@ -1,5 +1,5 @@
 --  Cerro_Explain - Documentation and help system
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --
 --  High-arity help system supporting multiple invocation styles:
 --    ct explain <topic>       Explain a concept

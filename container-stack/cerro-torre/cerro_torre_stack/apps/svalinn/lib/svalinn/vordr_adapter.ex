@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: PMPL-1.0-or-later
+# SPDX-License-Identifier: MPL-2.0
 defmodule Svalinn.VordrAdapter do
   @moduledoc """
   Automatic adapter for Vörðr communication with compile-time mode detection.

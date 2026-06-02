@@ -6,7 +6,7 @@ image:https://img.shields.io/badge/License-PMPL--1.0--or--later-indigo.svg[PMPL-
 
 Licensed under *PMPL-1.0-or-later* (Palimpsest-MPL License). The full text is in `LICENSE` and `license/PMPL-1.0.txt`.
 
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // SPDX-FileCopyrightText: 2025-2026 Jonathan D.A. Jewell
 
 :toc: preamble

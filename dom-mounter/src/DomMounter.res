@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 // DomMounter.res - High-assurance DOM mounting with Idris2 proofs
 
 // FFI bindings to Zig layer (which implements Idris2 ABI)

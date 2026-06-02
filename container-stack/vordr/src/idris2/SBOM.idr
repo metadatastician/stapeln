@@ -1,4 +1,4 @@
--- SPDX-License-Identifier: PMPL-1.0-or-later
+-- SPDX-License-Identifier: MPL-2.0
 -- SBOM.idr — Software Bill of Materials integration
 --
 -- This module provides types and verification for SBOM attestations

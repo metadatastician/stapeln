@@ -1,5 +1,5 @@
 --  ct_test_parser - Test program for CTP manifest parser
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --
 --  Usage: ct_test_parser <manifest.ctp>
 

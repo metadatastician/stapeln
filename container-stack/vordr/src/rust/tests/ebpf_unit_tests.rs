@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: PMPL-1.0-or-later
+// SPDX-License-Identifier: MPL-2.0
 //! Unit tests for eBPF monitoring modules
 //!
 //! Tests the userspace eBPF infrastructure without requiring kernel support.

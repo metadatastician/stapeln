@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------
 --  Cerro_Manifest - Implementation
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 -------------------------------------------------------------------------------
 
 --  Parser implementation uses standard Ada patterns not compatible with SPARK

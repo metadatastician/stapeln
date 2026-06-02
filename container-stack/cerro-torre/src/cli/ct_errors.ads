@@ -1,5 +1,5 @@
 --  Cerro Torre CLI - Exit codes and error types
---  SPDX-License-Identifier: PMPL-1.0-or-later
+--  SPDX-License-Identifier: MPL-2.0
 --  Palimpsest-Covenant: 1.0
 
 with Ada.Command_Line;
