@@ -62,7 +62,7 @@ jobs:
       image: snazzybucket/idris2:latest  # Idris2 0.7.0 — same image as GitLab idris2-check
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v4
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v4
 
       - name: Build proof package
         working-directory: container-stack/cerro-torre/verification/idris
@@ -82,7 +82,7 @@ jobs:
     continue-on-error: true  # promote to hard gate once green on 2 main runs
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v4
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v4
 
       - name: Install Alire toolchain (FSF GNAT + gnatprove)
         run: |
