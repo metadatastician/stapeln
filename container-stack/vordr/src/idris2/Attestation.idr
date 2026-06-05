@@ -8,7 +8,8 @@ module Attestation
 
 import Container
 import Verification
-import Data.List -- Ensures unlines is available
+import Data.List
+import Data.String -- `unlines` lives here (not Data.List)
 
 %default total
 
@@ -64,16 +65,16 @@ record Envelope where
 public export
 data ValidDSSE : Envelope -> Type where
   MkValidDSSE : (env : Envelope) ->
-                (format env == DSSE) -> -- Using function application for field access
-                (length env.signatures > 0) ->
+                (format env = DSSE) ->                  -- propositional (a Type), not Bool ==
+                ((length env.signatures > 0) = True) -> -- Bool predicate reflected into a Type
                 ValidDSSE env
 
 ||| An in-toto attestation has required fields
 public export
 data ValidInToto : Envelope -> Type where
   MkValidInToto : (env : Envelope) ->
-                  (format env == InToto) -> -- Using function application for field access
-                  (env.payloadType == "application/vnd.in-toto+json") ->
+                  (format env = InToto) ->                                -- propositional, not Bool ==
+                  (env.payloadType = "application/vnd.in-toto+json") ->   -- propositional, not Bool ==
                   ValidInToto env
 
 --------------------------------------------------------------------------------
@@ -136,6 +137,7 @@ addStep name result chain =
 
 ||| Check if chain passed
 public export
+chainPassed : VerificationChain -> Bool
 chainPassed (MkChain _ overall) = isVerified overall -- Simplified definition
 
 --------------------------------------------------------------------------------
@@ -169,6 +171,6 @@ Show Envelope where
 public export
 Show VerificationChain where
   show chain =
-    let stepStr = Data.List.unlines (map (\(n, r) => "  " ++ n ++ ": " ++ show r) chain.steps)
+    let stepStr = unlines (map (\(n, r) => "  " ++ n ++ ": " ++ show r) chain.steps)
     in "VerificationChain:\n" ++ stepStr ++ "Overall: " ++ show chain.overall
 

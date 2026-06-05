@@ -1,0 +1,6 @@
+-- SPDX-License-Identifier: MPL-2.0
+-- stapeln Idris2 ABI proof layer (Types/Layout/Proofs/Foreign).
+package stapeln-abi
+sourcedir = "."
+depends = base, contrib
+modules = Types, Layout, Proofs, Foreign

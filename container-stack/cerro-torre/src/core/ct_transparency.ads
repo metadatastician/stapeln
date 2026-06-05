@@ -28,7 +28,8 @@ with Ada.Containers.Vectors;
 with Interfaces;
 
 package CT_Transparency
-   with SPARK_Mode => On
+   with SPARK_Mode => Off  --  Uses Ada.Containers.Vectors (Entry_List) +
+                           --  Unbounded_String — dynamic, outside SPARK.
 is
    use Interfaces;
 

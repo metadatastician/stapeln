@@ -6,13 +6,14 @@
 -- Postulates are used ONLY where the property depends on runtime values
 -- (e.g., C struct packing) or Idris2 cannot reduce concrete record fields.
 
-module Stapeln.ABI.Proofs
+module Proofs
 
 import Data.Nat
 import Data.List
+import Data.List.Elem
 import Decidable.Equality
-import Stapeln.ABI.Types
-import Stapeln.ABI.Layout
+import Types
+import Layout
 
 %default total
 
@@ -25,31 +26,39 @@ import Stapeln.ABI.Layout
 ||| resultToInt is injective: equal outputs imply equal inputs.
 public export
 resultToIntInjective : (a, b : ResultCode) -> resultToInt a = resultToInt b -> a = b
-resultToIntInjective Ok          Ok          Refl = Refl
-resultToIntInjective Ok          Error       prf  = absurd prf
-resultToIntInjective Ok          InvalidParam prf = absurd prf
-resultToIntInjective Ok          NotFound    prf  = absurd prf
-resultToIntInjective Ok          OutOfMemory prf  = absurd prf
-resultToIntInjective Error       Ok          prf  = absurd prf
-resultToIntInjective Error       Error       Refl = Refl
-resultToIntInjective Error       InvalidParam prf = absurd prf
-resultToIntInjective Error       NotFound    prf  = absurd prf
-resultToIntInjective Error       OutOfMemory prf  = absurd prf
-resultToIntInjective InvalidParam Ok          prf = absurd prf
-resultToIntInjective InvalidParam Error       prf = absurd prf
+resultToIntInjective Ok           Ok           Refl = Refl
+resultToIntInjective Error        Error        Refl = Refl
 resultToIntInjective InvalidParam InvalidParam Refl = Refl
-resultToIntInjective InvalidParam NotFound    prf = absurd prf
-resultToIntInjective InvalidParam OutOfMemory prf = absurd prf
-resultToIntInjective NotFound    Ok          prf  = absurd prf
-resultToIntInjective NotFound    Error       prf  = absurd prf
-resultToIntInjective NotFound    InvalidParam prf = absurd prf
-resultToIntInjective NotFound    NotFound    Refl = Refl
-resultToIntInjective NotFound    OutOfMemory prf  = absurd prf
-resultToIntInjective OutOfMemory Ok          prf  = absurd prf
-resultToIntInjective OutOfMemory Error       prf  = absurd prf
-resultToIntInjective OutOfMemory InvalidParam prf = absurd prf
-resultToIntInjective OutOfMemory NotFound    prf  = absurd prf
-resultToIntInjective OutOfMemory OutOfMemory Refl = Refl
+resultToIntInjective OutOfMemory  OutOfMemory  Refl = Refl
+resultToIntInjective NullPointer  NullPointer  Refl = Refl
+-- Distinct constructors map to distinct Int codes (0..4), so a witness that
+-- their codes are equal is uninhabited. We refute each off-diagonal pair with
+-- an explicit `Refl impossible` clause: the coverage checker reduces the
+-- (public, reducible) `resultToInt` to the primitive literals and sees `Refl`
+-- cannot typecheck at e.g. `0 = 1`. This is both honest and fast. (Using
+-- `absurd` instead requires `Uninhabited (resultToInt a = resultToInt b)`,
+-- whose instance search does NOT reduce `resultToInt` and diverges in this
+-- module's import context.)
+resultToIntInjective Ok           Error        Refl impossible
+resultToIntInjective Ok           InvalidParam Refl impossible
+resultToIntInjective Ok           OutOfMemory  Refl impossible
+resultToIntInjective Ok           NullPointer  Refl impossible
+resultToIntInjective Error        Ok           Refl impossible
+resultToIntInjective Error        InvalidParam Refl impossible
+resultToIntInjective Error        OutOfMemory  Refl impossible
+resultToIntInjective Error        NullPointer  Refl impossible
+resultToIntInjective InvalidParam Ok           Refl impossible
+resultToIntInjective InvalidParam Error        Refl impossible
+resultToIntInjective InvalidParam OutOfMemory  Refl impossible
+resultToIntInjective InvalidParam NullPointer  Refl impossible
+resultToIntInjective OutOfMemory  Ok           Refl impossible
+resultToIntInjective OutOfMemory  Error        Refl impossible
+resultToIntInjective OutOfMemory  InvalidParam Refl impossible
+resultToIntInjective OutOfMemory  NullPointer  Refl impossible
+resultToIntInjective NullPointer  Ok           Refl impossible
+resultToIntInjective NullPointer  Error        Refl impossible
+resultToIntInjective NullPointer  InvalidParam Refl impossible
+resultToIntInjective NullPointer  OutOfMemory  Refl impossible
 
 -- ============================================================================
 -- Proof 2: ResultCode Values Are Distinct
@@ -66,8 +75,8 @@ okNotInvalidParam : Not (resultToInt Ok = resultToInt InvalidParam)
 okNotInvalidParam = \case Refl impossible
 
 public export
-okNotNotFound : Not (resultToInt Ok = resultToInt NotFound)
-okNotNotFound = \case Refl impossible
+okNotNullPointer : Not (resultToInt Ok = resultToInt NullPointer)
+okNotNullPointer = \case Refl impossible
 
 public export
 okNotOutOfMemory : Not (resultToInt Ok = resultToInt OutOfMemory)
@@ -78,24 +87,24 @@ errorNotInvalidParam : Not (resultToInt Error = resultToInt InvalidParam)
 errorNotInvalidParam = \case Refl impossible
 
 public export
-errorNotNotFound : Not (resultToInt Error = resultToInt NotFound)
-errorNotNotFound = \case Refl impossible
+errorNotNullPointer : Not (resultToInt Error = resultToInt NullPointer)
+errorNotNullPointer = \case Refl impossible
 
 public export
 errorNotOutOfMemory : Not (resultToInt Error = resultToInt OutOfMemory)
 errorNotOutOfMemory = \case Refl impossible
 
 public export
-invalidParamNotNotFound : Not (resultToInt InvalidParam = resultToInt NotFound)
-invalidParamNotNotFound = \case Refl impossible
+invalidParamNotNullPointer : Not (resultToInt InvalidParam = resultToInt NullPointer)
+invalidParamNotNullPointer = \case Refl impossible
 
 public export
 invalidParamNotOutOfMemory : Not (resultToInt InvalidParam = resultToInt OutOfMemory)
 invalidParamNotOutOfMemory = \case Refl impossible
 
 public export
-notFoundNotOutOfMemory : Not (resultToInt NotFound = resultToInt OutOfMemory)
-notFoundNotOutOfMemory = \case Refl impossible
+nullPointerNotOutOfMemory : Not (resultToInt NullPointer = resultToInt OutOfMemory)
+nullPointerNotOutOfMemory = \case Refl impossible
 
 -- ============================================================================
 -- Proof 3: Port Validity Constraints
@@ -120,20 +129,29 @@ public export
 portZeroInvalid : Not (ValidPort 0)
 portZeroInvalid (MkValidPort 0 {gt}) = absurd gt
 
+-- NOTE: the upper-bound witness `LTE p 65535` is supplied EXPLICITLY via
+-- `lteAddRight` rather than left to `{auto}` search. Auto-searching `LTE p
+-- 65535` for a concrete port diverges here: with Data.Nat's LTE hints in scope
+-- the proof search branches at every level down to depth ~p, which never
+-- terminates in practice (it hung the whole module). `lteAddRight p : LTE p
+-- (p + m)` builds the witness directly (m is inferred by peeling), so each
+-- proof is linear and fast. The lower bound `LTE 1 p` is shallow (`LTESucc
+-- LTEZero`).
+
 ||| Port 80 is valid (constructive proof).
 public export
 port80Valid : ValidPort 80
-port80Valid = MkValidPort 80
+port80Valid = MkValidPort 80 {gt = LTESucc LTEZero} {lt = lteAddRight 80}
 
 ||| Port 443 is valid (constructive proof).
 public export
 port443Valid : ValidPort 443
-port443Valid = MkValidPort 443
+port443Valid = MkValidPort 443 {gt = LTESucc LTEZero} {lt = lteAddRight 443}
 
 ||| Port 8080 is valid (constructive proof).
 public export
 port8080Valid : ValidPort 8080
-port8080Valid = MkValidPort 8080
+port8080Valid = MkValidPort 8080 {gt = LTESucc LTEZero} {lt = lteAddRight 8080}
 
 -- ============================================================================
 -- Proof 4: Service Name Non-Emptiness
@@ -152,7 +170,7 @@ emptyNameInvalid (IsNonEmpty "" f) = f Refl
 ||| A valid stack has a non-empty services list.
 public export
 validStackNonEmpty : ValidStack spec -> NonEmptyProof (services spec)
-validStackNonEmpty (MkValidStack spec {nonempty}) = nonempty
+validStackNonEmpty (MkValidStack spec {nonempty} _) = nonempty
 
 ||| An empty services list cannot form a valid stack.
 public export
@@ -214,8 +232,8 @@ intToResult : Int -> Maybe ResultCode
 intToResult 0 = Just Ok
 intToResult 1 = Just Error
 intToResult 2 = Just InvalidParam
-intToResult 3 = Just NotFound
-intToResult 4 = Just OutOfMemory
+intToResult 3 = Just OutOfMemory
+intToResult 4 = Just NullPointer
 intToResult _ = Nothing
 
 ||| Round-trip: encoding then decoding always recovers the original code.
@@ -224,7 +242,7 @@ resultRoundTrip : (r : ResultCode) -> intToResult (resultToInt r) = Just r
 resultRoundTrip Ok = Refl
 resultRoundTrip Error = Refl
 resultRoundTrip InvalidParam = Refl
-resultRoundTrip NotFound = Refl
+resultRoundTrip NullPointer = Refl
 resultRoundTrip OutOfMemory = Refl
 
 -- ============================================================================
@@ -235,13 +253,18 @@ resultRoundTrip OutOfMemory = Refl
 ||| (Trivially true by pattern matching, but useful as documentation.)
 public export
 allResultCodes : List ResultCode
-allResultCodes = [Ok, Error, InvalidParam, NotFound, OutOfMemory]
+allResultCodes = [Ok, Error, InvalidParam, NullPointer, OutOfMemory]
 
-||| Every ResultCode appears in allResultCodes.
+||| Every ResultCode appears in allResultCodes. The list is inlined in the type
+||| (rather than referring to `allResultCodes`) because the `Elem` constructors
+||| `Here`/`There` need the spine to be a literal `(::)` to unify; the named CAF
+||| `allResultCodes` does not unfold during unification. It is definitionally the
+||| same list, so this proves exactly "every ResultCode appears in allResultCodes".
 public export
-resultCodeComplete : (r : ResultCode) -> Elem r allResultCodes
+resultCodeComplete : (r : ResultCode)
+                  -> Elem r [Ok, Error, InvalidParam, NullPointer, OutOfMemory]
 resultCodeComplete Ok = Here
 resultCodeComplete Error = There Here
 resultCodeComplete InvalidParam = There (There Here)
-resultCodeComplete NotFound = There (There (There Here))
+resultCodeComplete NullPointer = There (There (There Here))
 resultCodeComplete OutOfMemory = There (There (There (There Here)))

@@ -4,7 +4,7 @@
 --  Cerro_Provenance - Implementation
 -------------------------------------------------------------------------------
 
-pragma SPARK_Mode (On);
+pragma SPARK_Mode (Off);  --  matches spec: dynamic containers, not SPARK
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 

@@ -13,7 +13,8 @@ with Cerro_Crypto;
 with Cerro_Manifest;
 
 package Cerro_Provenance
-   with SPARK_Mode => On
+   with SPARK_Mode => Off  --  Uses Ada.Containers.Vectors (Subject/Material
+                           --  lists) — dynamic containers, outside SPARK.
 is
    use Ada.Strings.Unbounded;
    use Cerro_Crypto;

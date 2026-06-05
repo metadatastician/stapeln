@@ -77,6 +77,82 @@ dotDotNotInfix : (xs : List Char)
 dotDotNotInfix xs prf contra = absurd (trans (sym prf) contra)
 
 -- ============================================================================
+-- Boolean / `any` Lemmas (fully proven — no trusted base)
+-- ============================================================================
+--
+-- These structural lemmas about `&&`, `||`, and the stdlib `Foldable`
+-- `any` are needed by ImporterProofs.ociLayoutEnforcement. Idris2's `any`
+-- is `foldMap @{Any}`, which unfolds to a left fold with an accumulator;
+-- `anyCons` re-expresses it in the head/tail form proofs can recurse on.
+-- Every proof term here is total, so they add nothing to the trusted base.
+
+||| `b || False = b`.
+public export
+orFalseRight : (b : Bool) -> (b || False) = b
+orFalseRight True  = Refl
+orFalseRight False = Refl
+
+||| `||` is associative.
+public export
+orAssoc : (a, b, c : Bool) -> ((a || b) || c) = (a || (b || c))
+orAssoc True  b c = Refl
+orAssoc False b c = Refl
+
+||| `b || True = True`.
+public export
+orTrueRight : (b : Bool) -> (b || True) = True
+orTrueRight True  = Refl
+orTrueRight False = Refl
+
+||| Left conjunct extraction: if `a && b` is True then `a` is True.
+public export
+andLeftTrue : (a, b : Bool) -> (a && b) = True -> a = True
+andLeftTrue True  _ _   = Refl
+andLeftTrue False _ prf = absurd prf
+
+||| Pull the accumulator out of the OR-fold underlying `any`.
+public export
+foldlOrPull : (p : a -> Bool) -> (acc : Bool) -> (xs : List a)
+  -> foldl (\z, e => z || p e) acc xs
+   = acc || foldl (\z, e => z || p e) False xs
+foldlOrPull p acc [] = sym (orFalseRight acc)
+foldlOrPull p acc (x :: xs) =
+  rewrite foldlOrPull p (acc || p x) xs in
+  rewrite foldlOrPull p (p x) xs in
+  orAssoc acc (p x) (foldl (\z, e => z || p e) False xs)
+
+||| `any` in head/tail form: `any p (x :: xs) = p x || any p xs`.
+||| (Stdlib `any = foldMap @{Any}` does not reduce to this definitionally.)
+public export
+anyCons : (p : a -> Bool) -> (x : a) -> (xs : List a)
+       -> any p (x :: xs) = p x || any p xs
+anyCons p x xs = foldlOrPull p (p x) xs
+
+||| OR-introduction from pointwise Bool implications.
+public export
+orIntroFromImpl : (px, anyp, qx, anyq : Bool)
+  -> (px = True -> qx = True)
+  -> (anyp = True -> anyq = True)
+  -> (px || anyp) = True
+  -> (qx || anyq) = True
+orIntroFromImpl True  anyp qx anyq f g prf = rewrite f Refl in Refl
+orIntroFromImpl False anyp qx anyq f g prf = rewrite g prf in orTrueRight qx
+
+||| Monotonicity of Bool `any`: a pointwise implication lifts over the list.
+public export
+anyMono : (p, q : a -> Bool)
+       -> ((z : a) -> p z = True -> q z = True)
+       -> (xs : List a)
+       -> any p xs = True
+       -> any q xs = True
+anyMono p q impl [] prf = absurd prf
+anyMono p q impl (x :: xs) prf =
+  rewrite anyCons q x xs in
+  orIntroFromImpl (p x) (any p xs) (q x) (any q xs)
+    (impl x) (anyMono p q impl xs)
+    (trans (sym (anyCons p x xs)) prf)
+
+-- ============================================================================
 -- Bridge Axioms (string-primitive postulates)
 -- ============================================================================
 --
@@ -91,6 +167,8 @@ dotDotNotInfix xs prf contra = absurd (trans (sym prf) contra)
 -- NET EFFECT: they let ImporterProofs.idr discharge `extractionSafety`,
 -- `symlinkSafety`, `zipSlipPrevention` with real proofs — replacing 3
 -- ad-hoc string postulates with 2 fundamental, well-understood ones.
+-- Two further fundamental axioms (`eqStringSym`, `unpackEmptyInv`, below)
+-- additionally discharge `ociLayoutEnforcement` and `absolutePathRejection`.
 
 ||| BRIDGE AXIOM: String.isPrefixOf agrees with the proven List-Char
 ||| `charsPrefixOf` under `unpack`. `isPrefixOf` is a C primitive with
@@ -111,3 +189,26 @@ unpackAppend : (a, b : String)
             -> unpack (a ++ b) = unpack a ++ unpack b
 unpackAppend _ _ =
   idris_crash "unpackAppend: string-primitive axiom — type-level use only"
+
+||| BRIDGE AXIOM: primitive String equality `==` is symmetric. `(==)` on
+||| String is `intToBool ∘ prim__eqString`, an opaque C primitive with no
+||| reduction rules; symmetry is a backend-semantics fact. Used to flip the
+||| `"manifest.json" == e.path` conjunct (extracted from the `elem` witness)
+||| into the goal orientation `e.path == "manifest.json"`.
+partial
+public export
+eqStringSym : (s1, s2 : String) -> (s1 == s2) = True -> (s2 == s1) = True
+eqStringSym _ _ _ =
+  idris_crash "eqStringSym: string-primitive axiom — type-level use only"
+
+||| BRIDGE AXIOM: `unpack` yields the empty list only for the empty string
+||| (the converse, `unpack "" = []`, holds by `Refl` via constant folding).
+||| `unpack` is built on opaque C primitives (`prim__strLength` etc.), so
+||| this injectivity-at-empty fact is not reducible at the type level. Used
+||| to turn a char-level non-emptiness (`unpack comp = c :: cs`) obligation
+||| back into the string-level premise `Not (component = "")`.
+partial
+public export
+unpackEmptyInv : (s : String) -> unpack s = [] -> s = ""
+unpackEmptyInv _ _ =
+  idris_crash "unpackEmptyInv: string-primitive axiom — type-level use only"

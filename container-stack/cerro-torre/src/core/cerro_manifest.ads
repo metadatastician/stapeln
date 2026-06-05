@@ -1,17 +1,21 @@
---  Cerro Torre Manifest - SPARK-verified manifest parsing
+--  Cerro Torre Manifest - manifest parsing (not SPARK: uses dynamic containers)
 --  SPDX-License-Identifier: MPL-2.0
 --  Palimpsest-Covenant: 1.0
 --
---  This package provides manifest parsing with formal verification.
---  The parser is proven to terminate on all inputs and to correctly
---  validate manifest structure.
+--  This package provides manifest parsing. It is NOT in the SPARK subset:
+--  the Manifest model is built from Ada.Containers.Vectors (unbounded, dynamic
+--  allocation), which SPARK does not admit, and the body is already
+--  `SPARK_Mode (Off)`. The spec was previously (incorrectly) `SPARK_Mode => On`,
+--  which made gnatprove reject every Vector-typed declaration ("not allowed in
+--  SPARK due to entity declared with SPARK_Mode Off"). SPARK verification is
+--  scoped to the crypto/provenance/registry core instead.
 
 with Ada.Strings.Unbounded;
 with Ada.Containers.Vectors;
 with Ada.Calendar;
 
 package Cerro_Manifest
-   with SPARK_Mode => On
+   with SPARK_Mode => Off
 is
    use Ada.Strings.Unbounded;
 

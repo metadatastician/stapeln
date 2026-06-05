@@ -22,6 +22,7 @@ jobs:
   a2ml-validate:
     name: Validate A2ML manifests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -49,8 +50,9 @@ jobs:
           strict: 'false'
           # Default carve-outs plus stapeln's legitimately distinct A2ML
           # doc-types whose identity is structural, not a TOML name/version
-          # pair: clade declarations, YAML anchor files, and agent-instruction
-          # session configs. Same rationale as the action's built-in defaults
+          # pair: clade declarations, YAML anchor files, agent-instruction
+          # session configs, and Guile s-expression classification registries
+          # (audits/*.a2ml). Same rationale as the action's built-in defaults
           # (hyperpolymath/hypatia#243 — distinguish doc type from target).
           paths-ignore: |
             vendor/
@@ -63,6 +65,7 @@ jobs:
             .machine_readable/agent_instructions/
             .machine_readable/CLADE.a2ml
             .machine_readable/anchors/
+            audits/assail-classifications.a2ml
 
       - name: Write summary
         run: |
@@ -87,6 +90,7 @@ jobs:
   k9-validate:
     name: Validate K9 contracts
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -136,6 +140,7 @@ jobs:
   empty-lint:
     name: Empty-linter (invisible characters)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -200,6 +205,7 @@ jobs:
   groove-check:
     name: Groove manifest check
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout repository
@@ -258,6 +264,7 @@ jobs:
   dogfood-summary:
     name: Dogfooding compliance summary
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     needs: [a2ml-validate, k9-validate, empty-lint, groove-check]
     if: always()
 

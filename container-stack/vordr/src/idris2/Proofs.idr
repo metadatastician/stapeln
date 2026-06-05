@@ -64,16 +64,19 @@ mustCreateBeforeStart x = cannotSkipCreate x
 ||| Type representing a reversible operation
 public export
 data Reversible : (from : ContainerState) -> (to : ContainerState) -> Type where
-  ||| Start is reversible via stop
-  StartIsReversible : Reversible Created Running
-  ||| Pause is reversible via resume
+  ||| Pause is reversible via resume (Running <-> Paused)
   PauseIsReversible : Reversible Running Paused
-  ||| Stop is NOT reversible in general (data may be lost)
-  -- (Notably absent: no constructor for Running -> Stopped)
+  -- NOTE: Start (Created -> Running) is NOT Bennett-reversible. The state
+  -- machine (Container.ValidTransition) has no Running -> Created transition —
+  -- stopping a Running container goes to Stopped, losing the
+  -- "created-but-not-started" state. The earlier `StartIsReversible`
+  -- constructor was therefore unsound: its `inverse` (StopRunning :
+  -- Running -> Stopped) could not have the required type
+  -- `ValidTransition Running Created`. Removed rather than left ill-typed.
+  -- Stop is likewise not reversible (data may be lost).
 
-||| Proof: Pause-Resume forms an identity operation
-||| pause . resume = id (modulo timestamps)
-||| Note: Commented out - requires rework of type signature
+-- Proof: Pause-Resume forms an identity operation (pause . resume = id,
+-- modulo timestamps). Commented out — requires rework of the type signature.
 -- export
 -- pauseResumeIdentity : (c : Container Running) ->
 --                       let (_, paused) = pauseContainer c
@@ -84,16 +87,15 @@ data Reversible : (from : ContainerState) -> (to : ContainerState) -> Type where
 ||| The inverse of a reversible transition
 public export
 inverse : Reversible from to -> ValidTransition to from
-inverse StartIsReversible = StopRunning
 inverse PauseIsReversible = ResumeP
 
 --------------------------------------------------------------------------------
 -- Resource Safety Proofs
 --------------------------------------------------------------------------------
 
-||| Proof: Resource limits are preserved through transitions
-||| (A container never exceeds its allocated resources)
-||| Note: Commented out - requires rework of type signature
+-- Proof: Resource limits are preserved through transitions (a container never
+-- exceeds its allocated resources). Commented out — requires rework of the
+-- type signature.
 -- export
 -- limitsPreserved : (c : Container Created) ->
 --                   (pid : Nat) ->
@@ -116,15 +118,26 @@ export
 emptyDepsNoVulns : (doc : SBOMDocument) ->
                    doc.dependencies = [] ->
                    totalVulns doc = 0
-emptyDepsNoVulns doc Refl = Refl
+emptyDepsNoVulns doc prf = rewrite prf in Refl
 
-||| Proof: Adding a clean dependency doesn't introduce vulnerabilities
+||| Proof: Adding a clean dependency doesn't introduce vulnerabilities.
+||| After exposing the head via `mapConsEq` and rewriting `d.vulns = []`, the
+||| goal is `sum (0 :: rest) = sum rest`, which holds by `Refl`: both sides
+||| reduce to `foldl (+) 0 rest` (the `0` accumulator is `neutral <+> 0 = 0`).
+|||
+||| NB: the counting function is written as the lambda `\dep => length dep.vulns`
+||| rather than point-free `(length . vulns)`. In a type-signature position the
+||| bare names `length`/`vulns` were being auto-bound as fresh implicits
+||| (shadowing the real functions — Idris emits the "implicitly bind" warning),
+||| which made the original statement ill-typed (the `?_.vulns` in the old error).
 export
 cleanDepsAdditive : (deps : List Dependency) ->
                     (d : Dependency) ->
                     d.vulns = [] ->
-                    sum (map (length . vulns) (d :: deps)) = sum (map (length . vulns) deps)
-cleanDepsAdditive _ _ Refl = Refl
+                    sum (map (\dep => length dep.vulns) (d :: deps))
+                      = sum (map (\dep => length dep.vulns) deps)
+cleanDepsAdditive deps d prf =
+  rewrite prf in Refl
 
 --------------------------------------------------------------------------------
 -- Verification Chain Proofs
@@ -132,45 +145,59 @@ cleanDepsAdditive _ _ Refl = Refl
 
 ||| A verification chain is a sequence of attestations that together
 ||| prove a container is trustworthy
+||| (`Attestation` here is `Verification.Attestation`, already in scope via
+||| `import Verification`; "verified" means its `valid` field is True. The
+||| module-qualified `Attestation.Attestation` / `verified` used previously
+||| referenced an unimported module and an undefined function.)
 public export
 data VerificationChain : Nat -> Type where
   Empty : VerificationChain 0
-  Link  : Attestation.Attestation ->
+  Link  : Attestation ->
           VerificationChain n ->
           VerificationChain (S n)
 
 ||| Proof: A non-empty verification chain has at least one attestation
 export
-nonEmptyHasAttestation : VerificationChain (S n) -> Attestation.Attestation
+nonEmptyHasAttestation : VerificationChain (S n) -> Attestation
 nonEmptyHasAttestation (Link att _) = att
 
-||| All attestations in a chain are verified
+||| All attestations in a chain are verified (every attestation's `valid` flag)
 public export
 data AllVerified : VerificationChain n -> Type where
   EmptyVerified : AllVerified Empty
-  ChainVerified : (att : Attestation.Attestation) ->
-                  (verified att = True) ->
+  ChainVerified : (att : Attestation) ->
+                  (att.valid = True) ->
                   AllVerified rest ->
                   AllVerified (Link att rest)
 
 --------------------------------------------------------------------------------
 -- Security Invariants
 --------------------------------------------------------------------------------
-
-||| Security invariant: privileged containers require explicit authorization
-public export
-data PrivilegedRequiresAuth : Type where
-  MkPrivilegedRequiresAuth : (config : SecurityConfig) ->
-                             (auth : AuthorizationLevel) ->
-                             (isPrivileged config = True) ->
-                             (auth = Admin) ->
-                             PrivilegedRequiresAuth
-
-||| Proof: Non-admin users cannot create privileged containers
-export
-nonAdminCantPrivilege : (config : SecurityConfig) ->
-                        (auth : AuthorizationLevel) ->
-                        Not (auth = Admin) ->
-                        isPrivileged config = True ->
-                        Void
-nonAdminCantPrivilege _ Admin notAdmin _ = notAdmin Refl
+--
+-- DISABLED: this section never compiled. It references types defined nowhere in
+-- vordr — `SecurityConfig`, `AuthorizationLevel`, `Admin`, `isPrivileged` — so
+-- the module (and package) failed to build, masking the genuine proofs above.
+-- `nonAdminCantPrivilege` is also unsound as written: from `Not (auth = Admin)`
+-- and `isPrivileged config = True` it claims `Void` (a non-sequitur without an
+-- invariant linking authorization to privilege), and its single clause only
+-- covers `auth = Admin` (non-covering otherwise). Re-enabling needs a real
+-- security model: define those types, then state the invariant as a constructor
+-- (mirroring `PrivilegedRequiresAuth`) rather than a bare `... -> Void`.
+--
+-- ||| Security invariant: privileged containers require explicit authorization
+-- public export
+-- data PrivilegedRequiresAuth : Type where
+--   MkPrivilegedRequiresAuth : (config : SecurityConfig) ->
+--                              (auth : AuthorizationLevel) ->
+--                              (isPrivileged config = True) ->
+--                              (auth = Admin) ->
+--                              PrivilegedRequiresAuth
+--
+-- ||| Proof: Non-admin users cannot create privileged containers
+-- export
+-- nonAdminCantPrivilege : (config : SecurityConfig) ->
+--                         (auth : AuthorizationLevel) ->
+--                         Not (auth = Admin) ->
+--                         isPrivileged config = True ->
+--                         Void
+-- nonAdminCantPrivilege _ Admin notAdmin _ = notAdmin Refl

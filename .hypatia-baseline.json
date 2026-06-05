@@ -1,0 +1,16 @@
+[
+  {
+    "severity": "info",
+    "rule_module": "cicd_rules",
+    "type": "banned_language_file",
+    "file_pattern": "**/*.res",
+    "note": "ReScript is this repo's primary application language (see CLAUDE.md language policy). The hyperpolymath estate is migrating ReScript -> AffineScript; tracked .res files are grandfathered here via a single file_pattern entry until that migration lands, per the banned-language rule's documented baseline mechanism."
+  },
+  {
+    "severity": "info",
+    "rule_module": "cicd_rules",
+    "type": "banned_language_file",
+    "file_pattern": "**/*.dats",
+    "note": "ATS2 linear-type shadow proofs under container-stack/cerro-torre (verification/ats/, tools/ats-shadow/). These are legitimate formal-verification artifacts that complement the Idris2 proof layer, not application code."
+  }
+]

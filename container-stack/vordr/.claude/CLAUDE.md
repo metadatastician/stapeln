@@ -19,6 +19,11 @@ The following files in `.machine_readable/` contain structured project metadata:
 
 ## Language Policy (STRICT)
 
+> **2026 migration: ReScript → AffineScript.** AffineScript replaces ReScript
+> for the MCP adapter / browser UI; the governance banned-language gate enforces
+> "use AffineScript instead". Existing `.res` are grandfathered via
+> `.hypatia-baseline.json`; do not add new `.res`.
+
 ### ALLOWED Languages
 
 | Language | Use Case | Location |
@@ -27,7 +32,7 @@ The following files in `.machine_readable/` contain structured project metadata:
 | **Rust** | eBPF probes, performance-critical paths, CLI | `src/rust/` |
 | **Elixir** | Orchestration, state management, reversibility | `src/elixir/` |
 | **Ada/SPARK** | Cryptographic operations, SPARK proofs | `src/ada/` |
-| **ReScript** | MCP adapter, browser UI | `adapters/`, `runtime/` |
+| **AffineScript** | MCP adapter, browser UI (replaces ReScript) | `adapters/`, `runtime/` |
 | **Guile Scheme** | SCM checkpoint files | `*.scm` |
 | **Bash** | Build scripts only | `scripts/` |
 
@@ -35,7 +40,8 @@ The following files in `.machine_readable/` contain structured project metadata:
 
 | Banned | Replacement | Reason |
 |--------|-------------|--------|
-| TypeScript | ReScript | RSR compliance |
+| TypeScript | AffineScript | RSR compliance |
+| ReScript | AffineScript | RSR migration — no new `.res`; existing grandfathered |
 | Go | Rust | RSR compliance |
 | Python | Idris2/Elixir | RSR compliance (except SaltStack) |
 | Java/Kotlin | Ada/Rust | RSR compliance |

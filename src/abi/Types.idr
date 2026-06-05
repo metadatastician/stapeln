@@ -1,9 +1,10 @@
 -- SPDX-License-Identifier: MPL-2.0
 -- Stapeln ABI type definitions (Idris2) with dependent types and proofs
 
-module Stapeln.ABI.Types
+module Types
 
 import Data.List
+import Data.List.Quantifiers
 import Data.Nat
 import Decidable.Equality
 
@@ -13,16 +14,29 @@ import Decidable.Equality
 -- Result Codes
 -- ============================================================================
 
+||| ABI result codes. The integer mapping is the C ABI contract and MUST match
+||| `ffi/zig/src/main.zig` (`pub const Result = enum(c_int) { ok=0, error=1,
+||| invalid_param=2, out_of_memory=3, null_pointer=4 }`). A previous refactor
+||| drifted this type (it carried a `NotFound` at 3 and pushed `OutOfMemory` to
+||| 4, with no `NullPointer`), which silently de-correlated the round-trip and
+||| injectivity proofs in Proofs.idr from the actual FFI boundary. Realigned.
 public export
-data ResultCode = Ok | Error | InvalidParam | NotFound | OutOfMemory
+data ResultCode = Ok | Error | InvalidParam | OutOfMemory | NullPointer
+
+||| The C ABI and Foreign.idr name this type `Result`; `ResultCode` is the
+||| canonical Idris name. `Result` is the ABI-facing alias so the proven
+||| properties line up with the FFI surface that uses them.
+public export
+Result : Type
+Result = ResultCode
 
 public export
 resultToInt : ResultCode -> Int
 resultToInt Ok = 0
 resultToInt Error = 1
 resultToInt InvalidParam = 2
-resultToInt NotFound = 3
-resultToInt OutOfMemory = 4
+resultToInt OutOfMemory = 3
+resultToInt NullPointer = 4
 
 -- DecEq for ResultCode enables compile-time equality proofs
 public export
@@ -30,28 +44,28 @@ DecEq ResultCode where
   decEq Ok Ok = Yes Refl
   decEq Ok Error = No (\case Refl impossible)
   decEq Ok InvalidParam = No (\case Refl impossible)
-  decEq Ok NotFound = No (\case Refl impossible)
   decEq Ok OutOfMemory = No (\case Refl impossible)
+  decEq Ok NullPointer = No (\case Refl impossible)
   decEq Error Ok = No (\case Refl impossible)
   decEq Error Error = Yes Refl
   decEq Error InvalidParam = No (\case Refl impossible)
-  decEq Error NotFound = No (\case Refl impossible)
   decEq Error OutOfMemory = No (\case Refl impossible)
+  decEq Error NullPointer = No (\case Refl impossible)
   decEq InvalidParam Ok = No (\case Refl impossible)
   decEq InvalidParam Error = No (\case Refl impossible)
   decEq InvalidParam InvalidParam = Yes Refl
-  decEq InvalidParam NotFound = No (\case Refl impossible)
   decEq InvalidParam OutOfMemory = No (\case Refl impossible)
-  decEq NotFound Ok = No (\case Refl impossible)
-  decEq NotFound Error = No (\case Refl impossible)
-  decEq NotFound InvalidParam = No (\case Refl impossible)
-  decEq NotFound NotFound = Yes Refl
-  decEq NotFound OutOfMemory = No (\case Refl impossible)
+  decEq InvalidParam NullPointer = No (\case Refl impossible)
   decEq OutOfMemory Ok = No (\case Refl impossible)
   decEq OutOfMemory Error = No (\case Refl impossible)
   decEq OutOfMemory InvalidParam = No (\case Refl impossible)
-  decEq OutOfMemory NotFound = No (\case Refl impossible)
   decEq OutOfMemory OutOfMemory = Yes Refl
+  decEq OutOfMemory NullPointer = No (\case Refl impossible)
+  decEq NullPointer Ok = No (\case Refl impossible)
+  decEq NullPointer Error = No (\case Refl impossible)
+  decEq NullPointer InvalidParam = No (\case Refl impossible)
+  decEq NullPointer OutOfMemory = No (\case Refl impossible)
+  decEq NullPointer NullPointer = Yes Refl
 
 -- ============================================================================
 -- Core Records
@@ -99,15 +113,31 @@ data ValidPort : (p : Nat) -> Type where
              -> {auto lt : LTE p 65535}
              -> ValidPort p
 
-||| Proof witness that a string is non-empty.
+||| Proof witness that a string is non-empty: a (relevant) proof that its
+||| length is not zero.
+|||
+||| Previously the witness was erased (quantity 0) and the type also carried a
+||| vacuous `{auto prf : s = s}`. An erased witness cannot be used, so
+||| `Not (NonEmpty "")` was impossible to discharge (and the `s = s` field
+||| proved nothing). The witness is now relevant so non-emptiness can actually
+||| be eliminated in proofs.
 public export
 data NonEmpty : String -> Type where
-  IsNonEmpty : (s : String) -> {auto prf : s = s} -> (0 _ : length s = 0 -> Void) -> NonEmpty s
+  IsNonEmpty : (s : String) -> (notEmpty : length s = 0 -> Void) -> NonEmpty s
 
 ||| A service name proven to be non-empty.
 public export
 data ValidServiceName : String -> Type where
   MkValidServiceName : (s : String) -> NonEmpty s -> ValidServiceName s
+
+||| Proof that a list is non-empty (has at least one element).
+||| (Hoisted to top level: it was previously inside an invalid `where` block on
+||| the `ValidStack` data declaration — which `MkValidStack` also references
+||| forward — so this module failed to parse and never compiled. Its
+||| constructor is renamed to avoid clashing with `NonEmpty.IsNonEmpty`.)
+public export
+data NonEmptyProof : List a -> Type where
+  IsNonEmptyList : NonEmptyProof (x :: xs)
 
 ||| A stack specification proven to contain at least one service,
 ||| where every service has a non-empty name.
@@ -117,11 +147,6 @@ data ValidStack : StackSpec -> Type where
               -> {auto nonempty : NonEmptyProof (services spec)}
               -> (allNamed : All (\svc => NonEmpty (name svc)) (services spec))
               -> ValidStack spec
-  where
-    ||| Proof that a list is non-empty (has at least one element).
-    public export
-    data NonEmptyProof : List a -> Type where
-      IsNonEmpty : NonEmptyProof (x :: xs)
 
 -- ============================================================================
 -- Decision Procedures (runtime validation with proof construction)

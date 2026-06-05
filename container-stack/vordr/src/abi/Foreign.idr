@@ -7,12 +7,29 @@
 ||| All functions are declared here with type signatures and safety proofs.
 ||| Implementations live in ffi/zig/
 
-module Vordr.ABI.Foreign
+module Foreign
 
-import Vordr.ABI.Types
-import Vordr.ABI.Layout
+import Types
 
 %default total
+
+--------------------------------------------------------------------------------
+-- Handle (opaque wrapper over the C `*Handle`)
+--------------------------------------------------------------------------------
+
+||| Idris-side view of the C library handle. The C ABI passes `*Handle`
+||| (see ffi/zig/src/main.zig); across the FFI boundary it is a raw pointer
+||| value, represented here as Bits64. A null pointer (0) denotes "no handle".
+public export
+record Handle where
+  constructor MkHandle
+  handlePtr : Bits64
+
+||| Wrap a raw pointer returned by C into a Handle, rejecting null (0).
+export
+createHandle : Bits64 -> Maybe Handle
+createHandle 0 = Nothing
+createHandle ptr = Just (MkHandle ptr)
 
 --------------------------------------------------------------------------------
 -- Library Lifecycle
@@ -181,19 +198,19 @@ public export
 Callback : Type
 Callback = Bits64 -> Bits32 -> Bits32
 
-||| Register a callback
+||| Register a callback. Declared with the `Callback` function type so Idris2
+||| marshals the closure to a C function pointer at the FFI boundary, rather
+||| than an unsound `cast` of a closure to AnyPtr (no Cast instance; it would
+||| require believe_me).
 export
 %foreign "C:vordr_register_callback, libvordr"
-prim__registerCallback : Bits64 -> AnyPtr -> PrimIO Bits32
+prim__registerCallback : Bits64 -> Callback -> PrimIO Bits32
 
 ||| Register a callback with the Zig FFI layer.
-||| The cast from Callback to AnyPtr is an inherent FFI boundary crossing —
-||| type safety is enforced by the Zig side matching the callback signature.
 export
 registerCallback : Handle -> Callback -> IO (Either Result ())
 registerCallback h cb = do
-  -- FFI boundary: callback function pointer cast to AnyPtr for C ABI compatibility.
-  result <- primIO (prim__registerCallback (handlePtr h) (cast cb))
+  result <- primIO (prim__registerCallback (handlePtr h) cb)
   pure $ case resultFromInt result of
     Just Ok => Right ()
     Just err => Left err

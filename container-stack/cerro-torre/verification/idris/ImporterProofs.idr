@@ -37,16 +37,27 @@ Path = String
 ||| SafePath is an inductive proof that a path is safe for extraction:
 |||   - SafeEmpty: the empty string is trivially safe
 |||   - SafeComponent: a path "component/rest" is safe if:
-|||     1. component is not ".."
-|||     2. component doesn't start with "/"
-|||     3. rest is also safe
+|||     1. component is non-empty
+|||     2. component is not ".."
+|||     3. component doesn't start with "/"
+|||     4. rest is also safe
+|||
+||| SOUNDNESS NOTE (2026-06): the non-emptiness requirement (1) is load-bearing.
+||| Without it, an absolute path "/rest" decomposes as "" ++ "/" ++ rest, so
+||| the empty leading component would make every absolute path "safe" — i.e.
+||| `absolutePathRejection` would be FALSE. Requiring `Not (component = "")`
+||| closes that gap and lets `absolutePathRejection` be proven (see below).
+||| `rest` is an explicit index so proofs can recover the suffix string
+||| (auto-bound implicits are erased at quantity 0 and unusable relevantly).
 public export
 data SafePath : Path -> Type where
   ||| An empty path is safe
   SafeEmpty : SafePath ""
 
-  ||| A relative component without ".." is safe
+  ||| A non-empty relative component (not "..", not "/"-prefixed) is safe
   SafeComponent : (component : String)
+               -> (rest : String)
+               -> Not (component = "")
                -> Not (component = "..")
                -> Not (Data.String.isPrefixOf "/" component = True)
                -> SafePath rest
@@ -187,30 +198,90 @@ symlinkSafety root _ target _ _ _ =
   rewrite unpackAppend root ("/" ++ target) in
   charsPrefixOfAppend (unpack root) (unpack ("/" ++ target))
 
-||| POSTULATE: Absolute Path Rejection
+-- --- Helper lemmas for absolutePathRejection ------------------------------
+
+||| `isPrefixOf "/" ""` is False — both literals constant-fold, so by `Refl`.
+export
+prefixSlashEmpty : Data.String.isPrefixOf "/" "" = False
+prefixSlashEmpty = Refl
+
+||| Native unfolding of String.isPrefixOf for the "/" separator. `isPrefixOf`
+||| on String is `\a,b => isPrefixOf (unpack a) (unpack b)` (the List version,
+||| `isPrefixOfBy (==)`), and `unpack "/"` constant-folds to `['/']`; all by Refl.
+export
+prefixNative : (x : String)
+            -> Data.String.isPrefixOf "/" x = isPrefixOfBy (==) ['/'] (unpack x)
+prefixNative x = Refl
+
+||| For a non-empty `comp` (so `unpack comp = c :: cs`), prefixing-"/"-ness is
+||| unaffected by appending `tail`: only the head char is inspected. Proven by
+||| `unpackAppend` + reducing `isPrefixOfBy (==) ['/']` on both cons forms to
+||| `('/' == c) && True`.
+partial
+export
+slashPrefixAppendEq : (comp, tail : String) -> (c : Char) -> (cs : List Char)
+  -> unpack comp = c :: cs
+  -> Data.String.isPrefixOf "/" comp = Data.String.isPrefixOf "/" (comp ++ tail)
+slashPrefixAppendEq comp tail c cs eq =
+  rewrite prefixNative comp in
+  rewrite prefixNative (comp ++ tail) in
+  rewrite unpackAppend comp tail in
+  rewrite eq in
+  Refl
+
+||| A non-empty string unpacks to a cons. The `[]` case contradicts
+||| `Not (comp = "")` via `unpackEmptyInv`.
+partial
+export
+nonEmptyUnpack : (comp : String) -> Not (comp = "")
+  -> (c : Char ** cs : List Char ** unpack comp = c :: cs)
+nonEmptyUnpack comp neComp with (unpack comp) proof eq
+  _ | [] = absurd (neComp (unpackEmptyInv comp eq))
+  _ | (c :: cs) = (c ** cs ** Refl)
+
+||| If "/" is a prefix of `comp ++ tail` and `comp` is non-empty, then "/" is
+||| a prefix of `comp` (the separator must be `comp`'s first character).
+partial
+export
+slashPrefixThroughAppend : (comp, tail : String) -> Not (comp = "")
+  -> Data.String.isPrefixOf "/" (comp ++ tail) = True
+  -> Data.String.isPrefixOf "/" comp = True
+slashPrefixThroughAppend comp tail neComp prefixPrf =
+  let (c ** cs ** eq) = nonEmptyUnpack comp neComp
+  in trans (slashPrefixAppendEq comp tail c cs eq) prefixPrf
+
+||| Core of absolutePathRejection, over a path string `p`.
+partial
+export
+absolutePathNotSafe : {p : Path} -> Data.String.isPrefixOf "/" p = True
+                   -> SafePath p -> Void
+absolutePathNotSafe prefixPrf SafeEmpty =
+  absurd (trans (sym prefixSlashEmpty) prefixPrf)
+absolutePathNotSafe prefixPrf (SafeComponent comp rest neComp _ notSlash _) =
+  notSlash (slashPrefixThroughAppend comp ("/" ++ rest) neComp prefixPrf)
+
+||| PROVEN: Absolute Path Rejection (2026-06 — was a postulate)
 |||
 ||| An absolute path (starting with "/") cannot be SafePath.
 |||
-||| Justification: SafePath's SafeComponent constructor requires
-||| Not (isPrefixOf "/" component) for every component. An absolute
-||| path has "/" as a prefix of its first component, which contradicts
-||| the SafeComponent requirement.
+||| Proof: case analysis on the SafePath witness (`absolutePathNotSafe`).
+|||   - SafeEmpty: path = "" but `isPrefixOf "/" "" = False` (Refl) contradicts
+|||     the `= True` premise.
+|||   - SafeComponent comp rest …: path = comp ++ "/" ++ rest with comp
+|||     non-empty. `slashPrefixThroughAppend` derives `isPrefixOf "/" comp = True`
+|||     from the premise, contradicting the constructor's `notSlash` field.
 |||
-||| Proof sketch (for future implementation):
-|||   Case analysis on safePath:
-|||     SafeEmpty: entry.path = "" but isPrefixOf "/" "" = False,
-|||       contradicting isAbsolute
-|||     SafeComponent component notDotDot notSlash rest:
-|||       entry.path = component ++ "/" ++ rest
-|||       isPrefixOf "/" (component ++ "/" ++ rest) = True (given)
-|||       This implies isPrefixOf "/" component = True (string prefix lemma)
-|||       But notSlash : Not (isPrefixOf "/" component) → contradiction
+||| This is exactly why `SafeComponent` now requires `Not (component = "")`:
+||| without it the empty-leading-component decomposition of "/rest" would make
+||| the theorem false. Trusted base: `unpackAppend` + `unpackEmptyInv` (both
+||| fundamental String-primitive facts); `isPrefixOf "/" ""` and the native
+||| unfolding reduce by `Refl`. `partial` is the AXIOM-TRANSITIVE marker.
 partial
 export
 absolutePathRejection : (entry : TarEntry)
                      -> isPrefixOf "/" entry.path = True
                      -> Not (SafePath entry.path)
-absolutePathRejection _ _ = idris_crash "absolutePathRejection: string-primitive postulate — type-level use only"
+absolutePathRejection entry prefixPrf = absolutePathNotSafe prefixPrf
 
 -- ============================================================================
 -- OCI Layout Validation
@@ -229,22 +300,40 @@ data OCILayout : List TarEntry -> Type where
           -> (hasBlobsDir : any (\e => isPrefixOf "blobs/" e.path) entries = True)
           -> OCILayout entries
 
-||| POSTULATE: OCI Layout Enforcement
+||| PROVEN: OCI Layout Enforcement (2026-06 — was a postulate)
 |||
-||| A valid OCI layout contains manifest.json.
+||| A valid OCI layout contains manifest.json (path-level statement).
 |||
-||| Justification: The ValidOCI constructor requires hasManifest as
-||| a proof that manifest.json is in the entry list. The goal asks
-||| for a slightly different formulation using (==) instead of elem
-||| on the full record. These are equivalent when the path field
-||| matches, but proving the equivalence requires decidable equality
-||| on TarEntry and a lemma relating elem to any with (==).
+||| Proof: `ValidOCI` carries `hasManifest : elem m entries = True` with
+||| `m = MkTarEntry "manifest.json" 0 False Nothing`. By the stdlib defs
+||| `elem = elemBy (==)` and `elemBy p e = any (p e)`, this is definitionally
+||| `any (m ==) entries = True`. We lift it to the goal predicate
+||| `\e => e.path == "manifest.json"` via `anyMono` (StringLemmas): the
+||| pointwise obligation `(m == e) = True -> (e.path == "manifest.json") = True`
+||| is discharged by extracting the first conjunct of the `Eq TarEntry`
+||| chain (`andLeftTrue`) — giving `"manifest.json" == e.path = True` — and
+||| flipping it with the fundamental `eqStringSym` axiom.
+|||
+||| Trusted base: `eqStringSym` only (a fundamental String-`==` primitive
+||| fact). The list/Bool reasoning (`anyMono`, `andLeftTrue`) is fully total.
+||| `partial` is the AXIOM-TRANSITIVE marker inherited from `eqStringSym`.
 partial
 export
 ociLayoutEnforcement : (entries : List TarEntry)
                     -> OCILayout entries
                     -> any (\e => e.path == "manifest.json") entries = True
-ociLayoutEnforcement _ _ = idris_crash "ociLayoutEnforcement: decidable-equality postulate — type-level use only"
+ociLayoutEnforcement entries (ValidOCI entries hasManifest _) =
+  anyMono (\e => MkTarEntry "manifest.json" 0 False Nothing == e)
+          (\e => e.path == "manifest.json")
+          pointwise entries hasManifest
+  where
+    partial
+    pointwise : (e : TarEntry)
+             -> (MkTarEntry "manifest.json" 0 False Nothing == e) = True
+             -> (e.path == "manifest.json") = True
+    pointwise e prf =
+      eqStringSym "manifest.json" e.path
+        (andLeftTrue ("manifest.json" == e.path) _ prf)
 
 -- ============================================================================
 -- Attack Prevention

@@ -9,6 +9,7 @@ module Verification
 import Container
 import Data.So
 import Data.List
+import Data.List.Quantifiers
 
 %default total
 
@@ -218,21 +219,21 @@ allVerified (Failed _ :: _) = False
 
 ||| If every element in a verification list is Verified or Skipped,
 ||| allVerified returns True.
+|||
+||| The hypothesis is the *propositional* `All` (Data.List.Quantifiers) — one
+||| proof per element that it is `Verified` or some `Skipped reason`. (This
+||| previously read `all`, the Bool `Foldable` function, which does not
+||| typecheck against a `Type`-valued predicate, so the module did not build.)
 export
 allVerifiedFromList : (results : List VerifyResult) ->
-                      (all (\r => Either (r = Verified) (reason ** r = Skipped reason)) results) ->
+                      All (\r => Either (r = Verified) (reason ** r = Skipped reason)) results ->
                       allVerified results = True
 allVerifiedFromList [] _ = Refl
 allVerifiedFromList (Verified :: xs) (_ :: rest) = allVerifiedFromList xs rest
 allVerifiedFromList (Skipped _ :: xs) (_ :: rest) = allVerifiedFromList xs rest
 allVerifiedFromList (Failed _ :: _) (prf :: _) = case prf of
-  Left contra => absurd (uninhabited contra)
-  Right (_ ** contra) => absurd (uninhabited contra)
-  where
-    uninhabited : Failed _ = Verified -> Void
-    uninhabited Refl impossible
-    uninhabited : Failed _ = Skipped _ -> Void
-    uninhabited Refl impossible
+  Left contra => case contra of Refl impossible
+  Right (_ ** contra) => case contra of Refl impossible
 
 ||| A container with valid signature attestation is signed
 export

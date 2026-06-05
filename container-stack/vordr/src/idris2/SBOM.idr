@@ -180,8 +180,10 @@ record SBOMDocument where
   version      : String
   dependencies : List Dependency
 
-||| Count total vulnerabilities in SBOM
-export
+||| Count total vulnerabilities in SBOM.
+||| `public export` so its defining equation reduces in dependent proofs
+||| (e.g. Proofs.emptyDepsNoVulns rewrites `doc.dependencies` inside it).
+public export
 totalVulns : SBOMDocument -> Nat
 totalVulns doc = sum (map (length . vulns) doc.dependencies)
 
@@ -225,30 +227,27 @@ data AllLicensed : SBOMDocument -> Type where
 ||| Verify SBOM has no critical vulnerabilities.
 ||| Returns a proof-carrying Right if no critical vulns, or Left with error description.
 |||
-||| Note: The proof obligation requires that filterBySeverity returns [] when
-||| the case match succeeds. We use Builtin.believe_me as a bridge because
-||| Idris2 cannot automatically unify the let-bound intermediate with the
-||| case scrutinee. This is sound because the case branch only fires when
-||| the result is definitionally [].
+||| Note: the proof obligation (`filterBySeverity doc Critical lookup === []`)
+||| is discharged structurally by `isNil`, which decides whether a list is
+||| empty by a single constructor split — no element `DecEq` is needed. On the
+||| `Yes prf` branch, `prf` is a genuine `=== []` witness threaded into
+||| `MkNoCriticalVulns`. No `believe_me` is used.
+||| (Previously this called a `decEqList` specialised to `List String`, which
+||| did not typecheck against `filterBySeverity`'s `List Dependency` result —
+||| the module did not build. `isNil` is element-agnostic and correct.)
 export
 verifySBOM : (doc : SBOMDocument) ->
              (lookup : VulnId -> Maybe Severity) ->
              Either String (NoCriticalVulns doc)
 verifySBOM doc lookup =
-  case decEqList (filterBySeverity doc Critical lookup) [] of
+  case isNil (filterBySeverity doc Critical lookup) of
     Yes prf => Right (MkNoCriticalVulns doc lookup prf)
     No _ => Left $ "Found critical vulnerabilities in SBOM"
   where
-    -- DecEq for lists of strings (VulnId = String)
-    decEqList : (xs : List String) -> (ys : List String) -> Dec (xs === ys)
-    decEqList [] [] = Yes Refl
-    decEqList [] (_ :: _) = No (\case Refl impossible)
-    decEqList (_ :: _) [] = No (\case Refl impossible)
-    decEqList (x :: xs) (y :: ys) = case decEq x y of
-      Yes Refl => case decEqList xs ys of
-        Yes Refl => Yes Refl
-        No contra => No (\case Refl => contra Refl)
-      No contra => No (\case Refl => contra Refl)
+    -- Decide list emptiness propositionally (works for any element type).
+    isNil : (xs : List a) -> Dec (xs === [])
+    isNil [] = Yes Refl
+    isNil (_ :: _) = No (\case Refl impossible)
 
 ||| Check if SBOM is acceptable for deployment
 export

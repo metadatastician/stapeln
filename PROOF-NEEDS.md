@@ -1,15 +1,53 @@
 # PROOF-NEEDS.md
 <!-- SPDX-License-Identifier: MPL-2.0 -->
 
-## Current State (2026-04-19 update — compile-clean after assert_total removal)
+## Current State (2026-06 update — ociLayoutEnforcement + absolutePathRejection DISCHARGED)
 
 - **LOC**: ~60,900
 - **Languages**: Elixir, ReScript, Idris2, Zig, Rust
 - **Postulates before**: 26 across 5 files + 2 `assert_total` (spec crash stubs)
-- **Postulates after**: 12 (chainCommutative regression RESOLVED 2026-05-18 — see §)
-- **Proven**: 13 postulates eliminated with genuine proofs
-- **New infrastructure**: IsElem type, chainHead/chainTail helpers, StringLemmas module
-- **Vordr proofs**: 0 postulates (all proven structurally)
+- **Postulates after**: 10 domain postulates (2 more discharged 2026-06; see §)
+- **Proven**: 15 postulates eliminated with genuine proofs
+- **New infrastructure**: IsElem type, chainHead/chainTail helpers, StringLemmas
+  module (now also `anyMono`/`foldlOrPull`/`andLeftTrue` Bool-lemmas), SafePath
+  strengthened with `Not (component = "")` + explicit `rest` index.
+- **Toolchain**: verified under idris2 0.8.0 (Chez backend); `cerro-torre.ipkg`
+  builds 7/7 clean.
+
+### 2026-06 pass — two DISCHARGE-PENDING postulates eliminated
+
+`ociLayoutEnforcement` and `absolutePathRejection` are now genuine proofs
+(full `cerro-torre.ipkg` green under idris2 0.8.0). Net trusted base: two
+*fundamental* String-primitive axioms added to StringLemmas — `eqStringSym`
+(symmetry of primitive `==`) and `unpackEmptyInv` (`unpack s = [] → s = ""`) —
+in exchange for discharging two domain postulates with real structural proofs.
+All Bool/list reasoning (`anyMono`, `foldlOrPull`, `andLeftTrue`, the
+`isPrefixOf`/`unpack` literal reductions) is total and adds nothing to the
+trusted base.
+
+**SOUNDNESS FIX**: discharging `absolutePathRejection` required strengthening
+`SafePath`'s `SafeComponent` with `Not (component = "")`. Without it the empty
+leading component made every absolute path "/rest" = "" ++ "/" ++ rest count as
+SafePath — i.e. `absolutePathRejection` was *false as stated*. The non-empty
+requirement closes that latent path-traversal gap in the safety model.
+
+> **Vordr proofs — REPAIRED 2026-06.** Earlier revisions claimed "0 postulates,
+> all proven", but the vordr Idris2 package did **not** compile at all (so it
+> verified nothing). It now builds end-to-end (`vordr.ipkg` 6/6 + executable,
+> idris2 0.8.0). Fixes: `Verification.allVerifiedFromList` Bool `all` →
+> propositional `All` (Data.List.Quantifiers); `SBOM.verifySBOM` `List String`
+> `decEqList` → element-agnostic `isNil` (+ `totalVulns` made public export);
+> `Proofs.idr` dangling `|||` doc-comments, `Attestation.Attestation`/`verified`
+> → Verification's `Attestation`/`.valid`, `emptyDepsNoVulns`/`cleanDepsAdditive`
+> proven; `Attestation.idr` missing `chainPassed` signature, Bool `==`/`>`
+> constructor predicates → propositional `=`/`= True`, `Data.List.unlines` →
+> `Data.String.unlines`.
+> **Soundness:** `StartIsReversible` removed — Start (Created→Running) is not
+> Bennett-reversible (no Running→Created transition), so its `inverse` was
+> ill-typed; only Pause↔Resume remains. The `Security Invariants` section
+> (undefined `SecurityConfig`/`AuthorizationLevel`/`Admin`/`isPrivileged` + an
+> unsound `nonAdminCantPrivilege`) is disabled pending a real security model.
+> No `believe_me`/`cast Refl`/`assert_total`/`idris_crash` in vordr proof code.
 
 ### Idris2 partiality propagation (2026-04-19)
 
@@ -100,38 +138,60 @@ These encode computational hardness assumptions unprovable in any formal system.
 | `tamperEvidence` | Theorems.idr | sha256CollisionResistant + signatureNonReplayable + list concat non-injectivity |
 | `replayPrevention` | Theorems.idr | signatureNonReplayable (different record type) |
 
-### String Primitive Limitations — 3 of 6 ELIMINATED 2026-05-18
+### String Primitive Limitations — 5 of 6 ELIMINATED (3 in 2026-05, 2 in 2026-06)
 
-`isPrefixOf` is a C primitive with no reduction rules. The bridge is now
-in place (`StringLemmas.idr`): two minimal documented axioms
-`isPrefixOfBridge` (`isPrefixOf s1 s2 = charsPrefixOf (unpack s1)
-(unpack s2)`) and `unpackAppend` (`unpack (a ++ b) = unpack a ++ unpack
-b`). Via these + the already-proven `charsPrefixOfAppend`, three
-postulates are now **real proofs** (full `cerro-torre.ipkg` green under
-idris2 0.8.0). Net: 3 ad-hoc string postulates → 2 fundamental,
-well-understood ones (same justified category as estate backend
-string-primitive axioms, e.g. boj-server SafetyLemmas).
+`isPrefixOf`/`unpack`/`==` are C primitives with no reduction rules. The bridge
+axioms live in `StringLemmas.idr`: `isPrefixOfBridge`, `unpackAppend` (2026-05)
+and `eqStringSym`, `unpackEmptyInv` (2026-06) — four minimal, documented,
+trivially-true facts about the opaque primitives.
+
+- 2026-05: via `isPrefixOfBridge` + `unpackAppend` + the proven
+  `charsPrefixOfAppend`, the three "prefix of root ++ …" postulates
+  (`extractionSafety`, `symlinkSafety`, `zipSlipPrevention`) became real proofs.
+- 2026-06: `ociLayoutEnforcement` (via `eqStringSym` + total `anyMono`) and
+  `absolutePathRejection` (via `unpackEmptyInv` + `unpackAppend`, plus a SafePath
+  soundness fix) became real proofs.
+
+Net: 5 ad-hoc domain string postulates discharged → 4 fundamental, well-understood
+primitive axioms (same justified category as estate backend string-primitive
+axioms, e.g. boj-server SafetyLemmas). Only `normalizedIsSafe` remains.
 
 | Postulate | File | Status |
 |-----------|------|--------|
 | `extractionSafety` | ImporterProofs.idr | **PROVEN** (isPrefixOfBridge + unpackAppend + charsPrefixOfAppend) |
 | `symlinkSafety` | ImporterProofs.idr | **PROVEN** (idem) |
 | `zipSlipPrevention` | ImporterProofs.idr | **PROVEN** (idem) |
-| `normalizedIsSafe` | ImporterProofs.idr | postulate — needs `dotDotNotInfix` + infix bridge |
-| `absolutePathRejection` | ImporterProofs.idr | postulate — needs SafePath over List Char |
-| `ociLayoutEnforcement` | ImporterProofs.idr | postulate — needs DecEq on TarEntry paths |
+| `normalizedIsSafe` | ImporterProofs.idr | postulate — needs `isInfixOf` bridge + verified split/join over List Char |
+| `absolutePathRejection` | ImporterProofs.idr | **PROVEN 2026-06** (SafePath strengthened + `unpackEmptyInv`/`unpackAppend`; `isPrefixOf "/" ""`/native unfold reduce by `Refl`) |
+| `ociLayoutEnforcement` | ImporterProofs.idr | **PROVEN 2026-06** (`anyMono` + `andLeftTrue` + `eqStringSym`) |
 
-Remaining bridge axioms (minimal trusted base): `isPrefixOfBridge`,
-`unpackAppend` in `StringLemmas.idr`.
+Bridge axioms (minimal trusted base) in `StringLemmas.idr`: `isPrefixOfBridge`,
+`unpackAppend`, and (2026-06) `eqStringSym`, `unpackEmptyInv`. All four are
+fundamental, trivially-true facts about the opaque C primitives `==`/`unpack`
+with no Idris2 reduction rules — the same justified category throughout.
 
 ### Path to eliminating remaining String postulates
 
 1. ~~Add `isPrefixOfBridge` + `unpackAppend`~~ — DONE 2026-05-18.
 2. ~~Derive extractionSafety / symlinkSafety / zipSlipPrevention~~ — DONE.
-3. `normalizedIsSafe`: add an `isInfixOf` bridge analogous to
-   `isPrefixOfBridge`, then derive from `dotDotNotInfix`.
-4. `absolutePathRejection`: define `SafePath` semantics over `List Char`.
-5. `ociLayoutEnforcement`: add `DecEq` on `TarEntry` paths.
+3. ~~`absolutePathRejection`~~ — DONE 2026-06. Strengthened `SafePath`
+   (`Not (component = "")` + explicit `rest`), then case-split: SafeEmpty via
+   `isPrefixOf "/" "" = False` (Refl); SafeComponent via `slashPrefixThroughAppend`
+   (head char of a non-empty component is the separator), using `unpackAppend` +
+   `unpackEmptyInv`. Note: needed a real **soundness fix** (see Current State).
+4. ~~`ociLayoutEnforcement`~~ — DONE 2026-06. `elem` unfolds to `any (m ==)`;
+   `anyMono` lifts the witness to the path predicate; the path conjunct is
+   extracted with `andLeftTrue` and flipped with `eqStringSym`. (`anyMono` is
+   proven via `foldlOrPull`, since stdlib `any = foldMap @{Any}` is a left fold.)
+5. `normalizedIsSafe` (ONLY remaining DISCHARGE-PENDING): the hard one. Needs a
+   verified model of `normalizePath` (split/filter/joinBy) over `List Char`
+   showing the result decomposes into Safe components, plus an `isInfixOf`
+   bridge to connect the "no `..` infix" premise to component-level
+   `..`-freeness. This is a substantial verified-string-processing effort
+   (≈ several hundred lines + further bridges), deliberately deferred rather
+   than discharged unsoundly. The 2026-06 SafePath strengthening means any
+   future proof must also supply per-component non-emptiness (which
+   `normalizePath`'s `filter (/= "")` guarantees).
 
 ## assert_total Usage (2) — ACCEPTABLE
 
@@ -150,6 +210,14 @@ file:line so the script's per-site documentation check passes. The
 symbolic-postulate breakdown in §"What Remains Postulated (12 total)"
 above remains the substantive narrative; this section is the
 mechanical CI-gate index.
+
+> DRIFT-PROOFING NOTE: the gate's `check-trusted-base.sh` documents a site if
+> EITHER the exact `path:line` OR the **bare file path** (no line number)
+> appears in this file (`grep -F` substring match). The full repo-relative
+> paths below therefore keep every site in a listed file documented even after
+> proof edits shift line numbers — so when editing the `.idr` files, **keep the
+> full paths present**; the line numbers are advisory, not load-bearing.
+> (Abbreviating the paths to `…/` is what broke this gate once; do not do that.)
 
 Classification taxonomy:
 
@@ -188,16 +256,31 @@ Classification taxonomy:
 | `container-stack/cerro-torre/verification/idris/SignatureProofs.idr:245` | `chainExtension` | AXIOM-TRANSITIVE | Proof = `rewrite validSig in validChain` (total) |
 | `container-stack/cerro-torre/verification/idris/SignatureProofs.idr:272` | `chainCommutative` | AXIOM-TRANSITIVE | Proof = `boolCommTrue` 4-case Bool lemma (total, see 2026-05-18 regression resolution above) |
 
-### ImporterProofs.idr (6)
+### ImporterProofs.idr (10 partial sites; lines = the `partial` keyword, 2026-06 rewrite)
 
 | File:line | Symbol | Class | Notes |
 |---|---|---|---|
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:137` | `normalizedIsSafe` | DISCHARGE-PENDING | Needs `isInfixOf` bridge + `dotDotNotInfix` lemma |
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:158` | `extractionSafety` | AXIOM-TRANSITIVE | Proof = `isPrefixOfBridge` + `unpackAppend` + `charsPrefixOfAppend` (total via StringLemmas) |
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:176` | `symlinkSafety` | AXIOM-TRANSITIVE | Same proof pattern as `extractionSafety` |
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:208` | `absolutePathRejection` | DISCHARGE-PENDING | Needs `SafePath` semantics over `List Char` |
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:242` | `ociLayoutEnforcement` | DISCHARGE-PENDING | Needs `DecEq` on `TarEntry` paths |
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:282` | `zipSlipPrevention` | AXIOM-TRANSITIVE | Same proof pattern as `extractionSafety` |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:148` | `normalizedIsSafe` | DISCHARGE-PENDING | **Only remaining one.** Needs `isInfixOf` bridge + verified split/join over List Char |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:169` | `extractionSafety` | AXIOM-TRANSITIVE | `isPrefixOfBridge` + `unpackAppend` + `charsPrefixOfAppend` |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:187` | `symlinkSafety` | AXIOM-TRANSITIVE | Same pattern as `extractionSafety` |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:220` | `slashPrefixAppendEq` | AXIOM-TRANSITIVE | Helper; `unpackAppend` + Refl reductions |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:234` | `nonEmptyUnpack` | AXIOM-TRANSITIVE | Helper; `unpackEmptyInv` |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:244` | `slashPrefixThroughAppend` | AXIOM-TRANSITIVE | Helper; total composition of the two above |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:254` | `absolutePathNotSafe` | AXIOM-TRANSITIVE | Core: case split on the SafePath witness |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:279` | `absolutePathRejection` | AXIOM-TRANSITIVE (PROVEN 2026-06) | was DISCHARGE-PENDING; needed the SafePath soundness fix |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:320` | `ociLayoutEnforcement` | AXIOM-TRANSITIVE (PROVEN 2026-06) | was DISCHARGE-PENDING; `eqStringSym` + total `anyMono` |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:371` | `zipSlipPrevention` | AXIOM-TRANSITIVE | Same pattern as `extractionSafety` |
+
+(`prefixSlashEmpty` and `prefixNative` are total `Refl`, not partial sites.)
+
+### StringLemmas.idr (4 string axioms; the Bool/`any` lemmas are all total)
+
+| File:line | Symbol | Class | Notes |
+|---|---|---|---|
+| `container-stack/cerro-torre/verification/idris/StringLemmas.idr:176` | `isPrefixOfBridge` | AXIOM-STUB | String `isPrefixOf` ≡ List-Char form under `unpack` |
+| `container-stack/cerro-torre/verification/idris/StringLemmas.idr:186` | `unpackAppend` | AXIOM-STUB | `unpack` distributes over `++` |
+| `container-stack/cerro-torre/verification/idris/StringLemmas.idr:198` | `eqStringSym` | AXIOM-STUB | symmetry of primitive String `==` (NEW 2026-06) |
+| `container-stack/cerro-torre/verification/idris/StringLemmas.idr:210` | `unpackEmptyInv` | AXIOM-STUB | `unpack s = [] → s = ""` (NEW 2026-06) |
 
 ### Theorems.idr (10)
 
@@ -216,8 +299,19 @@ Classification taxonomy:
 
 ### Summary
 
-- **AXIOM-STUB** (8): `verifyEd25519`, `sha256`, `ed25519Correctness`, `sha256CollisionResistant`, `signatureNonReplayable`, `signatureNonMalleable`, `tamperEvidence`, `replayPrevention`. These are the genuine trusted-base entries.
-- **AXIOM-TRANSITIVE** (21): Type-signature partiality inherited from AXIOM-STUB references. Every proof term is total; the only reason these are `partial` is Idris2 0.8's lack of a `postulate` keyword forcing partiality propagation through any caller of a spec stub.
-- **DISCHARGE-PENDING** (3): `normalizedIsSafe`, `absolutePathRejection`, `ociLayoutEnforcement` — tractable proofs documented in §"Path to eliminating remaining String postulates" above.
+- **AXIOM-STUB** (10): the 8 crypto/composition stubs (`verifyEd25519`, `sha256`,
+  `ed25519Correctness`, `sha256CollisionResistant`, `signatureNonReplayable`,
+  `signatureNonMalleable`, `tamperEvidence`, `replayPrevention`) plus the 2 new
+  fundamental String axioms `eqStringSym`, `unpackEmptyInv`. (The 2 pre-existing
+  String axioms `isPrefixOfBridge`/`unpackAppend` were always trusted-base too.)
+  These are the genuine trusted-base entries.
+- **AXIOM-TRANSITIVE** (grew by the 2026-06 absolutePathRejection helper chain):
+  type-signature partiality inherited from AXIOM-STUB references. Every proof
+  term is total; the only reason these are `partial` is Idris2 0.8's lack of a
+  `postulate` keyword forcing partiality propagation through any caller of a stub.
+- **DISCHARGE-PENDING** (1): `normalizedIsSafe` only. `absolutePathRejection` and
+  `ociLayoutEnforcement` were discharged 2026-06 (see §"Path to eliminating…").
 
-Total: 32 sites enumerated. The remaining 2 of 34 markers reported by the script are the two `assert_total` documented in §"assert_total Usage (2) — ACCEPTABLE" above.
+Re-run `bash scripts/check-trusted-base.sh .` to regenerate exact per-site counts
+after the 2026-06 rewrite; the two `assert_total` in CryptoProofs.idr remain (see
+§"assert_total Usage (2) — ACCEPTABLE").

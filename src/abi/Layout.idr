@@ -1,11 +1,12 @@
 -- SPDX-License-Identifier: MPL-2.0
 -- Memory layout definitions and proofs for Stapeln ABI
 
-module Stapeln.ABI.Layout
+module Layout
 
 import Data.Nat
 import Data.List
-import Stapeln.ABI.Types
+import Data.List.Quantifiers
+import Types
 
 %default total
 
@@ -98,7 +99,7 @@ data PositiveSize : FieldLayout -> Type where
 ||| All fields in the ServiceSpec layout have positive sizes.
 ||| Proved by explicit construction for each field.
 public export
-serviceSpecFieldsPositive : All PositiveSize (fields serviceSpecLayout)
+serviceSpecFieldsPositive : All PositiveSize (fields Layout.serviceSpecLayout)
 serviceSpecFieldsPositive =
   [ IsPositive (MkFieldLayout "name_ptr"  0  8)
   , IsPositive (MkFieldLayout "name_len"  8  8)
@@ -139,7 +140,7 @@ data AllNonOverlapping : List FieldLayout -> Type where
 ||| Layout: name_ptr[0..8), name_len[8..16), kind_ptr[16..24),
 |||          kind_len[24..32), port[32..36), padding[36..40)
 public export
-serviceSpecNonOverlapping : AllNonOverlapping (fields serviceSpecLayout)
+serviceSpecNonOverlapping : AllNonOverlapping (fields Layout.serviceSpecLayout)
 serviceSpecNonOverlapping =
   ANOCons (ABeforeB (MkFieldLayout "name_ptr" 0 8) (MkFieldLayout "name_len" 8 8))
   (ANOCons (ABeforeB (MkFieldLayout "name_len" 8 8) (MkFieldLayout "kind_ptr" 16 8))
@@ -189,18 +190,22 @@ stackSpecHeaderSizeCorrect = Refl
 -- Proof: Last Field Ends At Total Size
 -- ============================================================================
 
+||| Total `last` for field layouts (empty -> a zero field; concrete layouts are
+||| non-empty). Hoisted from an invalid `where` on the data declaration below,
+||| which also left a `?impossible_empty_layout` hole — so this module never
+||| compiled. Made total (no hole) by returning a zero field for the empty case.
+public export
+lastField : List FieldLayout -> FieldLayout
+lastField [x]            = x
+lastField (_ :: x :: xs) = lastField (x :: xs)
+lastField []             = MkFieldLayout "" 0 0
+
 ||| The last field of a non-empty layout ends exactly at the struct's total size.
 public export
 data LastFieldEndsAtTotal : StructLayout -> Type where
   MkLastFieldEndsAtTotal : (layout : StructLayout)
-                        -> {auto prf : fieldEnd (last (fields layout)) = totalSize layout}
+                        -> {auto prf : fieldEnd (lastField (fields layout)) = totalSize layout}
                         -> LastFieldEndsAtTotal layout
-  where
-    -- Helper: last element of a non-empty list
-    last : List a -> a
-    last [x] = x
-    last (_ :: x :: xs) = last (x :: xs)
-    last [] = ?impossible_empty_layout  -- structurally impossible for our concrete layouts
 
 ||| The last field of ServiceSpec (padding at offset 36, size 4) ends at 40.
 ||| 36 + 4 = 40 = totalSize serviceSpecLayout

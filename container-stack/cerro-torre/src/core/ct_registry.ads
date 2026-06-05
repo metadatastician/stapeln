@@ -26,7 +26,8 @@ with Interfaces;
 with CT_HTTP;
 
 package CT_Registry
-   with SPARK_Mode => On
+   with SPARK_Mode => Off  --  Registry/OCI client: HTTP (CT_HTTP) + Vectors +
+                           --  Unbounded_String — outside the SPARK subset.
 is
    use Interfaces;
 
