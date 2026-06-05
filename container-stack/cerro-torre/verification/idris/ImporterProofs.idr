@@ -17,6 +17,8 @@ module ImporterProofs
 import Data.String
 import Data.List
 import Data.List1
+import Data.List.Quantifiers
+import Data.List.Elem
 import Data.Nat
 import Decidable.Equality
 import StringLemmas
@@ -34,19 +36,28 @@ Path = String
 
 ||| A safe path that doesn't contain ".." or absolute paths.
 |||
-||| SafePath is an inductive proof that a path is safe for extraction:
-|||   - SafeEmpty: the empty string is trivially safe
-|||   - SafeComponent: a path "component/rest" is safe if:
-|||     1. component is non-empty
-|||     2. component is not ".."
-|||     3. component doesn't start with "/"
-|||     4. rest is also safe
+||| SafePath is an inductive proof that a (relative, normalized) path is safe
+||| for extraction. It models a "/"-joined sequence of components with NO
+||| trailing slash — exactly what `normalizePath` (split/filter/joinBy) emits:
+|||   - SafeEmpty    : the empty path "".
+|||   - SafeSingle   : a single FINAL component "c" (e.g. "a", or the last
+|||                    component "c" of "a/b/c").
+|||   - SafeComponent: "component/rest" where rest is itself safe and non-empty.
+||| Each component must be (1) non-empty, (2) not "..", (3) '/'-free.
 |||
-||| SOUNDNESS NOTE (2026-06): the non-emptiness requirement (1) is load-bearing.
-||| Without it, an absolute path "/rest" decomposes as "" ++ "/" ++ rest, so
-||| the empty leading component would make every absolute path "safe" — i.e.
-||| `absolutePathRejection` would be FALSE. Requiring `Not (component = "")`
-||| closes that gap and lets `absolutePathRejection` be proven (see below).
+||| SOUNDNESS NOTES (2026-06):
+|||  - (1) non-emptiness is load-bearing for `absolutePathRejection`: without it
+|||    "/rest" = "" ++ "/" ++ rest would make every absolute path "safe".
+|||  - (3) '/'-freeness (no '/' ANYWHERE in a component, via `charsElem '/'`) is
+|||    load-bearing for the SafeSingle/SafeComponent leaves: with only "doesn't
+|||    start with /", a single "component" like "a/../x" would be admitted,
+|||    sneaking a ".." past the not-".." check (3) forces every real "/"-segment
+|||    through checks (2)+(3) individually.
+|||  - Earlier this type had only SafeEmpty+SafeComponent, whose language is the
+|||    TRAILING-slash paths {"","a/","a/b/"} — disjoint from normalizePath's
+|||    output {"","a","a/b"} except at "". That made `normalizedIsSafe` false
+|||    (its target type was uninhabited for any non-empty path). SafeSingle (and
+|||    the `Not (rest = "")` on SafeComponent) close that gap.
 ||| `rest` is an explicit index so proofs can recover the suffix string
 ||| (auto-bound implicits are erased at quantity 0 and unusable relevantly).
 public export
@@ -54,12 +65,20 @@ data SafePath : Path -> Type where
   ||| An empty path is safe
   SafeEmpty : SafePath ""
 
-  ||| A non-empty relative component (not "..", not "/"-prefixed) is safe
+  ||| A single final relative component: non-empty, not "..", '/'-free.
+  SafeSingle : (component : String)
+            -> Not (component = "")
+            -> Not (component = "..")
+            -> Not (charsElem '/' (unpack component) = True)
+            -> SafePath component
+
+  ||| A non-empty, '/'-free, non-".." component followed by a NON-EMPTY safe rest
   SafeComponent : (component : String)
                -> (rest : String)
                -> Not (component = "")
                -> Not (component = "..")
-               -> Not (Data.String.isPrefixOf "/" component = True)
+               -> Not (charsElem '/' (unpack component) = True)
+               -> Not (rest = "")
                -> SafePath rest
                -> SafePath (component ++ "/" ++ rest)
 
@@ -81,17 +100,32 @@ data SafePath : Path -> Type where
 |||   - Rejoin with single "/" separators
 |||   - Strip leading "/" (normalization produces relative paths; absolute
 |||     paths are rejected by SafePath's absolutePathRejection postulate)
+||| Join strings with a separator, with NO trailing separator:
+||| `joinSep "/" [] = ""`, `joinSep "/" ["a"] = "a"`, `joinSep "/" ["a","b"] = "a/b"`.
+||| Lifted from a local `where` so normalizedIsSafe's SafePath discharge can
+||| recurse on the SAME `joinBy` that builds `normalizePath`.
+public export
+joinSep : String -> List String -> String
+joinSep sep [] = ""
+joinSep sep [x] = x
+joinSep sep (x :: xs) = x ++ sep ++ joinSep sep xs
+
+||| The normalized-path component filter: drop "" (duplicate slashes) and "."
+||| segments. A top-level name (not an inline lambda) so normalizePath and the
+||| discharge reference the identical predicate.
+public export
+normPred : String -> Bool
+normPred c = c /= "." && c /= ""
+
+||| The components of a normalized path. Shared by normalizePath and
+||| normalizedIsSafe so the two are definitionally the same list.
+public export
+normComponents : Path -> List String
+normComponents p = filter normPred (forget (split (== '/') p))
+
 export
 normalizePath : Path -> Path
-normalizePath p =
-  let components = split (== '/') p
-      filtered = filter (\c => c /= "." && c /= "") (forget components)
-  in joinBy "/" filtered
-  where
-    joinBy : String -> List String -> String
-    joinBy sep [] = ""
-    joinBy sep [x] = x
-    joinBy sep (x :: xs) = x ++ sep ++ joinBy sep xs
+normalizePath p = joinSep "/" (normComponents p)
 
 -- ============================================================================
 -- Tar Entry Types
@@ -127,30 +161,160 @@ Eq TarEntry where
 -- (implemented via primitive string operations). Full structural
 -- proofs would require String lemmas that don't exist in the stdlib.
 
-||| POSTULATE: Normalized Safe Path
-|||
-||| A normalized path with no ".." substrings is safe for extraction.
-|||
-||| Justification: If a path contains no ".." after normalization,
-||| it cannot traverse upward in the directory tree. Combined with
-||| the SafeComponent requirement that no component starts with "/",
-||| this ensures the path stays within the extraction root.
-|||
-||| Cannot currently be proven because:
-|||   1. normalizePath uses split/filter/join which are opaque to the
-|||      type checker (String operations reduce to C primitives)
-|||   2. Proving the relationship between isInfixOf ".." and
-|||      SafePath requires String decomposition lemmas that
-|||      don't exist in Idris2's stdlib
-|||   3. SafePath is defined inductively over string concatenation,
-|||      but String in Idris2 is a primitive type, not an inductive
-|||      data structure
+-- ============================================================================
+-- normalizedIsSafe — DISCHARGED (2026-06). Was false-as-stated (see SafePath);
+-- now that SafePath models normalizePath's output, here is the real proof.
+-- ============================================================================
+-- normalizePath p = joinSep "/" (normComponents p). We build SafePath of that
+-- join from per-component safety (joinBySafe). Each component is:
+--   * non-empty            — it survived the normComponents filter (filterSat);
+--   * not ".."             — else ".." is an infix of the join (dotDotInfixOfJoin),
+--                            contradicting the premise;
+--   * '/'-free             — split on '/' yields '/'-free components (splitNoDelim),
+--                            preserved by filter (allFilter).
+-- Trusted base grows by exactly two fundamental, opaque-String-primitive axioms:
+-- splitNoDelim and dotDotInfixOfJoin. Everything else below is total.
+
+||| AXIOM (split semantics): components of `split (== '/')` contain no '/'.
+||| `split` is built on opaque String primitives; '/'-freeness of its outputs is
+||| its defining property, not reducible at the Idris2 type level.
+partial
+export
+splitNoDelim : (p : String)
+            -> All (\c => charsElem '/' (unpack c) = False) (forget (split (== '/') p))
+splitNoDelim _ =
+  idris_crash "splitNoDelim: split-semantics axiom — type-level use only"
+
+||| AXIOM (join/infix semantics): a ".." component is a ".." infix of the join.
+||| `isInfixOf` is an opaque String primitive; this surfaces a ".." component to
+||| the infix premise of normalizedIsSafe.
+partial
+export
+dotDotInfixOfJoin : (cs : List String) -> Elem ".." cs
+                 -> Data.String.isInfixOf ".." (joinSep "/" cs) = True
+dotDotInfixOfJoin _ _ =
+  idris_crash "dotDotInfixOfJoin: join/infix-semantics axiom — type-level use only"
+
+||| `xs ++ ys = [] → xs = []` over List Char (trivial, total).
+nilFromAppendL : (xs, ys : List Char) -> xs ++ ys = [] -> xs = []
+nilFromAppendL []       _ _   = Refl
+nilFromAppendL (_ :: _) _ prf = absurd prf
+
+||| `a ++ b = "" → a = ""`, via the existing unpackAppend/unpackEmptyInv axioms.
+partial
+appendEmptyLeft : (a, b : String) -> a ++ b = "" -> a = ""
+appendEmptyLeft a b prf =
+  unpackEmptyInv a
+    (nilFromAppendL (unpack a) (unpack b)
+       (trans (sym (unpackAppend a b)) (cong unpack prf)))
+
+||| `joinSep "/" (x :: xs)` is non-empty when `x` is non-empty — satisfies
+||| SafeComponent's `Not (rest = "")` obligation for each interior split.
+partial
+joinByConsNonEmpty : (x : String) -> Not (x = "") -> (xs : List String)
+                  -> Not (joinSep "/" (x :: xs) = "")
+joinByConsNonEmpty _ neX []        = neX
+joinByConsNonEmpty x neX (y :: ys) =
+  \eq => neX (appendEmptyLeft x ("/" ++ joinSep "/" (y :: ys)) eq)
+
+||| Per-component safety obligation for SafePath.
+public export
+SafeComp : String -> Type
+SafeComp c = ( Not (c = "")
+             , Not (c = "..")
+             , Not (charsElem '/' (unpack c) = True) )
+
+||| Heart of the discharge: SafePath of the join from per-component safety.
+||| SafeEmpty / SafeSingle / SafeComponent line up with joinBy's
+||| [] / [x] / (x :: y :: ys) clauses.
+partial
+joinBySafe : (cs : List String) -> All SafeComp cs -> SafePath (joinSep "/" cs)
+joinBySafe []              []                              = SafeEmpty
+joinBySafe (c :: [])       ((ne, nd, nf) :: [])            = SafeSingle c ne nd nf
+joinBySafe (c :: c2 :: cs) ((ne, nd, nf) :: (sc2 :: rest)) =
+  SafeComponent c (joinSep "/" (c2 :: cs)) ne nd nf
+    (joinByConsNonEmpty c2 (fst sc2) cs)
+    (joinBySafe (c2 :: cs) (sc2 :: rest))
+
+||| An element of a filtered list satisfies the predicate (total).
+filterSat : (q : String -> Bool) -> (xs : List String) -> (x : String)
+         -> Elem x (filter q xs) -> q x = True
+filterSat q []        x e = absurd e
+filterSat q (y :: ys) x e with (q y) proof qEq
+  filterSat q (y :: ys) x e | True = case e of
+                                       Here      => qEq
+                                       There e'  => filterSat q ys x e'
+  filterSat q (y :: ys) x e | False = filterSat q ys x e
+
+||| `All p` survives `filter` (total).
+allFilter : {0 p : String -> Type} -> (q : String -> Bool) -> (xs : List String)
+         -> All p xs -> All p (filter q xs)
+allFilter q []        []          = []
+allFilter q (y :: ys) (py :: pys) with (q y)
+  _ | True  = py :: allFilter q ys pys
+  _ | False = allFilter q ys pys
+
+||| Project an `All` at an `Elem` (total).
+allElem : {0 p : String -> Type} -> {0 xs : List String}
+       -> All p xs -> Elem x xs -> p x
+allElem (px :: _)   Here      = px
+allElem (_  :: pxs) (There e) = allElem pxs e
+
+||| Build an `All` from a per-element function over `Elem` (total).
+allFromElem : {0 p : String -> Type} -> (xs : List String)
+           -> ((x : String) -> Elem x xs -> p x) -> All p xs
+allFromElem []        _ = []
+allFromElem (x :: xs) f = f x Here :: allFromElem xs (\y, e => f y (There e))
+
+-- Bool/String micro-lemmas (total).
+andRightTrue : (a, b : Bool) -> (a && b) = True -> b = True
+andRightTrue True  _ prf = prf
+andRightTrue False _ prf = absurd prf
+
+notTrueImpliesFalse : (b : Bool) -> not b = True -> b = False
+notTrueImpliesFalse True  prf = absurd prf
+notTrueImpliesFalse False _   = Refl
+
+notTrueFromFalse : (b : Bool) -> b = False -> Not (b = True)
+notTrueFromFalse _ bFalse bTrue = absurd (trans (sym bFalse) bTrue)
+
+||| `(c /= "") = True → Not (c = "")`. If `c = ""` then `c == ""` folds to True,
+||| contradicting `(c == "") = False` (from the `/=`).
+notEqEmptyFromNeq : (c : String) -> (c /= "") = True -> Not (c = "")
+notEqEmptyFromNeq c neqTrue cEq =
+  absurd (trans (sym (notTrueImpliesFalse (c == "") neqTrue))
+                (replace {p = \z => (z == "") = True} (sym cEq) Refl))
+
+||| Per-component safety for every element of `normComponents p`, given the
+||| no-".."-infix premise.
+partial
+mkAllSafe : (p : Path)
+         -> Not (Data.String.isInfixOf ".." (joinSep "/" (normComponents p)) = True)
+         -> All SafeComp (normComponents p)
+mkAllSafe p noDot = allFromElem (normComponents p) safeAt
+  where
+    safeAt : (c : String) -> Elem c (normComponents p) -> SafeComp c
+    safeAt c elemC =
+      ( notEqEmptyFromNeq c
+          (andRightTrue (c /= ".") (c /= "")
+             (filterSat normPred (forget (split (== '/') p)) c elemC))
+      , (\cEq => case cEq of
+                   Refl => noDot (dotDotInfixOfJoin (normComponents p) elemC))
+      , notTrueFromFalse (charsElem '/' (unpack c))
+          (allElem (allFilter normPred (forget (split (== '/') p)) (splitNoDelim p))
+                   elemC) )
+
+||| PROVEN (2026-06, was a postulate): a normalized path with no ".." infix is a
+||| SafePath. The proof is `joinBySafe` over the verified per-component safety
+||| (`mkAllSafe`). Trusted base: `splitNoDelim` + `dotDotInfixOfJoin` (two
+||| fundamental opaque-String-primitive axioms) + the pre-existing
+||| `unpackAppend`/`unpackEmptyInv`. No believe_me / cast Refl / assert_total.
 partial
 export
 normalizedIsSafe : (p : Path)
                 -> Not (Data.String.isInfixOf ".." (normalizePath p) = True)
                 -> SafePath (normalizePath p)
-normalizedIsSafe _ _ = idris_crash "normalizedIsSafe: string-primitive postulate — type-level use only"
+normalizedIsSafe p noDot = joinBySafe (normComponents p) (mkAllSafe p noDot)
 
 ||| POSTULATE: Extraction Safety
 |||
@@ -250,6 +414,25 @@ slashPrefixThroughAppend comp tail neComp prefixPrf =
   let (c ** cs ** eq) = nonEmptyUnpack comp neComp
   in trans (slashPrefixAppendEq comp tail c cs eq) prefixPrf
 
+||| From "/" being a prefix of a non-empty `comp`, conclude '/' occurs in
+||| `unpack comp`. `isPrefixOf "/" comp` unfolds (prefixNative) to
+||| `isPrefixOfBy (==) ['/'] (unpack comp)`; with `unpack comp = c :: cs` it
+||| reduces to `('/' == c) && True`, whose `True` head gives `'/' == c = True`,
+||| hence `charsElem '/' (c :: cs) = True`. (Bridges the SafePath '/'-free field
+||| to the absolute-prefix premise without a Char-equality axiom.)
+partial
+export
+slashPrefixImpliesCharsElem : (comp : String) -> Not (comp = "")
+  -> Data.String.isPrefixOf "/" comp = True
+  -> charsElem '/' (unpack comp) = True
+slashPrefixImpliesCharsElem comp neComp prefixPrf =
+  let (c ** cs ** eq) = nonEmptyUnpack comp neComp
+      slashEqC = andLeftTrue ('/' == c) True
+                   (replace {p = \u => isPrefixOfBy (==) ['/'] u = True} eq
+                      (trans (sym (prefixNative comp)) prefixPrf))
+  in replace {p = \u => charsElem '/' u = True} (sym eq)
+       (charsElemHere '/' c cs slashEqC)
+
 ||| Core of absolutePathRejection, over a path string `p`.
 partial
 export
@@ -257,8 +440,11 @@ absolutePathNotSafe : {p : Path} -> Data.String.isPrefixOf "/" p = True
                    -> SafePath p -> Void
 absolutePathNotSafe prefixPrf SafeEmpty =
   absurd (trans (sym prefixSlashEmpty) prefixPrf)
-absolutePathNotSafe prefixPrf (SafeComponent comp rest neComp _ notSlash _) =
-  notSlash (slashPrefixThroughAppend comp ("/" ++ rest) neComp prefixPrf)
+absolutePathNotSafe prefixPrf (SafeSingle comp neComp _ notSlash) =
+  notSlash (slashPrefixImpliesCharsElem comp neComp prefixPrf)
+absolutePathNotSafe prefixPrf (SafeComponent comp rest neComp _ notSlash _ _) =
+  notSlash (slashPrefixImpliesCharsElem comp neComp
+              (slashPrefixThroughAppend comp ("/" ++ rest) neComp prefixPrf))
 
 ||| PROVEN: Absolute Path Rejection (2026-06 — was a postulate)
 |||

@@ -161,8 +161,8 @@ axioms, e.g. boj-server SafetyLemmas). Only `normalizedIsSafe` remains.
 | `extractionSafety` | ImporterProofs.idr | **PROVEN** (isPrefixOfBridge + unpackAppend + charsPrefixOfAppend) |
 | `symlinkSafety` | ImporterProofs.idr | **PROVEN** (idem) |
 | `zipSlipPrevention` | ImporterProofs.idr | **PROVEN** (idem) |
-| `normalizedIsSafe` | ImporterProofs.idr | postulate — needs `isInfixOf` bridge + verified split/join over List Char |
-| `absolutePathRejection` | ImporterProofs.idr | **PROVEN 2026-06** (SafePath strengthened + `unpackEmptyInv`/`unpackAppend`; `isPrefixOf "/" ""`/native unfold reduce by `Refl`) |
+| `normalizedIsSafe` | ImporterProofs.idr | **PROVEN 2026-06** (was false-as-stated + postulate). SafePath redesigned to match normalizePath; proof = `joinBySafe ∘ mkAllSafe`. Trusted base += `splitNoDelim`, `dotDotInfixOfJoin` (2 fundamental String-primitive axioms) |
+| `absolutePathRejection` | ImporterProofs.idr | **PROVEN 2026-06** (SafePath redesigned: SafeSingle + `charsElem '/'`-free + non-empty rest; `unpackEmptyInv`/`unpackAppend`; `isPrefixOf "/" ""`/native unfold reduce by `Refl`) |
 | `ociLayoutEnforcement` | ImporterProofs.idr | **PROVEN 2026-06** (`anyMono` + `andLeftTrue` + `eqStringSym`) |
 
 Bridge axioms (minimal trusted base) in `StringLemmas.idr`: `isPrefixOfBridge`,
@@ -256,20 +256,27 @@ Classification taxonomy:
 | `container-stack/cerro-torre/verification/idris/SignatureProofs.idr:245` | `chainExtension` | AXIOM-TRANSITIVE | Proof = `rewrite validSig in validChain` (total) |
 | `container-stack/cerro-torre/verification/idris/SignatureProofs.idr:272` | `chainCommutative` | AXIOM-TRANSITIVE | Proof = `boolCommTrue` 4-case Bool lemma (total, see 2026-05-18 regression resolution above) |
 
-### ImporterProofs.idr (10 partial sites; lines = the `partial` keyword, 2026-06 rewrite)
+### ImporterProofs.idr (17 partial sites; lines = the `partial` keyword, 2026-06 normalizedIsSafe discharge)
 
 | File:line | Symbol | Class | Notes |
 |---|---|---|---|
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:148` | `normalizedIsSafe` | DISCHARGE-PENDING | **Only remaining one.** Needs `isInfixOf` bridge + verified split/join over List Char |
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:169` | `extractionSafety` | AXIOM-TRANSITIVE | `isPrefixOfBridge` + `unpackAppend` + `charsPrefixOfAppend` |
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:187` | `symlinkSafety` | AXIOM-TRANSITIVE | Same pattern as `extractionSafety` |
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:220` | `slashPrefixAppendEq` | AXIOM-TRANSITIVE | Helper; `unpackAppend` + Refl reductions |
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:234` | `nonEmptyUnpack` | AXIOM-TRANSITIVE | Helper; `unpackEmptyInv` |
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:244` | `slashPrefixThroughAppend` | AXIOM-TRANSITIVE | Helper; total composition of the two above |
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:254` | `absolutePathNotSafe` | AXIOM-TRANSITIVE | Core: case split on the SafePath witness |
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:279` | `absolutePathRejection` | AXIOM-TRANSITIVE (PROVEN 2026-06) | was DISCHARGE-PENDING; needed the SafePath soundness fix |
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:320` | `ociLayoutEnforcement` | AXIOM-TRANSITIVE (PROVEN 2026-06) | was DISCHARGE-PENDING; `eqStringSym` + total `anyMono` |
-| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:371` | `zipSlipPrevention` | AXIOM-TRANSITIVE | Same pattern as `extractionSafety` |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:181` | `splitNoDelim` | **AXIOM (new)** | split semantics: components of `split (== '/')` are '/'-free. Opaque String primitive — not reducible at the type level |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:191` | `dotDotInfixOfJoin` | **AXIOM (new)** | join/infix semantics: a ".." component is a ".." infix of the join. Opaque `isInfixOf` primitive |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:204` | `appendEmptyLeft` | AXIOM-TRANSITIVE | `a ++ b = "" → a = ""`; via `unpackAppend` + `unpackEmptyInv` (List-Char part total) |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:213` | `joinByConsNonEmpty` | AXIOM-TRANSITIVE | join with non-empty head is non-empty; via `appendEmptyLeft` |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:230` | `joinBySafe` | AXIOM-TRANSITIVE | builds SafePath of the join from per-component safety (structural; uses `joinByConsNonEmpty`) |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:290` | `mkAllSafe` | AXIOM-TRANSITIVE | per-component safety from `filter`/`split` + the 2 axioms |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:312` | `normalizedIsSafe` | **AXIOM-TRANSITIVE (PROVEN 2026-06)** | was DISCHARGE-PENDING (and false-as-stated). `joinBySafe ∘ mkAllSafe`; trusted base += `splitNoDelim`, `dotDotInfixOfJoin` |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:333` | `extractionSafety` | AXIOM-TRANSITIVE | `isPrefixOfBridge` + `unpackAppend` + `charsPrefixOfAppend` |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:351` | `symlinkSafety` | AXIOM-TRANSITIVE | Same pattern as `extractionSafety` |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:384` | `slashPrefixAppendEq` | AXIOM-TRANSITIVE | Helper; `unpackAppend` + Refl reductions |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:398` | `nonEmptyUnpack` | AXIOM-TRANSITIVE | Helper; `unpackEmptyInv` |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:408` | `slashPrefixThroughAppend` | AXIOM-TRANSITIVE | Helper; total composition of the two above |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:423` | `slashPrefixImpliesCharsElem` | AXIOM-TRANSITIVE | Helper (SafePath redesign); bridges the '/'-free field to the absolute-prefix premise |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:437` | `absolutePathNotSafe` | AXIOM-TRANSITIVE | Core: case split on the SafePath witness (3 ctors) |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:465` | `absolutePathRejection` | AXIOM-TRANSITIVE (PROVEN 2026-06) | re-proven against the redesigned SafePath (SafeEmpty/SafeSingle/SafeComponent) |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:506` | `ociLayoutEnforcement` | AXIOM-TRANSITIVE (PROVEN 2026-06) | `eqStringSym` + total `anyMono` |
+| `container-stack/cerro-torre/verification/idris/ImporterProofs.idr:557` | `zipSlipPrevention` | AXIOM-TRANSITIVE | Same pattern as `extractionSafety` |
 
 (`prefixSlashEmpty` and `prefixNative` are total `Refl`, not partial sites.)
 

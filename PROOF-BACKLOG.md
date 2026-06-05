@@ -85,10 +85,17 @@ same honest patterns proven in stapeln's src/abi), renamed `Foreign`→flat, add
 (`modules=Types,Foreign`). Builds exit 0 (~0.8s), no believe_me. (Layout was
 unused, so not recreated.) Same "wire into a CI gate" note as §1 applies.
 
-### 3. cerro-torre `normalizedIsSafe` — last DISCHARGE-PENDING postulate
-`ImporterProofs.idr`. Needs a verified `normalizePath` (split/filter/joinBy) over
-`List Char` + an `isInfixOf` bridge. User bar = discharge (expect net-new
-*fundamental* string axioms; keep honesty — no believe_me).
+### 3. cerro-torre `normalizedIsSafe` — ✅ DISCHARGED (2026-06)
+`ImporterProofs.idr`. Was **false as stated**: SafePath admitted only trailing-slash
+paths {"","a/","a/b/"}, disjoint from normalizePath's no-trailing-slash output
+{"","a","a/b"} — so `SafePath (normalizePath p)` was uninhabited for any non-empty
+path. Redesigned SafePath (SafeSingle leaf + '/'-free via `charsElem` + non-empty
+rest), re-proved `absolutePathRejection`, then discharged
+`normalizedIsSafe = joinBySafe ∘ mkAllSafe` (verified split/filter/joinSep recursion).
+Trusted base grew by exactly **2** fundamental opaque-String-primitive axioms:
+`splitNoDelim` (split components are '/'-free) + `dotDotInfixOfJoin` (a ".." component
+is a ".." infix of the join). ~13 supporting lemmas all total; no believe_me/cast
+Refl/assert_total. `cerro-torre.ipkg` builds 7/7 green. (PR #94.)
 
 ### 4. SPARK `cerro_ctp_lexer` unproved VCs
 `medium`/`low` (loop invariants, range checks). gnatprove exits 0 today (non-fatal),
@@ -105,8 +112,9 @@ believe_me/cast Refl/assert_total everywhere.
 ## Trusted base (KEEP — genuine)
 cerro-torre: 8 crypto AXIOM-STUBs (hardness/composition) + 4 string-primitive
 bridges (`isPrefixOfBridge`, `unpackAppend`, `eqStringSym`, `unpackEmptyInv`) +
-4 CryptoFFI runtime stubs. Zero believe_me/cast Refl/assert_total in cerro-torre
-or vordr proof code.
+**2 path-normalization axioms** (`splitNoDelim`, `dotDotInfixOfJoin`, from the
+normalizedIsSafe discharge) + 4 CryptoFFI runtime stubs. Zero believe_me/cast
+Refl/assert_total in cerro-torre or vordr proof code.
 
 ## 🟢 FALSE theorems found & fixed this session (do not regress)
 - `absolutePathRejection` (SafePath admitted absolute paths — path-traversal gap) → fixed.

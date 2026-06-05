@@ -42,6 +42,14 @@ charsInfixOf needle [] = False
 charsInfixOf needle (x :: xs) =
   charsPrefixOf needle (x :: xs) || charsInfixOf needle xs
 
+||| Whether a character occurs in a list of characters. Reduces on cons
+||| (unlike the Foldable `elem`), so proofs can case-split on it. Used to
+||| express the '/'-freeness of a path component (SafePath in ImporterProofs).
+public export
+charsElem : Char -> List Char -> Bool
+charsElem x [] = False
+charsElem x (y :: ys) = (x == y) || charsElem x ys
+
 -- ============================================================================
 -- Proven Lemmas
 -- ============================================================================
@@ -75,6 +83,14 @@ dotDotNotInfix : (xs : List Char)
               -> charsInfixOf ['.', '.'] xs = False
               -> Not (charsInfixOf ['.', '.'] xs = True)
 dotDotNotInfix xs prf contra = absurd (trans (sym prf) contra)
+
+||| If the head character matches the needle, the element is present.
+||| `charsElem x (c :: cs) = (x == c) || charsElem x cs`, so a `True` head
+||| comparison collapses the OR to `True`.
+public export
+charsElemHere : (x, c : Char) -> (cs : List Char)
+             -> (x == c) = True -> charsElem x (c :: cs) = True
+charsElemHere x c cs prf = rewrite prf in Refl
 
 -- ============================================================================
 -- Boolean / `any` Lemmas (fully proven — no trusted base)
