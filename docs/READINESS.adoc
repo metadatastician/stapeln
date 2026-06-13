@@ -8,6 +8,15 @@ This document defines what "production-ready" means for stapeln and tracks the c
 state of readiness against those criteria. Updated from README.adoc status table
 (last reviewed 2026-02-13).
 
+[NOTE]
+====
+Freshness correction (verified 2026-06-13): the *Idris2 proofs* status below
+("stubs only / zero proven lemmas") is **stale**. The estate now has 33 `.idr`
+files with **no** `believe_me`/`postulate`/`sorry` markers, and cerro-torre's
+lifecycle postulates were discharged (see `STATUS.md`, 2026-03-29). Treat the
+Idris2 rows below as "real proofs, coverage still expanding," not "stubs."
+====
+
 == What "Ready for Production" Means
 
 A production-ready stapeln instance satisfies all of the following:

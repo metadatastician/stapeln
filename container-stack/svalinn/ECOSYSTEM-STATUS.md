@@ -1,6 +1,12 @@
 # Cerro Torre Ecosystem - Implementation Status
 **Updated:** 2026-01-25
 
+> ⚠️ **Stale snapshot (2026-01-25) — superseded by `STATUS.md` (2026-03-29).**
+> Corrections verified 2026-06-13: selur `ephapax/bridge.eph` **and** `ephapax/types.eph`
+> are now **IMPLEMENTED** (~300 LOC combined) — the "bridge.eph (NOT EXISTS)" line below is
+> obsolete. Svalinn is mid-migration ReScript → AffineScript (general) + Ephapax (linear core),
+> not pure ReScript. Idris2 proofs are real (no `believe_me`/`postulate`), not stubs.
+
 ## 🎯 Big Picture: 4-Phase Implementation Plan
 
 **Original Timeline:** 22-32 weeks total

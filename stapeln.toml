@@ -314,9 +314,9 @@ copy-from = [
 entrypoint = ["/usr/local/bin/vordr"]
 
 [components.svalinn]
-description = "OCI edge gateway — ReScript/Deno with pre-start verification hooks"
+description = "OCI edge gateway — migrating ReScript → AffineScript (general app) + Ephapax (linear security core); Deno host. Pre-start verification hooks."
 path = "container-stack/svalinn"
-language = "rescript"
+language = "rescript"  # in migration: 11/33 modules ported to .affine; auth/bridge security core targets ephapax (linear). Build still compiles remaining .res.
 build-system = "deno"
 containerfile = "container-stack/svalinn/Containerfile"
 

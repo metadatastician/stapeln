@@ -19,10 +19,13 @@ The following files in `.machine_readable/` contain structured project metadata:
 
 ## Language Policy (STRICT)
 
-> **2026 migration: ReScript → AffineScript.** AffineScript replaces ReScript
-> for the MCP adapter / browser UI; the governance banned-language gate enforces
-> "use AffineScript instead". Existing `.res` are grandfathered via
-> `.hypatia-baseline.json`; do not add new `.res`.
+> **2026 migration: ReScript retired → AffineScript (general) + Ephapax (linear core).**
+> **AffineScript** replaces ReScript for the MCP adapter / browser UI (general app
+> code, typed-wasm). **Ephapax** owns the linear security core — exactly-once /
+> revocation / resource-lifecycle invariants and zero-copy IPC (see `selur`,
+> `ephapax-modules/`). The governance banned-language gate enforces "use
+> AffineScript instead"; existing `.res` are grandfathered via
+> `.hypatia-baseline.json` — do not add new `.res`.
 
 ### ALLOWED Languages
 
@@ -32,7 +35,8 @@ The following files in `.machine_readable/` contain structured project metadata:
 | **Rust** | eBPF probes, performance-critical paths, CLI | `src/rust/` |
 | **Elixir** | Orchestration, state management, reversibility | `src/elixir/` |
 | **Ada/SPARK** | Cryptographic operations, SPARK proofs | `src/ada/` |
-| **AffineScript** | MCP adapter, browser UI (replaces ReScript) | `adapters/`, `runtime/` |
+| **AffineScript** | MCP adapter, browser UI — general app code (replaces ReScript) | `adapters/`, `runtime/` |
+| **Ephapax** | Linear security core — exactly-once / lifecycle invariants, zero-copy IPC | `selur` bridge, `ephapax-modules/` |
 | **Guile Scheme** | SCM checkpoint files | `*.scm` |
 | **Bash** | Build scripts only | `scripts/` |
 

@@ -15,16 +15,24 @@ The following files in `.machine_readable/` contain structured project metadata:
 
 ## Language Policy (Hyperpolymath Standard)
 
-> **2026 migration: ReScript → AffineScript.** AffineScript is the primary
-> application language; ReScript is deprecated estate-wide — the governance
-> banned-language gate enforces "use AffineScript instead". Existing `.res`
-> files are grandfathered via `.hypatia-baseline.json`; do not add new `.res`.
+> **2026 migration: ReScript retired → two successor languages, by role.**
+> **AffineScript** is the primary *general application* language (affine-typed,
+> compiled to typed-wasm via the OCaml AffineScript compiler) — it replaces
+> ReScript for gateway / UI / app code. **Ephapax** owns the *linear security
+> core*: exactly-once tokens, revocation ledgers, secret/handle lifecycle,
+> container-lifecycle invariants, and zero-copy IPC (see `ephapax-modules/`,
+> `container-stack/selur/`). The two are complementary, not competing — reach
+> for AffineScript for general logic, Ephapax where linearity *is* the guarantee.
+> ReScript is deprecated estate-wide (the governance banned-language gate
+> enforces "use AffineScript instead"); existing `.res` are grandfathered via
+> `.hypatia-baseline.json` — do not add new `.res`.
 
 ### ALLOWED Languages & Tools
 
 | Language/Tool | Use Case | Notes |
 |---------------|----------|-------|
-| **AffineScript** | Primary application code | Affine-typed; compiled via the OCaml AffineScript compiler. Replaces ReScript. |
+| **AffineScript** | Primary *general* application code | Affine-typed; compiled to typed-wasm via the OCaml AffineScript compiler. Replaces ReScript for gateway/UI/app logic. |
+| **Ephapax** | *Linear security core* | Linear/affine types: exactly-once tokens, revocation, secret/handle lifecycle, container-lifecycle invariants, zero-copy IPC. See `ephapax-modules/`, `container-stack/selur/`. Complements AffineScript — not a general app language. |
 | **Deno** | Runtime & package management | Replaces Node/npm/bun |
 | **Rust** | Performance-critical, systems, WASM | Preferred for CLI tools |
 | **Tauri 2.0+** | Mobile apps (iOS/Android) | Rust backend + web UI |
