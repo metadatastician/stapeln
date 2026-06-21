@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule StapelnWeb.SecurityController do
   use StapelnWeb, :controller
 

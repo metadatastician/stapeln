@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 @policy(id="dev-testing", version="1.0"):
   @meta(created="2026-01-15", updated="2026-01-28"):
     Description: Development and testing policy - relaxed requirements

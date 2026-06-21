@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 = Cerro Torre CLI Ergonomics Specification
 :status: normative
 :audience: users, implementers

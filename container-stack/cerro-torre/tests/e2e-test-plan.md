@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # End-to-End Test Plan - Registry + Transparency Logs
 
 ## Test Environment Setup

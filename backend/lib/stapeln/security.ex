@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule Stapeln.Security do
   @moduledoc """
   Entry point for security-specific controllers and helpers.

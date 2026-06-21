@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Transparency Log Integration - Implementation Status
 
 ## Completed Features ✅

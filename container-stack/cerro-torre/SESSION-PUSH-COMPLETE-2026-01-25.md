@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Cerro Torre - Push Verification Session Summary
 
 **Date**: 2026-01-25

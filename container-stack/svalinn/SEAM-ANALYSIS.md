@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Svalinn Integration Seam Analysis
 
 ## Module Inventory

@@ -1,3 +1,4 @@
+; SPDX-License-Identifier: MPL-2.0
 ;; Guix channels for Axiom SMT solvers
 ;;
 ;; Provides reproducible, cryptographically verified builds of:

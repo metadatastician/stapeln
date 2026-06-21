@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # stapeln-frontend: 100% Complete! 🎉
 
 **Date**: 2026-02-05

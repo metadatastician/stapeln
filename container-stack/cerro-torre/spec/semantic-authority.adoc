@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 = Semantic Authority and Invariant Hierarchy
 :status: normative
 :audience: spec authors, implementers

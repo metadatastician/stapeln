@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule CerroShared do
   @moduledoc """
   Documentation for `CerroShared`.

@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Stapeln ABI/FFI
 
 Stapeln uses this boundary model:

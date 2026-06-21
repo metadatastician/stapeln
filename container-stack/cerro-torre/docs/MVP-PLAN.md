@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Cerro Torre MVP Plan
 
 **Version**: 0.1.0-mvp

@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # stapeln-frontend Examples
 
 Interactive examples demonstrating the features of stapeln-frontend.

@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # stapeln DOM Mounter
 
 This repo preserves the **DOM‑mounter** design and implementation work so it is not lost while stapeln ships its end‑user product.

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule CerroShared.MixProject do
   use Mix.Project
 

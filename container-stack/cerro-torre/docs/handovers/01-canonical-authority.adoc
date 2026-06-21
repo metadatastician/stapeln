@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 = Canonical Authority and Language Policy
 :status: normative
 :audience: maintainers, auditors, foundations

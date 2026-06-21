@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # 🎉 All Phases Complete: DOM Mounter with Formal Verification
 
 **Implementation Date:** 2026-02-05

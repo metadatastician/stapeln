@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Cerro Torre Live Registry Testing - 2026-01-25
 
 ## Session Overview

@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # SPARK Verification Requirements for Vörðr
 
 ## Overview

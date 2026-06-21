@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # stapeln Readiness Checklist
 
 Date: 2026-02-11

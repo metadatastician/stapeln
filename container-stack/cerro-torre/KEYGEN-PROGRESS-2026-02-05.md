@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Cerro Torre: Ed25519 Signing Implementation - Session 2026-02-05
 
 **Status:** 🟡 In Progress (82% → 85%)

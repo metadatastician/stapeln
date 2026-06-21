@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # stapeln Proven Library Integration
 
 **Date**: 2026-02-05

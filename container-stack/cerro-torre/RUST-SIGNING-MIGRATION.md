@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Rust Signing CLI Migration
 
 **Date:** 2026-02-05

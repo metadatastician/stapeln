@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Svalinn Integration Status
 
 ## Completed: Seam Analysis & Integration Testing Framework ✅

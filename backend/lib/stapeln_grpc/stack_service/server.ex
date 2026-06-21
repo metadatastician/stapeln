@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule StapelnGrpc.StackService.Server do
   @moduledoc false
   use GRPC.Server, service: StapelnGrpc.StackService.Service

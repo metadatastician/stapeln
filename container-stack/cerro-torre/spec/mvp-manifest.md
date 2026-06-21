@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # MVP Manifest Specification
 
 **Version**: 0.1.0-mvp

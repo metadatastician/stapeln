@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Lago Grey Integration: Base Image Designer
 
 **Status**: Design specification for integrating lago-grey as base image component

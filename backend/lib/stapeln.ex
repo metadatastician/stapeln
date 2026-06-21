@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule Stapeln do
   @moduledoc """
   Stapeln keeps the contexts that define your domain

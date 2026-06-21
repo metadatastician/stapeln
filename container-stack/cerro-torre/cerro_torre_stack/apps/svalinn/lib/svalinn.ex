@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule Svalinn do
   @moduledoc """
   Svalinn keeps the contexts that define your domain

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule StapelnGrpc.ValidateStackRequest do
   @moduledoc false
   use Protobuf, syntax: :proto3

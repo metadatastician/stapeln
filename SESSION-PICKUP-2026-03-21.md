@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Session Pickup — 2026-03-21
 
 ## What was done today

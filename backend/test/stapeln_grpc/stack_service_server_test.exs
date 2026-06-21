@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule StapelnGrpc.StackService.ServerTest do
   use ExUnit.Case, async: false
 

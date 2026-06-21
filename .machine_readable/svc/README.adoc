@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 = `.machine_readable/svc/` — Service components for stapeln
 :toc:
 

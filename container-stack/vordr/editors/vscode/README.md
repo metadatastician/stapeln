@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Vörðr VS Code Extension
 
 Language support for verified container workflows using Vörðr.

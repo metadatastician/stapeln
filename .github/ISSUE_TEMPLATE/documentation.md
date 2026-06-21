@@ -6,6 +6,7 @@ labels: 'documentation, priority: unset, triage'
 assignees: ''
 
 ---
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 
 name: Documentation
 description: Report unclear, missing, or incorrect documentation

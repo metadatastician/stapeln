@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Rokur
 
 Rokur is the secrets gate used by the stapeln runtime plane before container

@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Software Freedom Conservancy Inquiry
 
 **Draft for review — not yet sent**

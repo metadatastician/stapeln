@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule StapelnWeb.ErrorJSONTest do
   use StapelnWeb.ConnCase, async: true
 

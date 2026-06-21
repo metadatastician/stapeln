@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Build Summary: High-Assurance DOM Mounter
 
 **Date**: 2026-02-05

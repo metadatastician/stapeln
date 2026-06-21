@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Accessibility Standards for stackur
 
 ## WCAG 2.3 AAA Compliance

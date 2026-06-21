@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Vörðr CLI Reference
 
 Complete reference for all 16 Vörðr CLI commands.

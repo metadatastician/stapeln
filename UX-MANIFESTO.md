@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # stapeln UX Manifesto: "Containers for People Who Hate Containers"
 
 ## Core Principle

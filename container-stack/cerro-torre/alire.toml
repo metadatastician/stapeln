@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 name = "cerro_torre"
 description = "Supply-chain-verified Linux distribution tooling"
 version = "0.1.0-dev"

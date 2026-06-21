@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Cerro Torre Cooperative: Articles of Governance
 
 **Version**: Draft 0.1  

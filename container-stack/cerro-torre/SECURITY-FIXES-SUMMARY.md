@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Cerro Torre Security Fixes Summary - 2026-01-25
 
 ## Overview

@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Vörðr Documentation
 
 **Version:** 0.5.0-dev

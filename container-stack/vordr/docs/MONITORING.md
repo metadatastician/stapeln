@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Vörðr eBPF Monitoring Guide
 
 Complete guide to runtime monitoring with eBPF in Vörðr.

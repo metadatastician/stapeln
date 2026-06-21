@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 {
   description = "stapeln - {project-description}";
 

@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Security Reasoning Engine: miniKanren vs SLM
 
 **Decision**: Use miniKanren for deterministic rule reasoning, NOT an SLM

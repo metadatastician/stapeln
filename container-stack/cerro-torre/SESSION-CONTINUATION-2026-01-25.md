@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Cerro Torre Development Session Continuation - 2026-01-25
 
 ## Session Overview

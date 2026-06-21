@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Phase 1: Core Reliability Implementation ✅
 
 **Status**: COMPLETE

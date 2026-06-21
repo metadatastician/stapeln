@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # stapeln Firewall Configuration & Security
 
 **Status**: Design specification for OWASP-compliant firewall with ephemeral pinholes

@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Proven Libraries (Extracted)
 
 The proven library workstream (Idris2 → Zig → ReScript DOM‑mounter) has been extracted.

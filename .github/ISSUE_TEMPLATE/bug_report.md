@@ -6,6 +6,7 @@ labels: 'bug, priority: unset, triage'
 assignees: ''
 
 ---
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 
 **Describe the bug**
 A clear and concise description of what the bug is.

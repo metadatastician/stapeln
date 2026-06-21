@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Obvious Vulnerabilities: Fix These First
 
 **Question**: "Can you see anything obvious though now?"

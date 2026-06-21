@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 import Config
 
 # We don't run a server during test. If one is required,

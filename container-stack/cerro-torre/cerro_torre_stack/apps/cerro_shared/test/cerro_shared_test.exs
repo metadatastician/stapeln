@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule CerroSharedTest do
   use ExUnit.Case
   doctest CerroShared

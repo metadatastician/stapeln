@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # End-to-End Test Results - Cerro Torre
 
 **Date**: 2026-01-25

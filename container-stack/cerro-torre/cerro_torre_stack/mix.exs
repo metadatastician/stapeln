@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule CerroTorreStack.MixProject do
   use Mix.Project
 

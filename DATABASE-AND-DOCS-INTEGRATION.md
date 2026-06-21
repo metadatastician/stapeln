@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # stapeln Database & Document Integration
 
 ## Three Hyperpolymath Components

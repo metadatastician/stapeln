@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Decision Record 0002: Use TOML for Manifest Format
 
 **Status:** Accepted

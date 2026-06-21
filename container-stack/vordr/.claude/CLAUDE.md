@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 ## Machine-Readable Artefacts
 
 The following files in `.machine_readable/` contain structured project metadata:

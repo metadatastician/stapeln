@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # LLM Warmup — stapeln (Developer)
 
 ## What is stapeln?

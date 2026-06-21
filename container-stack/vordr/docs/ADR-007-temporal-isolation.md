@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # ADR-007: Temporal Isolation Engine
 
 **Status:** Proposed

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 = RSR Template Repository
 
 image:[Palimpsest-MPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"] image:[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-license"]

@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # TEST-NEEDS: stapeln
 
 ## CRG Grade: C — ACHIEVED 2026-04-04

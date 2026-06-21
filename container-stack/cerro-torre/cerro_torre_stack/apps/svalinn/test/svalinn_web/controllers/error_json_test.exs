@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule SvalinnWeb.ErrorJSONTest do
   use SvalinnWeb.ConnCase, async: true
 

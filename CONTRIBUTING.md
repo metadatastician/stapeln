@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Clone the repository
 git clone https://github.com/hyperpolymath/stapeln.git
 cd stapeln

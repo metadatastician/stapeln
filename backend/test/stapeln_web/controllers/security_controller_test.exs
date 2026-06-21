@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule StapelnWeb.SecurityControllerTest do
   use StapelnWeb.ConnCase, async: false
 

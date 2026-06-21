@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 import Config
 
 # config/runtime.exs is executed for all environments, including

@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Cerro Torre - Phase 3 Start Session Summary
 
 **Date**: 2026-01-25

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule Stapeln.Security.PanicAttacker do
   @moduledoc """
   Supervises panic-attack invocations and exposes trace/timeline state to the security UI.

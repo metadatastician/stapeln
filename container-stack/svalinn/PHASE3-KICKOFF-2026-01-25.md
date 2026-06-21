@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Phase 3 Kickoff - Session Summary
 
 **Date:** 2026-01-25

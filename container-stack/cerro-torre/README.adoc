@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 = Cerro Torre
 
 image:https://img.shields.io/badge/License-PMPL--1.0--or--later-indigo.svg[PMPL-1.0-or-later,link="https://github.com/hyperpolymath/palimpsest-license"]

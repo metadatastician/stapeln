@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule SvalinnWeb do
   @moduledoc """
   The entrypoint for defining your web interface, such

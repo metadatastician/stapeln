@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule StapelnWeb.ErrorJSON do
   @moduledoc """
   This module is invoked by your endpoint in case of errors on JSON requests.

@@ -1,4 +1,5 @@
 #!/bin/sh
+# SPDX-License-Identifier: MPL-2.0
 # Axiom SMT Solver Runner
 #
 # Securely executes SMT solvers with resource limits and timeout.

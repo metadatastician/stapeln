@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # CLAUDE.md — Cerro Torre Development Context
 
 This file provides context for AI-assisted development of the Cerro Torre project.

@@ -2,6 +2,7 @@
 title: stapeln
 date: 2026-03-31
 ---
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 
 # stapeln
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 = ATS Shadow Verification Policy
 :status: normative
 :audience: maintainers, CI authors

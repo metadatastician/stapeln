@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 = Manifest Canonicalization Rules (CTP-CANON v0)
 :status: draft-normative
 :audience: spec authors, implementers, auditors

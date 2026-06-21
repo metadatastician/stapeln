@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule Stapeln.Stacks do
   @moduledoc """
   Stack API context.

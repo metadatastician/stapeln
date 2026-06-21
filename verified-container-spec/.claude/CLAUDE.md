@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # CLAUDE.md - AI Assistant Instructions
 
 ## Machine-Readable Artefacts

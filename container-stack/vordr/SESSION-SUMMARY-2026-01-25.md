@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Vörðr Phase 1 Session Summary - 2026-01-25
 
 ## Session Overview

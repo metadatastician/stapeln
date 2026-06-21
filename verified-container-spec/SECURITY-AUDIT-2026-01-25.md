@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Verified Container Spec Security Audit - 2026-01-25
 
 **Auditor**: Claude Sonnet 4.5

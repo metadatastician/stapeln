@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 = Crypto Suites — Suite Commitment (No Downgrade)
 :toc:
 :toclevels: 3

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 = Cerro Torre Stack
 :toc:
 :toclevels: 3

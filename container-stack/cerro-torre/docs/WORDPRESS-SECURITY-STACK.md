@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # WordPress Security Stack Deployment Guide
 
 **Stack Components**:

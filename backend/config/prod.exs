@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 import Config
 
 # Force using SSL in production. This also sets the "strict-security-transport" header,

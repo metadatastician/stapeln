@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 defmodule StapelnWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :stapeln
 

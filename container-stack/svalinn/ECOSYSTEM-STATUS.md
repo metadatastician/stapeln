@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Cerro Torre Ecosystem - Implementation Status
 **Updated:** 2026-01-25
 

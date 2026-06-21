@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # stapeln Test Suite
 
 Comprehensive test coverage for validation, generation, and end-to-end workflows.

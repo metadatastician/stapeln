@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Converting Container Haters: The Ultimate Test
 
 ## The Challenge

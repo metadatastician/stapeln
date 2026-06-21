@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MPL-2.0
 = Phase-0 MUST Alignment Record
 :status: record
 :audience: maintainers, reviewers

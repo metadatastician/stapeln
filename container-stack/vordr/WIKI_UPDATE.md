@@ -1,3 +1,4 @@
+<!-- SPDX-License-Identifier: MPL-2.0 -->
 # Wiki Update: Recent Changes in Vörðr Project
 
 This document outlines significant recent changes to the Vörðr project, focusing on improvements to the Rust build process and the removal of Ada/SPARK integration. These updates aim to streamline development, reduce build complexity, and clarify the project's technological stack.
