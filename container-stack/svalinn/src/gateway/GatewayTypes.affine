@@ -6,6 +6,10 @@
 
 module GatewayTypes;
 
+// Option + its constructors are owned by `prelude` and must be imported
+// explicitly (the pre-#138 seeded-builtin `Some`/`None` was removed upstream).
+use prelude::{Option, Some, None};
+
 pub enum ContainerState {
   Created,
   Running,

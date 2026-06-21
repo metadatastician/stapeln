@@ -11,6 +11,7 @@
 
 module Authz;
 
+use prelude::{Option, Some, None};
 use AuthTypes;
 
 // JWT standard-claim validation (JWT.res verifyJWT, minus the signature

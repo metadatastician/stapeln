@@ -14,7 +14,7 @@
 #
 # Upstream tool repos are pinned by commit for reproducibility.
 
-ARG AFFINESCRIPT_REF=d2875a552f1d389b4a60c4adfdc02ae53e36aca3
+ARG AFFINESCRIPT_REF=58dc2a0bdfcd78bcc3448fe5a1785e2128adc005
 ARG TYPED_WASM_REF=e90e2d1a307c33d594d54065c902500da327977c
 
 # ---------------------------------------------------------------------------
@@ -29,6 +29,11 @@ USER opam
 WORKDIR /opt
 RUN git clone https://github.com/hyperpolymath/affinescript.git \
  && cd affinescript && git checkout "${AFFINESCRIPT_REF}"
+# Carry the vetted WASM cross-module constructor-linking fix (gen_imports links
+# imported enum constructors) until it lands upstream; then drop the COPY+apply
+# and bump AFFINESCRIPT_REF to the merged SHA.
+COPY patches/affinescript-wasm-ctor-link.patch /tmp/affinescript-wasm-ctor-link.patch
+RUN cd /opt/affinescript && git apply /tmp/affinescript-wasm-ctor-link.patch
 WORKDIR /opt/affinescript
 RUN opam install --deps-only -y . \
  && eval "$(opam env)" \

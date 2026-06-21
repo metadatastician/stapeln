@@ -28,7 +28,7 @@ permissions:
 
 env:
   # Pinned to the same commit the svalinn Containerfile uses.
-  AFFINESCRIPT_REF: d2875a552f1d389b4a60c4adfdc02ae53e36aca3
+  AFFINESCRIPT_REF: 58dc2a0bdfcd78bcc3448fe5a1785e2128adc005
 
 jobs:
   affine-build:
@@ -61,6 +61,10 @@ jobs:
           git clone https://github.com/hyperpolymath/affinescript.git /tmp/affinescript
           cd /tmp/affinescript
           git checkout "${AFFINESCRIPT_REF}"
+          # Carry the vetted WASM cross-module constructor-linking fix (gen_imports
+          # links imported enum constructors) until it lands upstream in affinescript;
+          # then drop this apply and bump AFFINESCRIPT_REF to the merged SHA.
+          git apply "${GITHUB_WORKSPACE}/container-stack/svalinn/patches/affinescript-wasm-ctor-link.patch"
           opam install --deps-only -y .
           eval "$(opam env)"
           dune build --release

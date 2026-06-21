@@ -10,15 +10,15 @@
 module Metrics;
 
 fn counter_block(name: String, help: String, value: Float) -> String {
-  "# HELP " + name + " " + help + "\n"
-  + "# TYPE " + name + " counter\n"
-  + name + " " + float_to_string(value) + "\n"
+  "# HELP " ++ name ++ " " ++ help ++ "\n"
+  ++ "# TYPE " ++ name ++ " counter\n"
+  ++ name ++ " " ++ float_to_string(value) ++ "\n"
 }
 
 fn gauge_block(name: String, help: String, value: Float) -> String {
-  "# HELP " + name + " " + help + "\n"
-  + "# TYPE " + name + " gauge\n"
-  + name + " " + float_to_string(value) + "\n"
+  "# HELP " ++ name ++ " " ++ help ++ "\n"
+  ++ "# TYPE " ++ name ++ " gauge\n"
+  ++ name ++ " " ++ float_to_string(value) ++ "\n"
 }
 
 // Cumulative histogram (Prometheus buckets are cumulative).
@@ -27,20 +27,20 @@ fn histogram_block(
   buckets: [Float], counts: [Float],
   sum: Float, count: Float
 ) -> String {
-  let out = "# HELP " + name + " " + help + "\n"
-          + "# TYPE " + name + " histogram\n";
-  let cumulative = 0.0;
-  let i = 0;
+  let mut out = "# HELP " ++ name ++ " " ++ help ++ "\n"
+          ++ "# TYPE " ++ name ++ " histogram\n";
+  let mut cumulative = 0.0;
+  let mut i = 0;
   while i < len(buckets) {
     let c = if i < len(counts) { counts[i] } else { 0.0 };
     cumulative = cumulative + c;
-    out = out + name + "_bucket{le=\"" + float_to_string(buckets[i]) + "\"} "
-              + float_to_string(cumulative) + "\n";
+    out = out ++ name ++ "_bucket{le=\"" ++ float_to_string(buckets[i]) ++ "\"} "
+              ++ float_to_string(cumulative) ++ "\n";
     i = i + 1;
   }
-  out = out + name + "_bucket{le=\"+Inf\"} " + float_to_string(count) + "\n";
-  out = out + name + "_sum " + float_to_string(sum) + "\n";
-  out = out + name + "_count " + float_to_string(count) + "\n";
+  out = out ++ name ++ "_bucket{le=\"+Inf\"} " ++ float_to_string(count) ++ "\n";
+  out = out ++ name ++ "_sum " ++ float_to_string(sum) ++ "\n";
+  out = out ++ name ++ "_count " ++ float_to_string(count) ++ "\n";
   out
 }
 
@@ -57,18 +57,18 @@ pub fn format_prometheus(
 ) -> String {
   counter_block("svalinn_requests_total",
     "Total HTTP requests received", requests_total)
-  + "\n"
-  + counter_block("svalinn_requests_errors_total",
+  ++ "\n"
+  ++ counter_block("svalinn_requests_errors_total",
     "Total HTTP request errors (5xx)", requests_errors_total)
-  + "\n"
-  + counter_block("svalinn_auth_failures_total",
+  ++ "\n"
+  ++ counter_block("svalinn_auth_failures_total",
     "Total authentication failures", auth_failures_total)
-  + "\n"
-  + histogram_block("svalinn_request_duration_seconds",
+  ++ "\n"
+  ++ histogram_block("svalinn_request_duration_seconds",
     "HTTP request duration in seconds",
     hist_buckets, hist_counts, hist_sum, hist_count)
-  + "\n"
-  + gauge_block("svalinn_containers_active",
+  ++ "\n"
+  ++ gauge_block("svalinn_containers_active",
     "Number of currently active containers", containers_active)
 }
 

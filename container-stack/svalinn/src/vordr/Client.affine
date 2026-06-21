@@ -9,6 +9,7 @@
 
 module Client;
 
+use prelude::{Option, Some, None};
 use Json;
 use VordrTypes;
 

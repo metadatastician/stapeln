@@ -29,7 +29,10 @@ Commit per logical module; push; keep the PR draft until all gates pass.
 ```bash
 # affinescript compiler — PIN must match Containerfile + svalinn-affine-build.yml
 git clone https://github.com/hyperpolymath/affinescript.git /tmp/affinescript
-cd /tmp/affinescript && git checkout d2875a552f1d389b4a60c4adfdc02ae53e36aca3
+cd /tmp/affinescript && git checkout 58dc2a0bdfcd78bcc3448fe5a1785e2128adc005
+# Carry the vetted WASM cross-module constructor-linking fix until it lands
+# upstream in affinescript (then drop this apply + bump the pin to the merged SHA):
+git apply <stapeln>/container-stack/svalinn/patches/affinescript-wasm-ctor-link.patch
 opam install --deps-only -y . && eval "$(opam env)" && dune build --release
 export AFFINESCRIPT_BIN=/tmp/affinescript/_build/install/default/bin/affinescript
 
