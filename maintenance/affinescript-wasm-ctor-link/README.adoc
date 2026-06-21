@@ -1,0 +1,86 @@
+// SPDX-License-Identifier: MPL-2.0
+= AffineScript WASM cross-module constructor linking — proven patch
+:toc: macro
+
+Verified fix for an *untracked* AffineScript compiler gap that blocks the
+svalinn ReScript→AffineScript migration (stapeln #96).
+
+[IMPORTANT]
+====
+This is *not* affinescript #138. #138 is *CLOSED* (PR #193) — it was the
+resolver/typecheck half ("remove the `b895374` Some/None/Ok/Err seed; resolve
+imports recursively"). This patch is the remaining *WASM-codegen* half, which
+has no tracking issue yet (see "New issue to file" below).
+====
+
+== The bug
+
+`affinescript compile <file>` (default core-WASM) on a module that imports an
+enum's value constructors — e.g. `use prelude::{Option, Some, None}` — fails:
+
+----
+Code generation error: (Codegen.UnboundVariable "Function or variable not found: Some")
+----
+
+…even though `affinescript check <file>` *passes*. The WASM backend's
+`gen_imports` (`lib/codegen.ml`) linked only imported `TopFn`/`TopConst`, never
+`TopType`, so constructor tags were never registered in `variant_tags`;
+`Some(x)` then fell through to the function-call path and errored at
+`codegen.ml:1752`.
+
+Non-WASM backends (Julia/JS/Deno/…) use `flatten_imports` + structural
+constructor emission and were unaffected — and the stdlib AOT gate
+(`test/test_stdlib_aot.ml`) only compiles to *Deno-ESM*, which is why this WASM
+gap went uncaught while epic #128 / #131–#138 was marked "compiles through
+codegen".
+
+== The fix
+
+`lib/codegen.ml` `gen_imports`: when an imported name is neither fn nor const,
+resolve it as an imported public enum *type* or *constructor* and register that
+enum's constructors into `variant_tags` with their canonical positional tags
+(identical to local `TopType` handling in `gen_decl`, `codegen.ml:3202-3209`).
+Glob `use M::*` also brings enum constructors. Plus a WASM-target regression
+test — the coverage the Deno-only AOT gate missed.
+
+Patch: `affinescript-wasm-ctor-link.patch` (apply at affinescript HEAD
+`58dc2a0` with `git apply`). 4 files, +99/−1.
+
+== Proof (verified locally 2026-06-21, affinescript HEAD `58dc2a0`)
+
+* *Build*: `dune build bin/main.exe` → exit 0.
+* *Before*: `compile` of a `use prelude::{Option,Some,None}` consumer →
+  `Codegen.UnboundVariable "… Some"`.
+* *After*: same consumer compiles → `out.wasm` (382 B; valid — `WebAssembly.compile`
+  accepts it). Option+Result construct+match likewise.
+* *Regression*: before/after `compile` diff over the 30-file `conformance` +
+  `tests/modules` corpus — identical (OK=16 / FAIL=14 both; zero `OK→FAIL`).
+* *Full suite*: `dune runtest` → *458 tests green*, including the new
+  "WASM gen_imports links imported constructors" case.
+
+== New affinescript issue to file (the proper tracking)
+
+[%hardbreaks]
+*Title*: WASM codegen does not link cross-module enum constructors (`gen_imports` drops `TopType`)
+*Body*:
+`affinescript compile` (core-WASM / WASM-GC) of a module importing an enum's
+value constructors (`use prelude::{Option, Some, None}`) raises
+`Codegen.UnboundVariable "… Some"` although `check` passes. Root cause:
+`lib/codegen.ml` `gen_imports` registers imported `TopFn`/`TopConst` only;
+imported `TopType` constructors never reach `variant_tags`. #138 / PR #193 fixed
+the resolver half; this is the WASM-codegen half. The stdlib AOT gate only
+exercises Deno-ESM, so the WASM path is unguarded. Fix + WASM-target regression
+test attached (proven at HEAD `58dc2a0`); also widen the AOT gate to a WASM
+target so this can't silently regress. `Closes #<this issue>`.
+
+== Apply
+
+----
+cd <affinescript>
+git checkout main && git pull
+git apply maintenance/affinescript-wasm-ctor-link/affinescript-wasm-ctor-link.patch
+dune build bin/main.exe && dune runtest
+----
+
+Or run the bundled `repro.sh <path-to-affinescript-checkout>` for the
+before/after compile.
