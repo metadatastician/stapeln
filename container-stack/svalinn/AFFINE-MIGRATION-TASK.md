@@ -16,6 +16,31 @@ Do not claim done until every verification gate below passes locally.
 Work on branch `claude/stapeln-maintenance-followup-iEUKy` (PR #46, draft).
 Commit per logical module; push; keep the PR draft until all gates pass.
 
+## Current status — 2026-06-21 (updated this session; supersedes the PR #46 framing)
+
+**Compiler blocker cracked + partial port landed.** The root blocker was NOT
+affinescript #138 (closed — that was the front-end/resolver half); it was an
+untracked **WASM-codegen** gap: `gen_imports` never linked imported enum
+constructors, so `use prelude::{Some, None, ...}` consumers failed `compile`
+with `Codegen.UnboundVariable`. Fixed + proven (stapeln #105) and **carried** as
+`container-stack/svalinn/patches/affinescript-wasm-ctor-link.patch` over
+affinescript `58dc2a0` (the current `AFFINESCRIPT_REF`) until it lands upstream.
+
+**Gateway port: 4/11 `src/*.affine` compile to WASM** — `auth/AuthTypes`,
+`gateway/GatewayTypes`, `gateway/RateLimiter`, `vordr/VordrTypes`. Remaining:
+- **4 parse errors** — `Main` (`None => {}`), `host/Json` (`pub extern fn`),
+  `policy/PolicyEngine`, `vordr/Client` (compiler-rejected syntax).
+- **2 sibling-module resolutions** — `auth/Authz` (`use AuthTypes`),
+  `gateway/SecurityHeaders` (`use Json`): single-file `compile` has no `src/**`
+  search path; needs a project/manifest build mode upstream.
+- **1 WASM builtin gap** — `gateway/Metrics`: `float_to_string` not implemented
+  in the core-WASM codegen.
+
+**Next:** land the patch upstream → re-pin `AFFINESCRIPT_REF` to the merged SHA
+and drop the carried `git apply` → fix the parse/type/sibling issues → 11/11
+green → cutover. Full analysis + ready-to-file affinescript issue text:
+`maintenance/affinescript-wasm-ctor-link/README.adoc`.
+
 ## Prerequisites (must exist locally)
 
 - `opam` + OCaml ≥ 5.1, `dune` ≥ 3.14, `m4`, `git`
