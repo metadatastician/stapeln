@@ -1,6 +1,6 @@
 # Vordr eBPF Kernel Programs
 
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 
 These are **kernel-side** eBPF programs compiled with [aya-bpf](https://github.com/aya-rs/aya). They run inside the Linux kernel's BPF virtual machine and communicate with the userspace `Monitor` (in `src/rust/ebpf/`) via ring buffer maps.
 

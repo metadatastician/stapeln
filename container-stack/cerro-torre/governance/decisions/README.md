@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Decision Records
 
 This directory contains Architectural Decision Records (ADRs) documenting significant technical and governance decisions for the Cerro Torre project.

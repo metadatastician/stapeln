@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MPL-2.0
+// SPDX-License-Identifier: CC-BY-SA-4.0
 = stapeln
 :toc: left
 :toclevels: 3
@@ -7,7 +7,7 @@
 
 **Visual Container Stack Designer for Verified Containers**
 
-image:https://img.shields.io/badge/License-PMPL--1.0--or--later-blue.svg[License: PMPL-1.0-or-later]
+image:https://img.shields.io/badge/License-MPL--2.0-blue.svg[License: PMPL-1.0-or-later]
 image:https://img.shields.io/badge/WCAG-2.3%20AAA-green.svg[WCAG 2.3 AAA]
 image:https://img.shields.io/badge/Security-OWASP%20Compliant-brightgreen.svg[OWASP Compliant]
 image:https://img.shields.io/badge/ReScript-TEA-e34c4c.svg[ReScript-TEA]

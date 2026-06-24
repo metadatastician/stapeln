@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # stapeln Database & Document Integration
 
 ## Three Hyperpolymath Components
@@ -472,7 +472,7 @@ let renderA2MLDoc = (doc: a2mlDocument, isDark: bool) => {
 
 ```nickel
 K9!
-# SPDX-License-Identifier: MPL-2.0
+# SPDX-License-Identifier: CC-BY-SA-4.0
 # Component: nginx verified container
 # Security Level: Kennel (pure data)
 
@@ -549,7 +549,7 @@ K9!
 
 ```nickel
 K9!
-# SPDX-License-Identifier: MPL-2.0
+# SPDX-License-Identifier: CC-BY-SA-4.0
 # Stack: LAMP deployment
 # Security Level: Hunt (requires signature)
 

@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Vörðr Zig FFI
 
 **Per ABI/FFI Universal Standard**
@@ -129,4 +129,4 @@ nm zig-out/lib/libvordr.so | grep vordr_  # Check exports
 
 ## License
 
-SPDX-License-Identifier: MPL-2.0
+SPDX-License-Identifier: CC-BY-SA-4.0

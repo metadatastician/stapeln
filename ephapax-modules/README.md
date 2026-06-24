@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Ephapax Modules for stapeln
 
 Security-critical components implemented in Ephapax with linear/affine types for formally verified resource safety.

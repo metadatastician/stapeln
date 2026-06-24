@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # DOM Mounter Enhancement Plan
 
 **Current Status**: Basic formally verified DOM mounting with Idris2 → Zig → ReScript

@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MPL-2.0
+# SPDX-License-Identifier: CC-BY-SA-4.0
 # Stapeln — Opus session brief
 
 **Model:** Claude Opus
@@ -77,7 +77,7 @@ Verify:
 
 Fix any gaps. Create `docs/AUTH-SEAM.adoc`:
 ```adoc
-// SPDX-License-Identifier: MPL-2.0
+// SPDX-License-Identifier: CC-BY-SA-4.0
 = Stapeln Authentication Seam
 
 Documents the full auth boundary: token generation, storage, transmission,

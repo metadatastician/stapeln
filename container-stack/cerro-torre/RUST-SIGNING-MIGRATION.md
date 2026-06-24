@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Rust Signing CLI Migration
 
 **Date:** 2026-02-05
@@ -150,5 +150,5 @@ cerro-torre/
 
 ## License
 
-All Rust code: `SPDX-License-Identifier: MPL-2.0`
+All Rust code: `SPDX-License-Identifier: CC-BY-SA-4.0`
 Author: Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>

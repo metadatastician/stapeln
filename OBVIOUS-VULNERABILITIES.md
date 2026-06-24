@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Obvious Vulnerabilities: Fix These First
 
 **Question**: "Can you see anything obvious though now?"
@@ -379,7 +379,7 @@ type settings = {
 
 ```rescript
 // settings/defaults.res
-// SPDX-License-Identifier: MPL-2.0
+// SPDX-License-Identifier: CC-BY-SA-4.0
 
 let secureDefaults: settings = {
   defaultRuntime: Podman,  // ✅ Rootless by default

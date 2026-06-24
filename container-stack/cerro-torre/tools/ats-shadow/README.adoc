@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MPL-2.0
+// SPDX-License-Identifier: CC-BY-SA-4.0
 = ATS Shadow Verifier (Non-authoritative)
 :status: draft
 :audience: maintainers, CI

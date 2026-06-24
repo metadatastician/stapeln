@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # stapeln Execution Plan (2026-02-11)
 
 Scope selected: `1 2 3 4 5 6`

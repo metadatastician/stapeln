@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MPL-2.0
+# SPDX-License-Identifier: CC-BY-SA-4.0
 # Stapeln — Sonnet session brief
 
 **Model:** Claude Sonnet
@@ -125,7 +125,7 @@ Create two files:
 
 **`backend/lib/stapeln_web/channels/user_socket.ex`**
 ```elixir
-# SPDX-License-Identifier: MPL-2.0
+# SPDX-License-Identifier: CC-BY-SA-4.0
 defmodule StapelnWeb.UserSocket do
   use Phoenix.Socket
   channel "events:*", StapelnWeb.EventsChannel
@@ -145,7 +145,7 @@ end
 
 **`backend/lib/stapeln_web/channels/events_channel.ex`**
 ```elixir
-# SPDX-License-Identifier: MPL-2.0
+# SPDX-License-Identifier: CC-BY-SA-4.0
 defmodule StapelnWeb.EventsChannel do
   use Phoenix.Channel
 
@@ -171,7 +171,7 @@ socket "/socket", StapelnWeb.UserSocket,
 Create `.github/workflows/rust-tests.yml`:
 
 ```yaml
-# SPDX-License-Identifier: MPL-2.0
+# SPDX-License-Identifier: CC-BY-SA-4.0
 name: Rust tests
 
 on: [push, pull_request]

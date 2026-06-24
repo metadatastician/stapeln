@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Cerro Torre Development Session - Complete Summary - 2026-01-25
 
 ## Executive Summary
@@ -200,7 +200,7 @@ Errors:      ❌ NONE
 
 **All files properly licensed**:
 ```ada
--- SPDX-License-Identifier: MPL-2.0
+-- SPDX-License-Identifier: CC-BY-SA-4.0
 -- Palimpsest-Covenant: 1.0
 ```
 

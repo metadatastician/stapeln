@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: MPL-2.0
+# SPDX-License-Identifier: CC-BY-SA-4.0
 # Stapeln — Haiku session brief
 
 **Model:** Claude Haiku
@@ -48,7 +48,7 @@ cd backend && mix run -e "IO.inspect(Stapeln.DbStore.available?())"
 `just crg-grade` looks for `**Current Grade:** X` in `READINESS.md`. Create it:
 
 ```markdown
-# SPDX-License-Identifier: MPL-2.0
+# SPDX-License-Identifier: CC-BY-SA-4.0
 # Stapeln — Component Readiness Grade
 
 **Current Grade:** D
@@ -107,7 +107,7 @@ Otherwise create a minimal stub `frontend/src/Tour.res.js` that exports no-ops f
 The aspect test SKIPs the Chainguard check. Create `Containerfile` at repo root:
 
 ```dockerfile
-# SPDX-License-Identifier: MPL-2.0
+# SPDX-License-Identifier: CC-BY-SA-4.0
 FROM cgr.dev/chainguard/elixir:latest AS build
 WORKDIR /app
 COPY backend/ .

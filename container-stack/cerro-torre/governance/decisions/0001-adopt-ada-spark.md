@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Decision Record 0001: Adopt Ada/SPARK as Primary Implementation Language
 
 **Status:** Accepted

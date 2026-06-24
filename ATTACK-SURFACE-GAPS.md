@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Attack Surface Gap Analysis: stapeln Ecosystem
 
 **Question**: "Are there any points on the attack surface that we should build to ensure it is super sealed?"

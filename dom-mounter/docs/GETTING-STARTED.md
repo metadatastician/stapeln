@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Getting Started with stapeln-frontend
 
 A step-by-step guide to using the formally verified DOM mounting library.

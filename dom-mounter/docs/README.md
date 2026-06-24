@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # stapeln-frontend
 
 A formally verified, security-hardened DOM mounting library with framework-agnostic architecture.

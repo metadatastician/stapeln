@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Lago Grey Integration: Base Image Designer
 
 **Status**: Design specification for integrating lago-grey as base image component
@@ -315,7 +315,7 @@ extend type Mutation {
 
 ```elixir
 # backend/lib/stapeln/lago_grey.ex
-# SPDX-License-Identifier: MPL-2.0
+# SPDX-License-Identifier: CC-BY-SA-4.0
 
 defmodule Stapeln.LagoGrey do
   @moduledoc """
@@ -378,7 +378,7 @@ Add base image security rules:
 
 ```scheme
 ;; security-rules/base-image.scm
-;; SPDX-License-Identifier: MPL-2.0
+;; SPDX-License-Identifier: CC-BY-SA-4.0
 
 (define (insecure-base-imageo component)
   "Rule: Components should use minimal, secure base images"

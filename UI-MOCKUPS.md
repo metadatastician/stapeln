@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # stapeln Visual UI Mockups: "Spaceship Customizer" Style
 
 **Design Philosophy**: Like customizing a spaceship in a game - choose components, see stats update in real-time, get warnings about vulnerabilities

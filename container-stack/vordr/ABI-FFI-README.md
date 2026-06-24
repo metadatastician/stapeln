@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 {{~ Aditionally delete this line and fill out the template below ~}}
 
 # {{PROJECT}} ABI/FFI Documentation

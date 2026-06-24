@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Red Team Exercise: "Destroy stapeln in 2 Seconds"
 
 **Attacker Profile**: Government cyberwar officer who loathes containers

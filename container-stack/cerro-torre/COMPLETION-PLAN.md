@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Cerro Torre - Path to 100% Completion
 
 **Current Status:** ~68% (honest assessment as of 2026-03-10)

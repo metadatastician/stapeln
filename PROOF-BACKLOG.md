@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # PROOF-BACKLOG — working-through-the-proofs tracker
 
 Status as of the first compact boundary. This is the **spine** (original thread

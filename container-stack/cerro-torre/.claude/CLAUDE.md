@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 ## Machine-Readable Artefacts
 
 The following files in `.machine_readable/` contain structured project metadata:

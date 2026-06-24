@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MPL-2.0
+// SPDX-License-Identifier: CC-BY-SA-4.0
 = Axiom SMT Runner Container
 
 Supply-chain verified container for isolated SMT solver execution in Axiom.jl formal verification.

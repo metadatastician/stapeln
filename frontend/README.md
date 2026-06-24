@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # stapeln Frontend
 
 This is the **stapeln UI application** (not the DOM‑mounter library).

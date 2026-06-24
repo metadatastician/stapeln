@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 ## Machine-Readable Artefacts
 
 The following files in `.machine_readable/` contain structured project metadata:
@@ -59,12 +59,12 @@ The following files in `.machine_readable/` contain structured project metadata:
 ### Idris2
 - Dependent types are documentation — name them clearly
 - Proofs in `src/idris2/proofs/` with literate comments
-- SPDX header: `-- SPDX-License-Identifier: MPL-2.0`
+- SPDX header: `-- SPDX-License-Identifier: CC-BY-SA-4.0`
 
 ### Rust
 - `rustfmt` + `clippy` mandatory
 - No `unsafe` except in eBPF bindings (document why)
-- SPDX header: `// SPDX-License-Identifier: MPL-2.0`
+- SPDX header: `// SPDX-License-Identifier: CC-BY-SA-4.0`
 
 ### Elixir
 - `mix format` mandatory

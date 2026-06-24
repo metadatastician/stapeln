@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # selur-compose
 
 selur-compose is the orchestrator that links selur, Svalinn, Vörðr, Cerro Torre bundles, Rokur, and the PanLL stack into a verified-container-secure topology. Placing it at the root of `stapeln/` ensures the compose files/definitions survive even as we restructure other directories.

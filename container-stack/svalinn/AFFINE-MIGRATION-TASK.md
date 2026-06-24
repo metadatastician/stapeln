@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Task: complete the svalinn ReScript → AffineScript/typed-wasm migration (verified)
 
 > **Run this with Claude Code in a local CLI that has the toolchain installed.**
@@ -87,7 +87,7 @@ Read these upstream files before porting (they define syntax/stdlib/limits):
   No async, no JS interop. `module Name;` header; `use Other;` imports;
   `pub extern fn` = host import. **Pitfall:** prelude defines
   `Option::None`, so don't name an enum variant `None` (we used `NoAuth`).
-- Every file starts with `// SPDX-License-Identifier: MPL-2.0`.
+- Every file starts with `// SPDX-License-Identifier: CC-BY-SA-4.0`.
 - One WASM module per top-level `.affine`; host loads by basename.
 
 ## Already done (11/31 — do NOT redo, mirror their style)

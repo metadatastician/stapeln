@@ -1,4 +1,4 @@
-<!-- SPDX-License-Identifier: MPL-2.0 -->
+<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # ABI/FFI Universal Standard: DOM Mounter
 
 High-assurance DOM mounting with formal verification using the Idris2 → Zig → ReScript architecture.
