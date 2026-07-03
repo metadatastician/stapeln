@@ -1,0 +1,12 @@
+[submodule "container-stack/vordr"]
+	path = container-stack/vordr
+	url = https://github.com/hyperpolymath/vordr.git
+[submodule "container-stack/selur"]
+	path = container-stack/selur
+	url = https://github.com/hyperpolymath/selur.git
+[submodule "container-stack/rokur"]
+	path = container-stack/rokur
+	url = https://github.com/hyperpolymath/rokur.git
+[submodule "container-stack/cerro-torre"]
+	path = container-stack/cerro-torre
+	url = https://github.com/hyperpolymath/cerro-torre.git

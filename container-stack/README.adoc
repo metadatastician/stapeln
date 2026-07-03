@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 = container-stack/
-Embedded snapshots of the upstream container components that stapeln designs, validates,
-and orchestrates.
+Git submodules pointing at the upstream container components that stapeln designs,
+validates, and orchestrates.
 
-Each subdirectory contains the source tree for one component of the hyperpolymath
+Each subdirectory is a submodule checkout of one component of the hyperpolymath
 container stack. They exist here as context for stapeln's validation rules, security
 inspector, and gap analysis — stapeln is the *design surface* for these components,
-not a fork of them.
+not a fork of them. Until 2026-07-03 these were full copies committed directly into
+this repo (a monorepo fold-in from 2026-02-13); they are now proper submodules against
+their own standalone repos, so there is one source of truth per component.
 
 == Components
 
@@ -18,7 +20,7 @@ not a fork of them.
 | Container builder — produces cryptographically signed, minimal Chainguard-based images. Upstream repo: `hyperpolymath/cerro-torre`.
 
 | `svalinn/`
-| Edge gateway — handles routing, rate-limiting, ephemeral pinholes at the network boundary. Upstream repo: `hyperpolymath/svalinn`.
+| Edge gateway — handles routing, rate-limiting, ephemeral pinholes at the network boundary. Upstream repo: `hyperpolymath/svalinn`. *Not yet converted to a submodule* — this copy and the standalone repo have diverged (different completion state, different files) and need reconciliation before the switch; tracked separately, do not delete either copy in the meantime.
 
 | `rokur/`
 | Stapeln GUI runtime — the Stapeln GUI component itself (Tauri/Dioxus shell). Upstream repo: `hyperpolymath/rokur`.
@@ -32,7 +34,10 @@ not a fork of them.
 
 == Usage
 
-These snapshots are used by stapeln's miniKanren security engine to derive attack-surface
-rules and by the Cisco View simulation mode to model realistic component behaviour.
+`git submodule update --init --recursive` (or `./setup.sh`, which now does this for you)
+populates these directories. They are used by stapeln's miniKanren security engine to
+derive attack-surface rules and by the Cisco View simulation mode to model realistic
+component behaviour.
 
-For canonical sources, refer to the upstream repos listed above.
+For canonical sources — and to make any real change — go to the upstream repos listed
+above, not these submodule checkouts.

@@ -1,6 +1,0 @@
--- SPDX-License-Identifier: MPL-2.0
--- vordr Idris2 ABI layer (Types + Foreign FFI declarations).
-package vordr-abi
-sourcedir = "."
-depends = base, contrib
-modules = Types, Foreign

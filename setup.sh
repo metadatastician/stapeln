@@ -203,8 +203,13 @@ main() {
         exit 1
     fi
 
-    # Step 3: Run just setup
-    printf "%sStep 2: Project setup%s\n" "$BOLD" "$RESET"
+    # Step 3: Populate container-stack/ submodules (cerro-torre, vordr, selur, rokur)
+    printf "%sStep 2: Fetch container-stack component submodules%s\n" "$BOLD" "$RESET"
+    git submodule update --init --recursive || warn "Submodule fetch failed — container-stack/ components will be empty"
+    printf "\n"
+
+    # Step 4: Run just setup
+    printf "%sStep 3: Project setup%s\n" "$BOLD" "$RESET"
     if just --list 2>/dev/null | grep -q "^setup "; then
         just setup
     elif just --list 2>/dev/null | grep -q "^setup-dev "; then
