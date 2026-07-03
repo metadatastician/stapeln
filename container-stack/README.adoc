@@ -20,7 +20,7 @@ their own standalone repos, so there is one source of truth per component.
 | Container builder — produces cryptographically signed, minimal Chainguard-based images. Upstream repo: `hyperpolymath/cerro-torre`.
 
 | `svalinn/`
-| Edge gateway — handles routing, rate-limiting, ephemeral pinholes at the network boundary. Upstream repo: `hyperpolymath/svalinn`. *Not yet converted to a submodule* — this copy and the standalone repo have diverged (different completion state, different files) and need reconciliation before the switch; tracked separately, do not delete either copy in the meantime.
+| Edge gateway — handles routing, rate-limiting, ephemeral pinholes at the network boundary. Upstream repo: `hyperpolymath/svalinn`. Was a diverged ReScript-era copy (ReScript is banned estate-wide); retired 2026-07-04 in favour of the standalone repo's further-progressed AffineScript/TypeScript line, after porting the copy's unique Rokur-gate contract and ops docs forward (hyperpolymath/svalinn#64, #65).
 
 | `rokur/`
 | Stapeln GUI runtime — the Stapeln GUI component itself (Tauri/Dioxus shell). Upstream repo: `hyperpolymath/rokur`.

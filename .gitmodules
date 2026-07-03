@@ -10,3 +10,6 @@
 [submodule "container-stack/cerro-torre"]
 	path = container-stack/cerro-torre
 	url = https://github.com/hyperpolymath/cerro-torre.git
+[submodule "container-stack/svalinn"]
+	path = container-stack/svalinn
+	url = https://github.com/hyperpolymath/svalinn.git
