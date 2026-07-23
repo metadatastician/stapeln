@@ -1,5 +1,6 @@
 = containerd-shim-verified-container
 
+SPDX-License-Identifier: MPL-2.0
 SPDX-License-Identifier: CC-BY-SA-4.0
 
 == Overview
@@ -71,4 +72,4 @@ This reference implementation requires additional work for production:
 
 == License
 
-Dual-licensed under MIT OR Apache-2.0 to match the verified-container-spec.
+Code is under MPL-2.0 and docs are under CC-BY-SA-4.0.
