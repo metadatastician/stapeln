@@ -1,14 +1,13 @@
-<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 # Clone the repository
-git clone https://github.com/hyperpolymath/stapeln.git
-cd stapeln
+git clone https://github.com/hyperpolymath/squisher-corpus.git
+cd squisher-corpus
 
 # Using Nix (recommended for reproducibility)
 nix develop
 
 # Or using toolbox/distrobox
-toolbox create stapeln-dev
-toolbox enter stapeln-dev
+toolbox create squisher-corpus-dev
+toolbox enter squisher-corpus-dev
 # Install dependencies manually
 
 # Verify setup
@@ -18,7 +17,7 @@ just test    # Run test suite
 
 ### Repository Structure
 ```
-stapeln/
+squisher-corpus/
 ├── src/                 # Source code (Perimeter 1-2)
 ├── lib/                 # Library code (Perimeter 1-2)
 ├── extensions/          # Extensions (Perimeter 2)
@@ -87,10 +86,10 @@ Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.md) an
 
 Look for issues labelled:
 
-- [`good first issue`](https://github.com/hyperpolymath/stapeln/labels/good%20first%20issue) — Simple Perimeter 3 tasks
-- [`help wanted`](https://github.com/hyperpolymath/stapeln/labels/help%20wanted) — Community help needed
-- [`documentation`](https://github.com/hyperpolymath/stapeln/labels/documentation) — Docs improvements
-- [`perimeter-3`](https://github.com/hyperpolymath/stapeln/labels/perimeter-3) — Community sandbox scope
+- [`good first issue`](https://github.com/hyperpolymath/squisher-corpus/labels/good%20first%20issue) — Simple Perimeter 3 tasks
+- [`help wanted`](https://github.com/hyperpolymath/squisher-corpus/labels/help%20wanted) — Community help needed
+- [`documentation`](https://github.com/hyperpolymath/squisher-corpus/labels/documentation) — Docs improvements
+- [`perimeter-3`](https://github.com/hyperpolymath/squisher-corpus/labels/perimeter-3) — Community sandbox scope
 
 ---
 
