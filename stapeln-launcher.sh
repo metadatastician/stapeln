@@ -17,7 +17,7 @@
 #     "LM-LA-LIFECYCLE-STANDARD.adoc"
 #     "cross-platform-system-integration-modes"
 #   ]
-#   standard-spec-version = "0.2.0"
+#   standard-spec-version = "0.3.0"
 #   generator             = "launch-scaffolder"
 # )
 # @a2ml-metadata end
@@ -44,27 +44,27 @@ APP_CATEGORIES="Development;System;Utility;"
 APP_GENERIC_NAME="Stapeln"
 RUNTIME_KIND="server-url"
 
-REPO_DIR="/var/mnt/eclipse/repos/fleet-ecosystem/stapeln"
-ICON_SOURCE="/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/assets/icon-256.png"
+REPO_DIR=""
+ICON_SOURCE="/assets/icon-256.png"
 
 # Absolute path back to the per-app `<app>.launcher.a2ml` config that
 # produced this script. Consumed by the --integ / --disinteg arms when
 # the `launch-scaffolder` binary is on $PATH, so they can delegate to
 # the Rust implementation instead of running the shell fallback.
-CONFIG_FILE="/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/stapeln.launcher.a2ml"
+CONFIG_FILE="/home/hyperpolymath/developer/meta-repos/stapeln/stapeln.launcher.a2ml"
 
 URL="http://localhost:4010"
 APP_PORT="4010"
 WAIT_SECONDS="15"
 
-PID_FILE="/tmp/stapeln-server.pid"
-LOG_FILE="/tmp/stapeln-server.log"
+PID_FILE="${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/stapeln-server.pid"
+LOG_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/stapeln/server.log"
 
 # Search list from [runtime].startup-command-search — first executable wins.
 START_COMMAND=""
 for candidate in \
-    "/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/scripts/run.sh" \
-    "/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/dev.sh" \
+    "/scripts/run.sh" \
+    "/dev.sh" \
     ; do
     if [ -x "$candidate" ]; then
         START_COMMAND="$candidate"
