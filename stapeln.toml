@@ -537,7 +537,7 @@ network = "stapeln-net"
 [compose.services.backend]
 target = "production"
 ports = ["4000:4000", "4001:4001"]
-env = { DATABASE_URL = "ecto://stapeln:stapeln@db:5432/stapeln_prod", SECRET_KEY_BASE = "${SECRET_KEY_BASE}" }
+env = { DATABASE_URL = "ecto://stapeln:${POSTGRES_PASSWORD:-stapeln}@db:5432/stapeln_prod", SECRET_KEY_BASE = "${SECRET_KEY_BASE}" }
 depends-on = ["db"]
 restart = "unless-stopped"
 
