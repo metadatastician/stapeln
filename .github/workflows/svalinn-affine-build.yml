@@ -24,6 +24,7 @@ on:
       - '.github/workflows/svalinn-affine-build.yml'
 
 permissions:
+  actions: read
   contents: read
 
 env:
