@@ -48,6 +48,28 @@
 5. Reconcile README / STATUS / TOPOLOGY into this single document
 6. Untrack frontend/lib/** and delete ~1,108 lines of unreachable ReScript
 
+## CI/CD status
+
+As of 2026-07-28, post-merge: **17/17 workflows parse clean**, with zero
+illegal `timeout-minutes` on reusable-call jobs and zero phantom `codeql-action` SHAs.
+(Three sweep-introduced fault classes were repaired and merged on this date — see the
+ecosystem sitrep for the taxonomy.)
+
+**Gates that genuinely enforce something:**
+
+- GitLab `trivy` and `gitleaks` (the only non-`allow_failure` jobs)
+
+**Gates that run but cannot fail (or check nothing):**
+
+- `container-stack-smoke.yml` — both build steps `continue-on-error`, target dirs are uninitialised submodules; has never built anything
+- all 3 jobs of `e2e.yml` (`|| echo "::warning::"`) and all 5 of `dogfood-gate.yml` (skip-and-pass on zero files)
+- `codeql.yml` pinned to `language: actions` — analyses workflow YAML, zero application source
+- GitLab: 7 of 16 jobs `allow_failure: true`
+- **no gate runs the 339 tests**
+
+> A gate is not done until it has been observed to **fail** on a deliberate defect.
+> Every fake gate listed above passed its own review.
+
 ## Ecosystem position
 
 This repo is part of the six-repo container stack designed by `stapeln`. The canonical
