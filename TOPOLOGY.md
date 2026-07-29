@@ -1,3 +1,9 @@
+> [!WARNING]
+> **SUPERSEDED — this document contains claims falsified by measurement on 2026-07-28.**
+> See `STATUS.md` in this repo for measured state, and
+> `dev-notes/stapeln-ecosystem-COMPREHENSIVE-SITREP-2026-07-28.md` for full evidence.
+> Falsified here: claims ~82% overall, 'Database Integration 100% PostgreSQL' (no ecto/postgrex in mix.exs), and 'Security/Gap views call real API' (they make zero HTTP calls). Retained for history; do not cite.
+
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 <!-- TOPOLOGY.md — Project architecture map and completion dashboard -->
 <!-- Last updated: 2026-03-23 -->

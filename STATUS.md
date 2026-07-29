@@ -1,77 +1,71 @@
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-# stapeln Status (Source of Truth)
+# Stapeln — Measured Status
 
-**Date:** 2026-03-29
+**Last measured:** 2026-07-28  
+**Honest completion:** ~45%  
+**Languages:** ReScript (frontend) · Elixir/Phoenix (backend) · Zig (FFI) · Idris2 (ABI proofs)
 
-## Product Goal
+> This document records **measured** state: every claim below is a file read, a build
+> run, or a test executed on the dates shown. Where an existing document in this repo
+> contradicts it, this one is correct and the other is stale. Full evidence and
+> cross-repo context: `dev-notes/stapeln-ecosystem-COMPREHENSIVE-SITREP-2026-07-28.md`.
 
-A reasonably IT-capable 12-year-old can help their parents build a secure container stack without prior container knowledge.
+## Summary
 
-## What Works Today
+~45% of code written; ~20% working end-to-end and defended by a gate.
 
-- **UI Prototype (frontend):** 9 views (51 ReScript modules) in `frontend/src/`, all compiling with 0 errors/warnings.
-- **TEA Architecture:** State, Msg, Update, View pattern in App.res. AppIntegrated.res exists as legacy alternative.
-- **Pipeline Designer (new):** Full 3-panel node-graph editor (PipelineDesigner, PipelineCanvas, PipelinePalette, PipelineOutput) with SVG canvas, bezier connections, minimap, context menus, drag-drop, 6 pre-built templates, code generation preview.
-- **URL-based routing:** AppRouter.res syncs tabs with browser URLs; back/forward navigation works.
-- **Undo/redo system:** Snapshot-based with 50-depth cap, Ctrl+Z/Ctrl+Y, visible buttons with disabled state.
-- **Auto-save:** 30-second interval with dirty tracking and visual "Saved"/"Unsaved" indicator.
-- **Dark mode:** System detection (prefers-color-scheme), localStorage persistence, HTML class sync for Tailwind.
-- **Conversational errors:** UX Manifesto Rule 4 pattern (title + reason + [Fix It] buttons) on all API error paths.
-- **Import/Export:** Working file picker → TEA dispatch cycle. Import errors show conversational fix suggestions.
-- **Security UX Components:** Port config (1,165 lines), security inspector (832 lines), gap analysis (951 lines), simulation mode (1,622 lines) — all fully implemented views, not stubs.
-- **Backend API (MVP):** Phoenix REST endpoints for stacks and validation are defined.
-- **GraphQL API (MVP):** Absinthe schema at `/api/graphql` is defined.
-- **Shared API Boundary:** REST/GraphQL route through `backend/lib/stapeln/native_bridge.ex`.
-- **ABI/FFI Contract:** Idris2 ABI (`src/abi/*`) has 8 genuine proofs (no believe_me). Zig FFI (`ffi/zig/src/main.zig`) provides CRUD + validate + dispatch. Real SHA-256 + Ed25519 in `crypto.zig`.
-- **VeriSimDB Integration:** Remote client with JSONL local fallback, configurable timeouts.
-- **Runtime Boundary:** `stapeln/backend` is the design/control plane. Container lifecycle orchestration is delegated to `container-stack/svalinn` and `container-stack/vordr`.
+## What genuinely works
 
-## What Is Partial or Scaffolded
+- 41 REST routes + real Absinthe GraphQL (2 queries, 3 mutations), both funnelling through one `Stacks -> NativeBridge` boundary
+- 10 UI tabs + 2 auth pages, all render and navigate (TEA pattern)
+- 8 genuine Idris2 proofs — `%default total`, ZERO `believe_me`/`postulate`/`assert_total`/holes; `abi.ipkg` module list matches the directory (an honest ipkg, not the fake per-file `--check`)
+- Real Ed25519 + SHA-256 in `ffi/zig/src/crypto.zig` via `std.crypto`, 10 tests
+- Export/Import round-trips the full design via `DesignFormat.res` (components, connections, position, config)
+- 339 real tests, ~6,200 lines (105 ExUnit, 107 Idris2, 110 Deno, 17 JS)
 
-- **WebSocket integration:** Socket.res exists but no live channel push/receive logic.
-- **Auth:** JWT + Plug module present but no token refresh, revocation, or session management. No login UI.
-- **Firewall:** Schema present but no nftables integration.
-- **Post-Quantum Crypto:** Module scaffolded; no real XMSS implementation.
-- **Simulation — Network (packet flow):** Packet flow UI fully renders with animation and stats; backend `SimulationEngine` produces deterministic dry-run events.
-- **Simulation — Build:** `BuildSimulator` simulates container build layers, sizes, times, security per-layer. Wired to API.
-- **Simulation — What-If:** `WhatIfEngine` compares pipeline variants (Chainguard swap, add gate, merge runs, pin images). Auto-suggests scenarios.
-- **Simulation — Supply Chain:** `SupplyChainAnalyzer` assesses SLSA levels, image provenance, trust boundaries, reproducibility.
-- **Simulation — Sessions:** `SimulationServer` GenServer manages async simulation sessions with start/poll/cancel.
-- **AttackSurfaceAnalyzer:** Documented in ROADMAP but not yet built (0%).
+## What is broken, missing, or misreported
 
-## Preserved Future Work
+- **No CI gate runs any of the 339 tests.** `scripts/readiness-check.sh` is a correct 99-line gate (real builds, real tests, `exit 1` on failure) invoked by no Justfile target, workflow, or GitLab job.
+- **Split-brain serializer.** Export-to-file uses `DesignFormat` and preserves topology; save-to-backend uses `App.res:47-64` hand-rolled string concat and DROPS connections, positions, and all config except `port`. A topology designer that does not persist its topology.
+- **`App.res:99` + `:122`** call `Int.fromString` on a raw JSON body -> `None` -> `stackId = 0`; backend requires `id > 0`. Security scan and gap analysis fail 100% of the time. One line fixes both.
+- Security Inspector and Gap Analysis have empty `init` and no-op handlers (`RunSecurityScan => state`); they make zero HTTP calls.
+- `ABI-FFI-README.md` documents 7 `stapeln_*_json` functions implemented nowhere.
+- `ffi/zig/src/bridge_cli.zig` — 353 real lines, 5 working ops, has NO build target.
+- `container-stack/*` are 5 uninitialised submodules; the smoke workflow that 'checks' them has both build steps on `continue-on-error`.
 
-- **DOM‑mounter track:** Extracted to `/var$REPOS_DIR/stapeln-dom-mounter`.
-- This work is not on the critical path for the container‑hater MVP.
+## Notes and open rulings
 
-## Architectural Decision: VeriSimDB (2026-03-23)
+- The README table (2026-02-13) UNDERSTATES six rows and OVERSTATES three. `TOPOLOGY.md` (~82%) is substantially false — it claims PostgreSQL at 100% when `mix.exs` has no `ecto`/`postgrex`, and claims the security/gap views call a real API when they make no calls at all.
+- Contrary to the README, these exist and are substantial: miniKanren 834 lines, VeriSimDB 889, auth 722 (+2 UI pages), post-quantum 273.
+- `frontend/lib/**` holds 188 committed build artefacts tracked despite `.gitignore` saying `lib/`; the '116 .res files / 44.5k lines' figure is really 56 files / ~19k lines.
 
-**All Stapeln data will use VeriSimDB, not PostgreSQL.** Dogfooding decision.
-- Dedicated instance: port 8093, volume `stapeln-verisimdb-data`
-- Existing `Stapeln.VeriSimDB.Client` module to be extended for stack CRUD
-- Ecto/DbStore/PostgreSQL layer to be removed (was a conventional shortcut)
-- The PostgreSQL container has been stopped; migrations were verified working but are superseded
+## Next actions
 
-## What Is Not Implemented Yet
+1. Wire scripts/readiness-check.sh into CI — makes 339 existing tests load-bearing in one commit
+2. Fix App.res:99 and :122 to parse data.id — unblocks security scan and gap analysis
+3. Point SaveStack at DesignFormat.serializeDesign; widen the backend schema to carry connections
+4. Adopt container/stapeln/ as the canonical output bundle and take ownership of its schema
+5. Reconcile README / STATUS / TOPOLOGY into this single document
+6. Untrack frontend/lib/** and delete ~1,108 lines of unreachable ReScript
 
-- **VeriSimDB as primary store:** Client exists for audit logging; needs extending for stack/user/settings CRUD
-- **Backend runtime orchestration API:** Not implemented in `stapeln/backend` by design; runtime operations belong to Svalinn/Vordr.
-- **Validation Engine Depth:** 12 check categories returning real findings; not yet parity with full security roadmap.
-- **Formal Verification Layers:** Idris2 types are now present for ABI contracts, but full proof pipeline is not wired.
+## Ecosystem position
 
-## Known Inconsistencies
+This repo is part of the six-repo container stack designed by `stapeln`. The canonical
+integration contract is the 8-file `container/stapeln/` bundle, in which each satellite
+consumes its own file:
 
-- Some docs claim a “complete” product; these refer to an internal DOM‑mounter workstream.
-- `IMPLEMENTATION-PLAN.md` originated as a legacy `stackur` plan and is now archival context.
-- `ROADMAP.adoc` is an alias/deprecation pointer and not the planning source of truth.
+| File | Consumer |
+|---|---|
+| `compose.toml` | selur |
+| `vordr.toml` | vordr |
+| `rokur.toml` | rokur |
+| `.gatekeeper.yaml` | svalinn |
+| `manifest.toml` + `ct-build.sh` | cerro-torre |
+| `deploy.k9.ncl` | K9 / k9-svc |
 
-## Immediate Focus (Next 4 Weeks)
+Runtime chain: `svalinn (443/80) -> rokur (8081) -> app`, with vordr watching all three,
+cerro-torre signing each as a `.ctp`, and selur as the network driver.
 
-- Truth-align docs and roadmap.
-- Expand backend from MVP to production readiness (durable persistence, broader validation, gRPC/GRC if needed).
-- End-user onboarding flow focused on “container haters.”
-- Execute the six-stream plan in `docs/EXECUTION-PLAN-2026-02-11.md`.
+**As of this measurement no repo emits or consumes that bundle**; five mutually
+incompatible ad-hoc contracts exist instead, of which exactly one works.
 
-## Readiness Gate Status
-
-- Current readiness blocker: repo clean gate fails when local edits are present (currently `container-stack/rokur/README.md`).
