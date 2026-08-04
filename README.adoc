@@ -10,7 +10,7 @@
 image:https://img.shields.io/badge/License-MPL--2.0-blue.svg[License: PMPL-1.0-or-later]
 image:https://img.shields.io/badge/WCAG-2.3%20AAA-green.svg[WCAG 2.3 AAA]
 image:https://img.shields.io/badge/Security-OWASP%20Compliant-brightgreen.svg[OWASP Compliant]
-image:https://img.shields.io/badge/ReScript-TEA-e34c4c.svg[ReScript-TEA]
+image:https://img.shields.io/badge/affinescript-TEA-e34c4c.svg[affinescript-TEA]
 image:https://img.shields.io/badge/runtime-Deno-000000.svg[Deno]
 image:https://img.shields.io/badge/backend-Elixir%20%2B%20Phoenix-4e2a8e.svg[Elixir]
 image:https://api.thegreenwebfoundation.org/greencheckimage/svalinnproject.org[Green Hosting,link="https://www.thegreenwebfoundation.org/green-web-check/?url=svalinnproject.org"]
@@ -148,7 +148,7 @@ Like customizing a spaceship in a game:
 | Layer | Technology
 
 | **Frontend**
-| ReScript-TEA (The Elm Architecture) + Deno
+| affinescript-TEA (The Elm Architecture) + Deno
 
 | **Backend**
 | Elixir (Phoenix) + GraphQL (Absinthe)
@@ -187,7 +187,7 @@ Like customizing a spaceship in a game:
 
 All state transitions are **pure functions**:
 
-[source,rescript]
+[source,affinescript]
 ----
 type model = { /* app state */ }
 type msg = AddComponent | DragMove | Deploy | Simulate | ...
@@ -285,7 +285,7 @@ cd stapeln
 
 # Frontend setup (Deno, no npm!)
 cd frontend
-deno install --allow-read --allow-write --allow-env --allow-run -n rescript npm:rescript@11
+deno install --allow-read --allow-write --allow-env --allow-run -n affinescript npm:affinescript@11
 deno task build
 
 # Backend setup (Elixir)
@@ -465,7 +465,7 @@ See link:ROADMAP.md[ROADMAP.md] for detailed timeline.
 
 === Phase 1: Design (Complete) ✅
 
-* ✅ ReScript-TEA architecture
+* ✅ affinescript-TEA architecture
 * ✅ Three-page UI design
 * ✅ Security specifications
 * ✅ Database integration specs
@@ -474,7 +474,7 @@ See link:ROADMAP.md[ROADMAP.md] for detailed timeline.
 
 === Phase 2: Frontend Implementation (45%) ⚠️
 
-* ✅ Model, Msg, Update, View (ReScript)
+* ✅ Model, Msg, Update, View (affinescript)
 * ✅ CiscoView, Settings pages
 * ✅ LagoGreyImageDesigner component (921 lines)
 * ✅ Interactive ice formation designer with real-time sizing
@@ -529,7 +529,7 @@ See link:CONTRIBUTING.md[CONTRIBUTING.md]
 **Areas needing help:**
 
 1. miniKanren security rules (Scheme)
-2. ReScript UI components
+2. affinescript UI components
 3. Elixir backend (Phoenix)
 4. Accessibility testing
 5. Documentation

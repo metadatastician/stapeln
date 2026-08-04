@@ -2,7 +2,7 @@
 # Build Summary: High-Assurance DOM Mounter
 
 **Date**: 2026-02-05
-**Architecture**: Idris2 (ABI) → Zig (FFI) → ReScript (Bindings)
+**Architecture**: Idris2 (ABI) → Zig (FFI) → affinescript (Bindings)
 
 ## ✅ Successfully Built Components
 
@@ -37,13 +37,13 @@ $ idris2 --check DomMounter.idr
 All 2 tests passed.
 ```
 
-### 3. ReScript Bindings (Compiled)
+### 3. affinescript Bindings (Compiled)
 **File**: `src/DomMounter.res`
 **Output**: `src/DomMounter.res.js` (1.8KB)
 **Status**: ✅ Compiled successfully
 
 **Public API**:
-```rescript
+```affinescript
 // High-level type-safe mounting
 mount: string => Result.t<unit, string>
 
@@ -73,7 +73,7 @@ mountWithCallback: (string, unit => unit, string => unit) => unit
 └──────────────────────────────────────────────┘
                     ↓ External FFI
 ┌──────────────────────────────────────────────┐
-│  ReScript (src/DomMounter.res.js)           │
+│  affinescript (src/DomMounter.res.js)           │
 │  • Type-safe JavaScript (1.8KB)             │
 │  • Result types for errors                   │
 │  • React integration ready                   │
@@ -93,14 +93,14 @@ cd ffi/zig && zig build-lib src/dom_mounter.zig -dynamic -OReleaseFast
 # 3. Test Zig FFI
 zig test src/dom_mounter.zig
 
-# 4. Build ReScript
+# 4. Build affinescript
 cd ../.. && deno task build
 ```
 
 ### Quick Test
 ```bash
 # Run integration tests
-rescript build test_dom_mounter.res
+affinescript build test_dom_mounter.res
 deno run src/test_dom_mounter.res.js
 ```
 
@@ -117,7 +117,7 @@ These aren't runtime checks - they're **proven correct at compile-time** by Idri
 
 ## Usage Example
 
-```rescript
+```affinescript
 // In your app initialization
 switch DomMounter.mountToApp() {
 | Ok() => {
@@ -147,7 +147,7 @@ All core systems are now compiled and ready!
 
 1. ✅ Idris2 ABI type-checked
 2. ✅ Zig FFI built and tested (libdom_mounter.so)
-3. ✅ ReScript bindings compiled (DomMounter.res.js)
+3. ✅ affinescript bindings compiled (DomMounter.res.js)
 4. ⏭️ Integrate with React app rendering
 5. ⏭️ Deploy with Deno runtime
 

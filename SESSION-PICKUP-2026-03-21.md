@@ -28,7 +28,7 @@ arXiv-style, covering the genuinely novel CS ideas. See each repo root for
 - **selur-compose** binary built (17/25 commands).
 
 ### 5. Svalinn Fixes + Bridge Integration
-- Fixed all pre-existing ReScript syntax errors (`|>` → `->`, `return` → `raise`).
+- Fixed all pre-existing affinescript syntax errors (`|>` → `->`, `return` → `raise`).
 - Created `SelurBridge.res` with live Deno WASM FFI bindings.
 - Injected bridge into `McpClient.callWithRetry` (transparent HTTP fallback).
 - Removed 103 stale build cache files from git tracking.
@@ -52,7 +52,7 @@ arXiv-style, covering the genuinely novel CS ideas. See each repo root for
 **The Build-a-Container Workshop UX.**
 
 The backend is wired. The miniKanren engine is ready. What's missing is the
-ReScript frontend that lets users drag, drop, and snap components together.
+affinescript frontend that lets users drag, drop, and snap components together.
 
 **Files to work in:** `stapeln/frontend/src/`
 **Key tasks:**

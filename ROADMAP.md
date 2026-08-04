@@ -41,7 +41,7 @@
 
 ## Phase 1: Design & Specifications (COMPLETE)
 
-- [x] ReScript-TEA architecture (Model, Msg, Update, View)
+- [x] affinescript-TEA architecture (Model, Msg, Update, View)
 - [x] Three-page UI design (Paragon, Cisco, Settings)
 - [x] WCAG 2.3 AAA accessibility specifications
 - [x] GraphQL schema with a11y metadata

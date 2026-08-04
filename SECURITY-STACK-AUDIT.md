@@ -122,8 +122,8 @@ end CT.Crypto.Signing;
 4. Update authentication to use Argon2id
 5. Replace HKDF-SHA256 with HKDF-SHAKE512
 
-**ReScript/Deno Limitations**:
-```rescript
+**affinescript/Deno Limitations**:
+```affinescript
 // Issue: Deno uses BoringSSL (no Kyber support yet)
 // Solution: Add Rust binding via Tauri for PQ-TLS
 

@@ -654,7 +654,7 @@ account required    pam_unix.so
 
 ### Frontend Auth Flow
 
-```rescript
+```affinescript
 // frontend/src/Auth.res
 // SPDX-License-Identifier: CC-BY-SA-4.0
 
@@ -811,7 +811,7 @@ let renderLogin = (state: authState, dispatch: loginMsg => unit) => {
 
 ### ReScript Implementation
 
-```rescript
+```affinescript
 // frontend/src/PortConfigPanel.res
 // SPDX-License-Identifier: CC-BY-SA-4.0
 
@@ -949,7 +949,7 @@ let formatCountdown = (expiresAt: DateTime.t): string => {
 
 ### Real-Time Countdown
 
-```rescript
+```affinescript
 // Update countdown every second
 let useCountdownEffect = (ports: array<port>) => {
   React.useEffect1(() => {
@@ -969,7 +969,7 @@ let useCountdownEffect = (ports: array<port>) => {
 
 ### Security Status Display
 
-```rescript
+```affinescript
 // frontend/src/SecurityInspector.res
 // SPDX-License-Identifier: CC-BY-SA-4.0
 
@@ -1263,7 +1263,7 @@ end
 
 Gap analysis sidebar (Page 1) includes firewall status:
 
-```rescript
+```affinescript
 type gapAnalysisItem =
   | MissingSignature(string)
   | NoSBOM(string)
@@ -1387,7 +1387,7 @@ end
 
 ### Audit Trail UI
 
-```rescript
+```affinescript
 // frontend/src/AuditTrail.res
 // SPDX-License-Identifier: CC-BY-SA-4.0
 

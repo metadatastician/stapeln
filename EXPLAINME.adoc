@@ -7,13 +7,13 @@ The README makes claims. This file backs them up with evidence from real code.
 
 == Core Claims & Evidence
 
-=== Claim 1: "ReScript-TEA: All State Transitions Are Pure Functions"
+=== Claim 1: "affinescript-TEA: All State Transitions Are Pure Functions"
 
 **From README** (lines 180-192):
 ____
 All state transitions are **pure functions**:
 
-[source,rescript]
+[source,affinescript]
 ----
 type model = { /* app state */ }
 type msg = AddComponent | DragMove | Deploy | Simulate | ...
@@ -26,7 +26,7 @@ ____
 
 **Evidence**: `/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/frontend/src/App.res` implements the TEA pattern: immutable `type model`, pure `update` function, deterministic `view` function. Paragon, Cisco, LagoGrey, and Settings views at `/var/mnt/eclipse/repos/fleet-ecosystem/stapeln/frontend/src/views/` all follow this pattern.
 
-**Caveat**: TEA pattern ensures *local* UI determinism. Backend state (VeriSimDB, Elixir GenServers) may have race conditions not visible in ReScript code. `effect<msg>` side effects (HTTP calls) can fail unpredictably.
+**Caveat**: TEA pattern ensures *local* UI determinism. Backend state (VeriSimDB, Elixir GenServers) may have race conditions not visible in affinescript code. `effect<msg>` side effects (HTTP calls) can fail unpredictably.
 
 === Claim 2: "miniKanren Security Engine: Deterministic Logic Programming"
 
@@ -78,13 +78,13 @@ ____
 
 == Dogfooded Across The Account
 
-Uses the hyperpolymath containerization + security stack (ReScript TEA, miniKanren reasoning, VeriSimDB, Ephemeral Pinholes). Same pattern across:
+Uses the hyperpolymath containerization + security stack (affinescript TEA, miniKanren reasoning, VeriSimDB, Ephemeral Pinholes). Same pattern across:
 - https://github.com/hyperpolymath/gossamer[gossamer] — Window management with similar event-driven TEA UI
 - https://github.com/hyperpolymath/panll[panll] — Panel system using TEA with VeriSimDB
 - https://github.com/hyperpolymath/svalinn[svalinn] — Edge gateway using Ephemeral Pinholes for firewall rules
 - https://github.com/hyperpolymath/cerro-torre[cerro-torre] — Container builder upstream of stapeln
 
-All share: *Pure UI logic in ReScript, declarative security rules in miniKanren, multi-modal storage in VeriSimDB.*
+All share: *Pure UI logic in affinescript, declarative security rules in miniKanren, multi-modal storage in VeriSimDB.*
 
 == File Map
 
@@ -92,7 +92,7 @@ All share: *Pure UI logic in ReScript, declarative security rules in miniKanren,
 |===
 | Path | Contents & Purpose
 
-| `frontend/src/App.res` | ReScript-TEA application root: model, update, view functions defining state machine and UI rendering
+| `frontend/src/App.res` | affinescript-TEA application root: model, update, view functions defining state machine and UI rendering
 
 | `frontend/src/views/ParagonView.res` | Vertical stack visualization with gap analysis sidebar, security scoring, real-time validation
 
@@ -112,7 +112,7 @@ All share: *Pure UI logic in ReScript, declarative security rules in miniKanren,
 
 | `security-rules/setup.scm` | miniKanren rule loader and REPL integration
 
-| `tests/` | ReScript test suite: pure function tests for model updates, view rendering tests, simulation validation tests
+| `tests/` | affinescript test suite: pure function tests for model updates, view rendering tests, simulation validation tests
 
 | `.machine_readable/6a2/STATE.a2ml` | Current project state: ~35% UI completion, backend MVP live, security engine partial
 

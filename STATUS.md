@@ -3,7 +3,7 @@
 
 **Last measured:** 2026-07-28  
 **Honest completion:** ~45%  
-**Languages:** ReScript (frontend) · Elixir/Phoenix (backend) · Zig (FFI) · Idris2 (ABI proofs)
+**Languages:** AffineScript (frontend) · Elixir/Phoenix (backend) · Zig (FFI) · Idris2 (ABI proofs)
 
 > This document records **measured** state: every claim below is a file read, a build
 > run, or a test executed on the dates shown. Where an existing document in this repo
@@ -46,7 +46,7 @@
 3. Point SaveStack at DesignFormat.serializeDesign; widen the backend schema to carry connections
 4. Adopt container/stapeln/ as the canonical output bundle and take ownership of its schema
 5. Reconcile README / STATUS / TOPOLOGY into this single document
-6. Untrack frontend/lib/** and delete ~1,108 lines of unreachable ReScript
+6. Untrack frontend/lib/** and delete ~1,108 lines of unreachable AffineScript
 
 ## CI/CD status
 

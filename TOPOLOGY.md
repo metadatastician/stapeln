@@ -20,7 +20,7 @@
                                             |
                                             v
                         +-----------------------------------------+
-                        |         FRONTEND (RESCRIPT TEA)         |
+                        |         FRONTEND (affinescript TEA)         |
                         |  +-----------+  +-------------------+  |
                         |  | 9 Views   |  | Socket.res        |  |
                         |  | (Tabbed)  |  | (WebSocket)       |  |
@@ -82,7 +82,7 @@
 ```
 COMPONENT                          STATUS              NOTES
 ---------------------------------  ------------------  ---------------------------------
-FRONTEND (51 ReScript modules, 0 errors, 0 warnings)
+FRONTEND (51 affinescript modules, 0 errors, 0 warnings)
   Frontend UI (9 views)            #########.  92%     9 tabs inc. Pipeline Designer; dark mode, undo/redo, auto-save
   Frontend-Backend Wiring          #########.  90%     REST proxy wired; security/gap views call real API; auto-trigger
   Pipeline Designer (NEW)          #########.  90%     3-panel node-graph: canvas, palette, output; 6 templates
@@ -126,7 +126,7 @@ OVERALL:                           ########..  ~82%    End-to-end verified: fron
 ## Key Dependencies
 
 ```
-Frontend (ReScript-TEA)
+Frontend (affinescript-TEA)
     |
     +--> ApiClient --> Phoenix REST + GraphQL --> NativeBridge --> Zig FFI
     |                       |                         |               |
