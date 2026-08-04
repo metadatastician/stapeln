@@ -4,6 +4,7 @@ defmodule StapelnWeb.StackController do
 
   alias Stapeln.Stacks
   alias Stapeln.Crypto
+  alias Stapeln.Design
 
   def index(conn, _params) do
     with {:ok, stacks} <- Stacks.list() do
@@ -12,10 +13,13 @@ defmodule StapelnWeb.StackController do
   end
 
   def create(conn, params) do
-    with {:ok, stack} <- Stacks.create(params) do
+    with {:ok, attrs} <- build_attrs(params),
+         {:ok, stack} <- Stacks.create(attrs) do
       conn
       |> put_status(:created)
       |> json(%{data: serialize_stack(stack)})
+    else
+      {:error, message} when is_binary(message) -> bad_request(conn, message)
     end
   end
 
@@ -30,14 +34,16 @@ defmodule StapelnWeb.StackController do
   end
 
   def update(conn, %{"id" => raw_id} = params) do
-    attrs = Map.delete(params, "id")
+    raw_attrs = Map.delete(params, "id")
 
     with {:ok, id} <- parse_id(raw_id),
+         {:ok, attrs} <- build_attrs(raw_attrs),
          {:ok, stack} <- Stacks.update(id, attrs) do
       json(conn, %{data: serialize_stack(stack)})
     else
       {:error, :invalid_id} -> bad_request(conn, "invalid stack id")
       {:error, :not_found} -> not_found(conn)
+      {:error, message} when is_binary(message) -> bad_request(conn, message)
     end
   end
 
@@ -152,10 +158,17 @@ defmodule StapelnWeb.StackController do
         }
       })
     else
-      {:error, :invalid_id} -> bad_request(conn, "invalid stack id")
-      {:error, :not_found} -> not_found(conn)
-      {:error, :missing_param, field} -> bad_request(conn, "missing required parameter: #{field}")
-      {:error, :invalid_base64, field} -> bad_request(conn, "invalid base64 in parameter: #{field}")
+      {:error, :invalid_id} ->
+        bad_request(conn, "invalid stack id")
+
+      {:error, :not_found} ->
+        not_found(conn)
+
+      {:error, :missing_param, field} ->
+        bad_request(conn, "missing required parameter: #{field}")
+
+      {:error, :invalid_base64, field} ->
+        bad_request(conn, "invalid base64 in parameter: #{field}")
     end
   end
 
@@ -191,10 +204,44 @@ defmodule StapelnWeb.StackController do
       name: stack.name,
       description: stack.description,
       services: stack.services,
+      design: Map.get(stack, :design),
       created_at: DateTime.to_iso8601(stack.created_at),
       updated_at: DateTime.to_iso8601(stack.updated_at)
     }
   end
+
+  # Build the persistence attrs from the raw request params. When the params
+  # look like a full-fidelity design document (they have a "canvas" key),
+  # store the document verbatim under "design" and derive the flattened
+  # "services" list the analyzers/Codegen consume from it. Otherwise the
+  # params are already in the legacy shape (top-level "services") and pass
+  # through unchanged.
+  defp build_attrs(%{"canvas" => _} = params) do
+    case Design.valid?(params) do
+      :ok ->
+        {:ok,
+         %{
+           "name" => derive_name(params),
+           "design" => params,
+           "services" => Design.derive_services(params)
+         }}
+
+      {:error, _reason} = error ->
+        error
+    end
+  end
+
+  defp build_attrs(params), do: {:ok, params}
+
+  defp derive_name(params) do
+    Map.get(params, "name") ||
+      non_empty(get_in(params, ["metadata", "description"])) ||
+      "stapeln-stack"
+  end
+
+  defp non_empty(nil), do: nil
+  defp non_empty(""), do: nil
+  defp non_empty(value), do: value
 
   defp parse_id(raw_id) do
     case Integer.parse(to_string(raw_id)) do

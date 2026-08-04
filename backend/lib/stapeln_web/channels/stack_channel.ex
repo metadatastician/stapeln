@@ -25,25 +25,45 @@ defmodule StapelnWeb.StackChannel do
   end
 
   # ---- Inbound events -------------------------------------------------------
+  #
+  # `stack_data` may be either a design document / legacy-services map, or
+  # (the current wire format from App.res's WS call sites) that same JSON
+  # re-encoded as a string value. Either way it is routed through
+  # `Stapeln.Design.derive_services/1` to get the flattened services list the
+  # engines expect — the legacy raw-services shape passes through unchanged.
 
   @impl true
   def handle_in("validate", %{"stack" => stack_data}, socket) do
-    report = Stapeln.ValidationEngine.validate(stack_data)
+    services = stack_data |> to_stack_map() |> Stapeln.Design.derive_services()
+    report = Stapeln.ValidationEngine.validate(%{services: services})
     push(socket, "validation_result", %{data: report})
     {:noreply, socket}
   end
 
   @impl true
   def handle_in("security_scan", %{"stack" => stack_data}, socket) do
-    report = Stapeln.SecurityScanner.scan(stack_data)
+    services = stack_data |> to_stack_map() |> Stapeln.Design.derive_services()
+    report = Stapeln.SecurityScanner.scan(%{services: services})
     push(socket, "security_result", %{data: report})
     {:noreply, socket}
   end
 
   @impl true
   def handle_in("gap_analysis", %{"stack" => stack_data}, socket) do
-    report = Stapeln.GapAnalyzer.analyze(stack_data)
+    services = stack_data |> to_stack_map() |> Stapeln.Design.derive_services()
+    report = Stapeln.GapAnalyzer.analyze(%{services: services})
     push(socket, "gap_result", %{data: report})
     {:noreply, socket}
   end
+
+  defp to_stack_map(stack_data) when is_map(stack_data), do: stack_data
+
+  defp to_stack_map(stack_data) when is_binary(stack_data) do
+    case Jason.decode(stack_data) do
+      {:ok, decoded} when is_map(decoded) -> decoded
+      _other -> %{}
+    end
+  end
+
+  defp to_stack_map(_other), do: %{}
 end
