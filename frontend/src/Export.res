@@ -44,6 +44,7 @@ let exportDesignToJson = (model: model, description: string) => {
     created: getCurrentTimestamp(),
     author: "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>",
     description,
+    name: model.stackName,
   }
 
   let jsonString = serializeDesign(model, metadata)

@@ -111,6 +111,28 @@ defmodule StapelnWeb.StackControllerTest do
     assert %{"error" => _reason} = json_response(conn, 400)
   end
 
+  # Regression coverage for the frontend fix in DesignFormat.res / App.res
+  # (`serializeForApi` used to send neither a top-level "name" nor a
+  # non-empty metadata.description, so every saved design document fell
+  # through derive_name's whole fallback chain to the literal
+  # "stapeln-stack" — every saved stack got the same name). These pin down
+  # the exact contract the frontend now relies on.
+  test "a design document's top-level name wins over metadata.description", %{conn: conn} do
+    named = Map.put(@design_doc, "name", "my-production-stack")
+    conn = post(conn, ~p"/api/stacks", named)
+    assert %{"data" => created} = json_response(conn, 201)
+    assert created["name"] == "my-production-stack"
+  end
+
+  test "a design document with no name and no description falls back to the literal default", %{
+    conn: conn
+  } do
+    unnamed = put_in(@design_doc, ["metadata", "description"], "")
+    conn = post(conn, ~p"/api/stacks", unnamed)
+    assert %{"data" => created} = json_response(conn, 201)
+    assert created["name"] == "stapeln-stack"
+  end
+
   test "end-to-end: save a design doc then run security-scan on the returned id", %{conn: conn} do
     conn = post(conn, ~p"/api/stacks", @design_doc)
     assert %{"data" => %{"id" => id}} = json_response(conn, 201)

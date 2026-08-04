@@ -11,6 +11,12 @@ type designMetadata = {
   created: string,
   author: string,
   description: string,
+  // User-facing stack name. Serialized as a top-level "name" key (see
+  // serializeDesign) — the backend's `derive_name` reads `params["name"]`
+  // first, falling back to `metadata.description` and then the literal
+  // "stapeln-stack" only when both are empty. Kept out of `designMetadata`'s
+  // own JSON sub-object so it lines up with that contract.
+  name: string,
 }
 
 type designFile = {
@@ -178,7 +184,7 @@ let modelFromJson = (json: JSON.t): option<model> => {
 
 // Serialize full design to JSON string
 let serializeDesign = (model: model, metadata: designMetadata): string => {
-  let design = Dict.fromArray([
+  let fields = [
     ("version", JSON.Encode.string(metadata.version)),
     (
       "metadata",
@@ -189,9 +195,21 @@ let serializeDesign = (model: model, metadata: designMetadata): string => {
       ])->JSON.Encode.object,
     ),
     ("canvas", modelToJson(model)),
-  ])
+  ]
 
-  JSON.stringify(design->JSON.Encode.object)
+  // Only emit a top-level "name" when it's non-empty. The backend's
+  // `derive_name` does `Map.get(params, "name") || fallback...`, and in
+  // Elixir an empty string is truthy — so sending `"name" => ""` would
+  // short-circuit derive_name's fallback to metadata.description /
+  // "stapeln-stack" and "stick" every unnamed stack with an empty name
+  // instead. Omitting the key entirely when there's nothing to send lets
+  // that fallback chain do its job.
+  let fields = switch metadata.name {
+  | "" => fields
+  | name => Array.concat(fields, [("name", JSON.Encode.string(name))])
+  }
+
+  JSON.stringify(Dict.fromArray(fields)->JSON.Encode.object)
 }
 
 // Deserialize design from JSON string
@@ -202,6 +220,13 @@ let deserializeDesign = (jsonStr: string): Result.t<(designMetadata, model), str
     switch json {
     | Object(obj) => {
         let version = Dict.get(obj, "version")->Option.flatMap(JSON.Decode.string)
+
+        // Top-level "name" is optional (older design documents predate it) —
+        // default to "" rather than failing the whole parse.
+        let name =
+          Dict.get(obj, "name")
+          ->Option.flatMap(JSON.Decode.string)
+          ->Belt.Option.getWithDefault("")
 
         let metadata = Dict.get(obj, "metadata")->Option.flatMap(metaJson => {
           switch metaJson {
@@ -218,6 +243,7 @@ let deserializeDesign = (jsonStr: string): Result.t<(designMetadata, model), str
                   created,
                   author,
                   description,
+                  name,
                 })
               | _ => None
               }

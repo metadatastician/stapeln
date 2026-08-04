@@ -25,11 +25,13 @@ function downloadFile(filename, content, mimeType) {
 
 function exportDesignToJson(model, description) {
   let metadata_created = new Date().toISOString();
+  let metadata_name = model.stackName;
   let metadata = {
     version: DesignFormat.currentVersion,
     created: metadata_created,
     author: "Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>",
-    description: description
+    description: description,
+    name: metadata_name
   };
   let jsonString = DesignFormat.serializeDesign(model, metadata);
   let timestamp = String(Date.now());

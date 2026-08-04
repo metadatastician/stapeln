@@ -68,11 +68,14 @@ let initialAppState = {
 
 function serializeForApi(model) {
   let metadata_created = new Date().toISOString();
+  let metadata_description = model.stackDescription;
+  let metadata_name = model.stackName;
   let metadata = {
     version: DesignFormat.currentVersion,
     created: metadata_created,
     author: "stapeln-editor",
-    description: ""
+    description: metadata_description,
+    name: metadata_name
   };
   return DesignFormat.serializeDesign(model, metadata);
 }
@@ -614,6 +617,29 @@ function App(props) {
             }),
             JsxRuntime.jsxs("div", {
               children: [
+                JsxRuntime.jsx("input", {
+                  "aria-label": "Stack name",
+                  className: "stack-name-input",
+                  style: {
+                    background: "transparent",
+                    border: "1px solid #444",
+                    borderRadius: "4px",
+                    color: "inherit",
+                    marginRight: "0.5rem",
+                    padding: "0.4rem 0.6rem"
+                  },
+                  title: "Stack name (saved with this stack)",
+                  placeholder: "Untitled stack",
+                  type: "text",
+                  value: state.model.stackName,
+                  onChange: evt => {
+                    let value = evt.target.value;
+                    dispatch({
+                      TAG: "UpdateStackName",
+                      _0: value
+                    });
+                  }
+                }),
                 JsxRuntime.jsx("button", {
                   children: "Undo",
                   className: "action-btn",

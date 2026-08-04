@@ -76,6 +76,8 @@ let initialModel = {
   securityLoading: false,
   gapLoading: false,
   currentStackId: undefined,
+  stackName: "",
+  stackDescription: "",
   settings: defaultSettingsConfig,
   wsState: "Disconnected",
   undoStack: initialModel_undoStack,

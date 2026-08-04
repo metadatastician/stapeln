@@ -123,6 +123,11 @@ type rec model = {
   securityLoading: bool,
   gapLoading: bool,
   currentStackId: option<int>,
+  // User-facing identity for the saved stack (sent to the backend on save
+  // so `derive_name` doesn't fall through to the literal "stapeln-stack"
+  // for every stack — see App.res's `serializeForApi`)
+  stackName: string,
+  stackDescription: string,
   // Settings
   settings: settingsConfig,
   // WebSocket state (optional — None means REST-only mode)
@@ -168,6 +173,8 @@ let initialModel = {
   securityLoading: false,
   gapLoading: false,
   currentStackId: None,
+  stackName: "",
+  stackDescription: "",
   settings: defaultSettingsConfig,
   wsState: Disconnected,
   undoStack: [],

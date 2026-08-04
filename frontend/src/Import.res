@@ -31,7 +31,10 @@ let importDesignFromFile = (
         Console.log2("Author:", metadata.author)
         Console.log2("Description:", metadata.description)
         Console.log2("Components:", Array.length(model.components))
-        onSuccess(model)
+        // modelFromJson only reconstructs canvas state (components/
+        // connections) — carry the name/description back onto the model so
+        // an imported design keeps its identity through a subsequent save.
+        onSuccess({...model, stackName: metadata.name, stackDescription: metadata.description})
       }
     | Error(err) => {
         Console.error2("Import error:", err)

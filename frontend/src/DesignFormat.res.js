@@ -194,7 +194,7 @@ function modelFromJson(json) {
 }
 
 function serializeDesign(model, metadata) {
-  let design = Object.fromEntries([
+  let fields = [
     [
       "version",
       metadata.version
@@ -220,8 +220,13 @@ function serializeDesign(model, metadata) {
       "canvas",
       modelToJson(model)
     ]
-  ]);
-  return JSON.stringify(design);
+  ];
+  let name = metadata.name;
+  let fields$1 = name === "" ? fields : Belt_Array.concat(fields, [[
+        "name",
+        name
+      ]]);
+  return JSON.stringify(Object.fromEntries(fields$1));
 }
 
 function deserializeDesign(jsonStr) {
@@ -234,6 +239,7 @@ function deserializeDesign(jsonStr) {
       };
     }
     let version = Belt_Option.flatMap(json["version"], Stdlib_JSON.Decode.string);
+    let name = Belt_Option.getWithDefault(Belt_Option.flatMap(json["name"], Stdlib_JSON.Decode.string), "");
     let metadata = Belt_Option.flatMap(json["metadata"], metaJson => {
       if (typeof metaJson !== "object" || metaJson === null || Array.isArray(metaJson)) {
         return;
@@ -246,7 +252,8 @@ function deserializeDesign(jsonStr) {
           version: Belt_Option.getWithDefault(version, "1.0"),
           created: created,
           author: author,
-          description: description
+          description: description,
+          name: name
         };
       }
     });

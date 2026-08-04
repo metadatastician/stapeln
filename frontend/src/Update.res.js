@@ -839,6 +839,16 @@ function update(model, msg) {
         let newrecord$34 = {...model};
         newrecord$34.activeErrors = Belt_Array.concat(model.activeErrors, [err]);
         return newrecord$34;
+      case "UpdateStackName" :
+        let newrecord$35 = {...model};
+        newrecord$35.isDirty = true;
+        newrecord$35.stackName = msg._0;
+        return newrecord$35;
+      case "UpdateStackDescription" :
+        let newrecord$36 = {...model};
+        newrecord$36.isDirty = true;
+        newrecord$36.stackDescription = msg._0;
+        return newrecord$36;
       case "LoadStack" :
         console.log("Loading stack:", msg._0);
         return model;
@@ -846,10 +856,10 @@ function update(model, msg) {
         let result$1 = msg._0;
         if (result$1.TAG === "Ok") {
           console.log("Stack saved with ID:", result$1._0);
-          let newrecord$35 = {...model};
-          newrecord$35.lastSavedAt = (Date.now());
-          newrecord$35.isDirty = false;
-          return newrecord$35;
+          let newrecord$37 = {...model};
+          newrecord$37.lastSavedAt = (Date.now());
+          newrecord$37.isDirty = false;
+          return newrecord$37;
         }
         let error_id = Model.generateId();
         let error_reason = result$1._0;
@@ -861,9 +871,9 @@ function update(model, msg) {
           severity: "Warning",
           fixLabel: error_fixLabel
         };
-        let newrecord$36 = {...model};
-        newrecord$36.activeErrors = Belt_Array.concat(model.activeErrors, [error]);
-        return newrecord$36;
+        let newrecord$38 = {...model};
+        newrecord$38.activeErrors = Belt_Array.concat(model.activeErrors, [error]);
+        return newrecord$38;
       case "StackLoaded" :
         let result$2 = msg._0;
         if (result$2.TAG === "Ok") {
@@ -877,10 +887,10 @@ function update(model, msg) {
         if (result$3.TAG === "Ok") {
           console.log("Security scan complete");
           let parsed = parseSecurityScanJson(result$3._0);
-          let newrecord$37 = {...model};
-          newrecord$37.securityLoading = false;
-          newrecord$37.securityState = parsed;
-          return newrecord$37;
+          let newrecord$39 = {...model};
+          newrecord$39.securityLoading = false;
+          newrecord$39.securityState = parsed;
+          return newrecord$39;
         }
         let error_id$1 = Model.generateId();
         let error_reason$1 = result$3._0;
@@ -892,19 +902,19 @@ function update(model, msg) {
           severity: "Warning",
           fixLabel: error_fixLabel$1
         };
-        let newrecord$38 = {...model};
-        newrecord$38.activeErrors = Belt_Array.concat(model.activeErrors, [error$1]);
-        newrecord$38.securityLoading = false;
-        return newrecord$38;
+        let newrecord$40 = {...model};
+        newrecord$40.activeErrors = Belt_Array.concat(model.activeErrors, [error$1]);
+        newrecord$40.securityLoading = false;
+        return newrecord$40;
       case "GapAnalysisResult" :
         let result$4 = msg._0;
         if (result$4.TAG === "Ok") {
           console.log("Gap analysis complete");
           let parsed$1 = parseGapAnalysisJson(result$4._0);
-          let newrecord$39 = {...model};
-          newrecord$39.gapLoading = false;
-          newrecord$39.gapState = parsed$1;
-          return newrecord$39;
+          let newrecord$41 = {...model};
+          newrecord$41.gapLoading = false;
+          newrecord$41.gapState = parsed$1;
+          return newrecord$41;
         }
         let error_id$2 = Model.generateId();
         let error_reason$2 = result$4._0;
@@ -916,10 +926,10 @@ function update(model, msg) {
           severity: "Warning",
           fixLabel: error_fixLabel$2
         };
-        let newrecord$40 = {...model};
-        newrecord$40.activeErrors = Belt_Array.concat(model.activeErrors, [error$2]);
-        newrecord$40.gapLoading = false;
-        return newrecord$40;
+        let newrecord$42 = {...model};
+        newrecord$42.activeErrors = Belt_Array.concat(model.activeErrors, [error$2]);
+        newrecord$42.gapLoading = false;
+        return newrecord$42;
       case "SettingsSaved" :
         let result$5 = msg._0;
         if (result$5.TAG === "Ok") {
@@ -951,16 +961,16 @@ function update(model, msg) {
             autoSave: autoSave,
             backendUrl: backendUrl
           };
-          let newrecord$41 = {...model};
-          newrecord$41.settings = newSettings;
-          return newrecord$41;
+          let newrecord$43 = {...model};
+          newrecord$43.settings = newSettings;
+          return newrecord$43;
         }
         console.error("Failed to load settings:", result$6._0);
         return model;
       case "WsConnectionStateChanged" :
-        let newrecord$42 = {...model};
-        newrecord$42.wsState = msg._0;
-        return newrecord$42;
+        let newrecord$44 = {...model};
+        newrecord$44.wsState = msg._0;
+        return newrecord$44;
       case "WsValidationResult" :
         let d = jsonDict(msg._0);
         if (d === undefined) {
@@ -985,55 +995,55 @@ function update(model, msg) {
           errors: errors,
           warnings: warnings
         };
-        let newrecord$43 = {...model};
-        newrecord$43.validationResult = result$7;
-        return newrecord$43;
+        let newrecord$45 = {...model};
+        newrecord$45.validationResult = result$7;
+        return newrecord$45;
       case "WsSecurityResult" :
         let d$1 = jsonDict(msg._0);
         if (d$1 !== undefined) {
           let data$1 = d$1["data"];
           if (data$1 !== undefined) {
             let parsed$2 = parseSecurityScanJson(data$1);
-            let newrecord$44 = {...model};
-            newrecord$44.securityLoading = false;
-            newrecord$44.securityState = parsed$2;
-            return newrecord$44;
+            let newrecord$46 = {...model};
+            newrecord$46.securityLoading = false;
+            newrecord$46.securityState = parsed$2;
+            return newrecord$46;
           }
-          let newrecord$45 = {...model};
-          newrecord$45.securityLoading = false;
-          return newrecord$45;
+          let newrecord$47 = {...model};
+          newrecord$47.securityLoading = false;
+          return newrecord$47;
         }
-        let newrecord$46 = {...model};
-        newrecord$46.securityLoading = false;
-        return newrecord$46;
+        let newrecord$48 = {...model};
+        newrecord$48.securityLoading = false;
+        return newrecord$48;
       case "WsGapResult" :
         let d$2 = jsonDict(msg._0);
         if (d$2 !== undefined) {
           let data$2 = d$2["data"];
           if (data$2 !== undefined) {
             let parsed$3 = parseGapAnalysisJson(data$2);
-            let newrecord$47 = {...model};
-            newrecord$47.gapLoading = false;
-            newrecord$47.gapState = parsed$3;
-            return newrecord$47;
+            let newrecord$49 = {...model};
+            newrecord$49.gapLoading = false;
+            newrecord$49.gapState = parsed$3;
+            return newrecord$49;
           }
-          let newrecord$48 = {...model};
-          newrecord$48.gapLoading = false;
-          return newrecord$48;
+          let newrecord$50 = {...model};
+          newrecord$50.gapLoading = false;
+          return newrecord$50;
         }
-        let newrecord$49 = {...model};
-        newrecord$49.gapLoading = false;
-        return newrecord$49;
+        let newrecord$51 = {...model};
+        newrecord$51.gapLoading = false;
+        return newrecord$51;
       case "DismissError" :
         let errorId = msg._0;
-        let newrecord$50 = {...model};
-        newrecord$50.activeErrors = Belt_Array.keep(model.activeErrors, e => e.id !== errorId);
-        return newrecord$50;
+        let newrecord$52 = {...model};
+        newrecord$52.activeErrors = Belt_Array.keep(model.activeErrors, e => e.id !== errorId);
+        return newrecord$52;
       case "LoginSuccess" :
         ApiClient.setToken(msg._0);
-        let newrecord$51 = {...model};
+        let newrecord$53 = {...model};
         let init$5 = model.auth;
-        newrecord$51.auth = {
+        newrecord$53.auth = {
           isAuthenticated: true,
           currentEmail: model.auth.loginForm.email,
           authError: undefined,
@@ -1041,12 +1051,12 @@ function update(model, msg) {
           loginForm: Model.defaultLoginForm,
           registerForm: init$5.registerForm
         };
-        return newrecord$51;
+        return newrecord$53;
       case "RegisterSuccess" :
         ApiClient.setToken(msg._0);
-        let newrecord$52 = {...model};
+        let newrecord$54 = {...model};
         let init$6 = model.auth;
-        newrecord$52.auth = {
+        newrecord$54.auth = {
           isAuthenticated: true,
           currentEmail: model.auth.registerForm.email,
           authError: undefined,
@@ -1054,15 +1064,15 @@ function update(model, msg) {
           loginForm: init$6.loginForm,
           registerForm: Model.defaultRegisterForm
         };
-        return newrecord$52;
+        return newrecord$54;
       case "LoginError" :
       case "RegisterError" :
         break;
       case "UpdateLoginEmail" :
-        let newrecord$53 = {...model};
+        let newrecord$55 = {...model};
         let init$7 = model.auth;
         let init$8 = model.auth.loginForm;
-        newrecord$53.auth = {
+        newrecord$55.auth = {
           isAuthenticated: init$7.isAuthenticated,
           currentEmail: init$7.currentEmail,
           authError: init$7.authError,
@@ -1073,12 +1083,12 @@ function update(model, msg) {
           },
           registerForm: init$7.registerForm
         };
-        return newrecord$53;
+        return newrecord$55;
       case "UpdateLoginPassword" :
-        let newrecord$54 = {...model};
+        let newrecord$56 = {...model};
         let init$9 = model.auth;
         let init$10 = model.auth.loginForm;
-        newrecord$54.auth = {
+        newrecord$56.auth = {
           isAuthenticated: init$9.isAuthenticated,
           currentEmail: init$9.currentEmail,
           authError: init$9.authError,
@@ -1089,12 +1099,12 @@ function update(model, msg) {
           },
           registerForm: init$9.registerForm
         };
-        return newrecord$54;
+        return newrecord$56;
       case "UpdateRegisterEmail" :
-        let newrecord$55 = {...model};
+        let newrecord$57 = {...model};
         let init$11 = model.auth;
         let init$12 = model.auth.registerForm;
-        newrecord$55.auth = {
+        newrecord$57.auth = {
           isAuthenticated: init$11.isAuthenticated,
           currentEmail: init$11.currentEmail,
           authError: init$11.authError,
@@ -1106,12 +1116,12 @@ function update(model, msg) {
             confirmPassword: init$12.confirmPassword
           }
         };
-        return newrecord$55;
+        return newrecord$57;
       case "UpdateRegisterPassword" :
-        let newrecord$56 = {...model};
+        let newrecord$58 = {...model};
         let init$13 = model.auth;
         let init$14 = model.auth.registerForm;
-        newrecord$56.auth = {
+        newrecord$58.auth = {
           isAuthenticated: init$13.isAuthenticated,
           currentEmail: init$13.currentEmail,
           authError: init$13.authError,
@@ -1123,12 +1133,12 @@ function update(model, msg) {
             confirmPassword: init$14.confirmPassword
           }
         };
-        return newrecord$56;
+        return newrecord$58;
       case "UpdateRegisterConfirm" :
-        let newrecord$57 = {...model};
+        let newrecord$59 = {...model};
         let init$15 = model.auth;
         let init$16 = model.auth.registerForm;
-        newrecord$57.auth = {
+        newrecord$59.auth = {
           isAuthenticated: init$15.isAuthenticated,
           currentEmail: init$15.currentEmail,
           authError: init$15.authError,
@@ -1140,14 +1150,14 @@ function update(model, msg) {
             confirmPassword: msg._0
           }
         };
-        return newrecord$57;
+        return newrecord$59;
       default:
         return model;
     }
   }
-  let newrecord$58 = {...model};
+  let newrecord$60 = {...model};
   let init$17 = model.auth;
-  newrecord$58.auth = {
+  newrecord$60.auth = {
     isAuthenticated: init$17.isAuthenticated,
     currentEmail: init$17.currentEmail,
     authError: msg._0,
@@ -1155,7 +1165,7 @@ function update(model, msg) {
     loginForm: init$17.loginForm,
     registerForm: init$17.registerForm
   };
-  return newrecord$58;
+  return newrecord$60;
 }
 
 export {

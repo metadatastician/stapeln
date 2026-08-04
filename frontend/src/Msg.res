@@ -37,6 +37,9 @@ type msg =
   | TriggerImportDesign
   | ImportDesignSuccess(model)
   | ImportDesignError(string)
+  // Stack identity (name/description sent to the backend on save)
+  | UpdateStackName(string)
+  | UpdateStackDescription(string)
   // API communication
   | SaveStack
   | LoadStack(string)

@@ -1003,6 +1003,14 @@ let update = (model: model, msg: msg): model => {
       {...model, auth: defaultAuthState}
     }
 
+  | UpdateStackName(stackName) => {
+      {...model, stackName, isDirty: true}
+    }
+
+  | UpdateStackDescription(stackDescription) => {
+      {...model, stackDescription, isDirty: true}
+    }
+
   // Pipeline designer messages are handled in App.res (not in Model)
   | Pipeline(_) => model
 

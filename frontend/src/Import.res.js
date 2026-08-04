@@ -20,7 +20,8 @@ function importDesignFromFile(file, onSuccess, onError) {
       console.log("Author:", metadata.author);
       console.log("Description:", metadata.description);
       console.log("Components:", model.components.length);
-      return onSuccess(model);
+      let newrecord = {...model};
+      return onSuccess((newrecord.stackDescription = metadata.description, newrecord.stackName = metadata.name, newrecord));
     }
     let err$1 = err._0;
     console.error("Import error:", err$1);

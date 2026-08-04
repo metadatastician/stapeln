@@ -46,12 +46,20 @@ let initialAppState = {
 // component, hardcoded the stack name to `"stapeln-stack"`, and dropped
 // position, config (beyond port), and every connection — so autosave was
 // silently destroying topology on every save.
+//
+// serializeForApi itself used to still emit `description: ""` and no name
+// at all, so the backend's `derive_name` fallback landed on the literal
+// "stapeln-stack" for every saved stack regardless of the topology fix
+// above — every save was distinguishable in structure but not in name.
+// Now sourced from the user-editable model.stackName / model.stackDescription
+// (see the "Stack name" input in the nav bar below).
 let serializeForApi = (model: model): string => {
   let metadata: DesignFormat.designMetadata = {
     version: DesignFormat.currentVersion,
     created: Date.toISOString(Date.make()),
     author: "stapeln-editor",
-    description: "",
+    description: model.stackDescription,
+    name: model.stackName,
   }
   DesignFormat.serializeDesign(model, metadata)
 }
@@ -503,6 +511,29 @@ let make = () => {
         </button>
 
         <div className="nav-actions">
+          // Stack name — sent to the backend on save so `derive_name` has
+          // something better than the "stapeln-stack" literal fallback.
+          <input
+            type_="text"
+            className="stack-name-input"
+            placeholder="Untitled stack"
+            value={state.model.stackName}
+            ariaLabel="Stack name"
+            title="Stack name (saved with this stack)"
+            onChange={evt => {
+              let value = ReactEvent.Form.target(evt)["value"]
+              dispatch(UpdateStackName(value))
+            }}
+            style={Sx.make(
+              ~padding="0.4rem 0.6rem",
+              ~marginRight="0.5rem",
+              ~border="1px solid #444",
+              ~borderRadius="4px",
+              ~background="transparent",
+              ~color="inherit",
+              (),
+            )}
+          />
           // Undo/Redo buttons
           <button
             className="action-btn"
