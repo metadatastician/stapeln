@@ -15,6 +15,7 @@ defmodule Stapeln.StackStore do
           name: String.t(),
           description: String.t() | nil,
           services: [service()],
+          design: map() | nil,
           created_at: DateTime.t(),
           updated_at: DateTime.t()
         }
@@ -73,6 +74,7 @@ defmodule Stapeln.StackStore do
       name: fetch(attrs, :name) || "stack-#{id}",
       description: fetch(attrs, :description),
       services: normalize_services(fetch(attrs, :services) || []),
+      design: fetch(attrs, :design),
       created_at: now,
       updated_at: now
     }
@@ -110,6 +112,7 @@ defmodule Stapeln.StackStore do
           stack
           |> maybe_put(:name, fetch(attrs, :name))
           |> maybe_put(:description, fetch(attrs, :description))
+          |> maybe_put(:design, fetch(attrs, :design))
           |> maybe_put_services(fetch(attrs, :services))
           |> Map.put(:updated_at, DateTime.utc_now() |> DateTime.truncate(:second))
 
@@ -147,7 +150,8 @@ defmodule Stapeln.StackStore do
         %{
           name: fetch(service, :name) || "unnamed-service",
           kind: fetch(service, :kind) || "unknown",
-          port: fetch(service, :port)
+          port: fetch(service, :port),
+          depends_on: fetch(service, :depends_on)
         }
         |> Enum.reject(fn {_k, value} -> is_nil(value) end)
         |> Map.new()
@@ -207,6 +211,7 @@ defmodule Stapeln.StackStore do
       name: fetch(stack, :name),
       description: fetch(stack, :description),
       services: fetch(stack, :services) || [],
+      design: fetch(stack, :design),
       created_at: parse_datetime(fetch(stack, :created_at)),
       updated_at: parse_datetime(fetch(stack, :updated_at))
     }
@@ -235,6 +240,7 @@ defmodule Stapeln.StackStore do
              name: stack.name,
              description: stack.description,
              services: stack.services,
+             design: Map.get(stack, :design),
              created_at: DateTime.to_iso8601(stack.created_at),
              updated_at: DateTime.to_iso8601(stack.updated_at)
            }}
