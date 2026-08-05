@@ -1,0 +1,40 @@
+# SPDX-License-Identifier: MPL-2.0
+# gitleaks configuration for stapeln.
+#
+# Every path below was verified BY HAND to contain fixtures or documentation
+# examples, never a credential. Paths are ANCHORED (^...) and as narrow as
+# possible: a loose pattern here blinds the scanner permanently and silently,
+# which is worse than the false positives it removes.
+#
+# NOTE ON SYNTAX: this must be `[allowlist]` (singular). The `[[allowlists]]`
+# plural form is silently IGNORED by the gitleaks version the estate pins —
+# it does not error, it simply changes nothing, so a config written that way
+# looks correct and suppresses nothing.
+#
+# Verified with a canary: planting a detectable AWS key pair under src/ takes
+# the count from 12 to 13 without this file, and to 1 WITH it — so the twelve
+# are suppressed and a real secret in a normal path is still caught.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = """
+Conformance test vectors, worked spec examples, and security documentation.
+
+verified-container-spec/vectors/** and examples/**: the high-entropy values are
+PUBLIC keys inside trust-store documents. The files carry ids such as
+"valid-trust-store-001" and "test-trust-store" and are consumed by
+verified-container-spec/conformance/profiles/*.json.
+
+OBVIOUS-VULNERABILITIES.md and RED-TEAM-EXERCISE.md: security documents whose
+purpose is to display insecure patterns. Both matches are the literal
+placeholders API_KEY=sk-1234567890 and DATABASE_PASSWORD=supersecret123 inside
+fenced code blocks.
+"""
+paths = [
+  '''^verified-container-spec/vectors/''',
+  '''^verified-container-spec/examples/''',
+  '''^OBVIOUS-VULNERABILITIES\.md$''',
+  '''^RED-TEAM-EXERCISE\.md$''',
+]
