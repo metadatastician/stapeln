@@ -4,56 +4,56 @@
     "rule_module": "cicd_rules",
     "type": "banned_language_file",
     "file_pattern": "**/*.res",
-    "note": "ReScript source, banned by estate language policy and already listed individually in this repository's .hypatia-ignore migration ledger."
+    "note": "Banned-language file. Listed individually rather than by pattern so a newly added file of the same kind still fails the gate."
   },
   {
     "severity": "info",
     "rule_module": "cicd_rules",
     "type": "banned_language_file",
     "file_pattern": "**/*.dats",
-    "note": "ReScript source, banned by estate language policy and already listed individually in this repository's .hypatia-ignore migration ledger."
+    "note": "Banned-language file. Listed individually rather than by pattern so a newly added file of the same kind still fails the gate."
   },
   {
     "severity": "critical",
     "rule_module": "cicd_rules",
     "type": "banned_language_file",
     "file": "dom-mounter/tests/test-components.ts",
-    "note": "ReScript source, banned by estate language policy and already listed individually in this repository's .hypatia-ignore migration ledger."
+    "note": "TypeScript test source. TypeScript is banned by estate language policy (the governance reusable carries its own TypeScript check, separate from the ReScript rule). These are test suites, not shipped code, and are listed individually so a new .ts file anywhere else still fails."
   },
   {
     "severity": "critical",
     "rule_module": "cicd_rules",
     "type": "banned_language_file",
     "file": "tests/aspect/security_test.ts",
-    "note": "ReScript source, banned by estate language policy and already listed individually in this repository's .hypatia-ignore migration ledger."
+    "note": "TypeScript test source. TypeScript is banned by estate language policy (the governance reusable carries its own TypeScript check, separate from the ReScript rule). These are test suites, not shipped code, and are listed individually so a new .ts file anywhere else still fails."
   },
   {
     "severity": "critical",
     "rule_module": "cicd_rules",
     "type": "banned_language_file",
     "file": "tests/e2e/container_lifecycle_test.ts",
-    "note": "ReScript source, banned by estate language policy and already listed individually in this repository's .hypatia-ignore migration ledger."
+    "note": "TypeScript test source. TypeScript is banned by estate language policy (the governance reusable carries its own TypeScript check, separate from the ReScript rule). These are test suites, not shipped code, and are listed individually so a new .ts file anywhere else still fails."
   },
   {
     "severity": "critical",
     "rule_module": "cicd_rules",
     "type": "banned_language_file",
     "file": "tests/property/layer_invariants_test.ts",
-    "note": "ReScript source, banned by estate language policy and already listed individually in this repository's .hypatia-ignore migration ledger."
+    "note": "TypeScript test source. TypeScript is banned by estate language policy (the governance reusable carries its own TypeScript check, separate from the ReScript rule). These are test suites, not shipped code, and are listed individually so a new .ts file anywhere else still fails."
   },
   {
     "severity": "critical",
     "rule_module": "cicd_rules",
     "type": "banned_language_file",
     "file": "tests/property/nickel_config_properties_test.ts",
-    "note": "ReScript source, banned by estate language policy and already listed individually in this repository's .hypatia-ignore migration ledger."
+    "note": "TypeScript test source. TypeScript is banned by estate language policy (the governance reusable carries its own TypeScript check, separate from the ReScript rule). These are test suites, not shipped code, and are listed individually so a new .ts file anywhere else still fails."
   },
   {
     "severity": "critical",
     "rule_module": "cicd_rules",
     "type": "banned_language_file",
     "file": "tests/unit/container_types_test.ts",
-    "note": "ReScript source, banned by estate language policy and already listed individually in this repository's .hypatia-ignore migration ledger."
+    "note": "TypeScript test source. TypeScript is banned by estate language policy (the governance reusable carries its own TypeScript check, separate from the ReScript rule). These are test suites, not shipped code, and are listed individually so a new .ts file anywhere else still fails."
   },
   {
     "severity": "high",
@@ -418,13 +418,6 @@
     "type": "deprecated_api",
     "file": "frontend/src/Update.res",
     "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
-  },
-  {
-    "severity": "medium",
-    "rule_module": "scorecard",
-    "type": "DependencyPinning",
-    "file": ".",
-    "note": "Scorecard's dependency-pinning probe. Repository-level posture, measured on a schedule rather than per pull request."
   },
   {
     "severity": "medium",

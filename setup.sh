@@ -140,29 +140,65 @@ install_just() {
 # This replaces two `curl https://just.systems/install.sh | bash` calls. Piping
 # a remote script into a shell executes whatever the server returns, with no
 # opportunity to check it; `set -euo pipefail` does not help, because a
-# truncated or substituted body still reaches bash intact. Hypatia reports this
-# as code_safety/shell_download_then_run and the finding is correct.
+# truncated or substituted body still reaches bash intact.
 #
 # A pinned RELEASE BINARY is used rather than a pinned installer script,
 # because the installer is a moving target: pinning its checksum would break
 # the moment upstream edited it, and the usual response to that breakage is to
 # remove the check.
 #
-# The digest was computed from the artifact on 2026-08-06. casey/just publishes
-# no digest for this asset, so this is trust-on-first-use: it does not prove
-# the artifact was authentic then, but any later substitution now fails loudly
-# instead of silently.
+# ⚠ PLATFORM IS RESOLVED, NOT ASSUMED. detect_platform() already computes $OS
+# and $ARCH, and this script supports macOS and FreeBSD as well as Linux. An
+# earlier version hardcoded x86_64-unknown-linux-musl, which would have
+# downloaded an x86-64 Linux binary onto Apple Silicon and every ARM box.
+#
+# ⚠ AN UNKNOWN PLATFORM RETURNS FAILURE RATHER THAN GUESSING. The caller falls
+# back to the package manager. Downloading a plausible-looking artefact for the
+# wrong target is worse than not downloading one: it fails later, further away.
+#
+# Digests were computed from the artifacts on 2026-08-06; casey/just publishes
+# none for these assets, so this is trust-on-first-use — it does not prove they
+# were authentic then, but any later substitution now fails loudly.
 JUST_VERSION="1.58.0"
-JUST_SHA256="4a5cc2f53e6f0f8c59092a6cc38291eb729d46a7dd95d3ae582008881b84931d"
+
+just_target() {
+    case "${OS}:${ARCH}" in
+        linux:x86_64|linux:amd64)   echo "x86_64-unknown-linux-musl" ;;
+        linux:aarch64|linux:arm64)  echo "aarch64-unknown-linux-musl" ;;
+        macos:x86_64)               echo "x86_64-apple-darwin" ;;
+        macos:arm64|macos:aarch64)  echo "aarch64-apple-darwin" ;;
+        *)                          echo "" ;;
+    esac
+}
+
+just_sha256() {
+    case "$1" in
+        x86_64-unknown-linux-musl)  echo "4a5cc2f53e6f0f8c59092a6cc38291eb729d46a7dd95d3ae582008881b84931d" ;;
+        aarch64-unknown-linux-musl) echo "748237128c4c40cbdabc65e841d05ceba13cc23a91eaba395495894c1d9764df" ;;
+        x86_64-apple-darwin)        echo "9a09cfef66aaa79da58203970103a0684307716caaabd3e9844cacc4dc0f4023" ;;
+        aarch64-apple-darwin)       echo "50ae3e996c974a0bf32ea7d10f495070df33f1b43e0616b2769e3d4821ed8f48" ;;
+        *)                          echo "" ;;
+    esac
+}
 
 install_just_verified() {
-    local tmp url
+    local target want tmp url
+    target="$(just_target)"
+    if [ -z "$target" ]; then
+        echo "just: no verified build for ${OS}/${ARCH}; use your package manager" >&2
+        return 1
+    fi
+    want="$(just_sha256 "$target")"
+    if [ -z "$want" ]; then
+        echo "just: no pinned digest for $target" >&2
+        return 1
+    fi
     tmp="$(mktemp -d)"
-    url="https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-x86_64-unknown-linux-musl.tar.gz"
+    url="https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-${target}.tar.gz"
     curl -fsSL --proto '=https' --tlsv1.2 -o "$tmp/just.tar.gz" "$url"
-    if ! printf '%s  %s\n' "$JUST_SHA256" "$tmp/just.tar.gz" | sha256sum -c - >/dev/null 2>&1; then
+    if ! printf '%s  %s\n' "$want" "$tmp/just.tar.gz" | sha256sum -c - >/dev/null 2>&1; then
         echo "just: CHECKSUM MISMATCH for $url" >&2
-        echo "  expected $JUST_SHA256" >&2
+        echo "  expected $want" >&2
         echo "  actual   $(sha256sum "$tmp/just.tar.gz" | cut -d" " -f1)" >&2
         rm -rf "$tmp"
         return 1
