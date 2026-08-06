@@ -12,5 +12,449 @@
     "type": "banned_language_file",
     "file_pattern": "**/*.dats",
     "note": "ATS2 linear-type shadow proofs under container-stack/cerro-torre (verification/ats/, tools/ats-shadow/). These are legitimate formal-verification artifacts that complement the Idris2 proof layer, not application code."
+  },
+  {
+    "severity": "critical",
+    "rule_module": "cicd_rules",
+    "type": "banned_language_file",
+    "file": "dom-mounter/tests/test-components.ts"
+  },
+  {
+    "severity": "critical",
+    "rule_module": "cicd_rules",
+    "type": "banned_language_file",
+    "file": "tests/aspect/security_test.ts"
+  },
+  {
+    "severity": "critical",
+    "rule_module": "cicd_rules",
+    "type": "banned_language_file",
+    "file": "tests/e2e/container_lifecycle_test.ts"
+  },
+  {
+    "severity": "critical",
+    "rule_module": "cicd_rules",
+    "type": "banned_language_file",
+    "file": "tests/property/layer_invariants_test.ts"
+  },
+  {
+    "severity": "critical",
+    "rule_module": "cicd_rules",
+    "type": "banned_language_file",
+    "file": "tests/property/nickel_config_properties_test.ts"
+  },
+  {
+    "severity": "critical",
+    "rule_module": "cicd_rules",
+    "type": "banned_language_file",
+    "file": "tests/unit/container_types_test.ts"
+  },
+  {
+    "severity": "high",
+    "rule_module": "code_safety",
+    "type": "elixir_send_unsanitised",
+    "file": "backend/lib/stapeln/crypto.ex"
+  },
+  {
+    "severity": "critical",
+    "rule_module": "code_safety",
+    "type": "getexn_on_external",
+    "file": "frontend/src/Tour.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "code_safety",
+    "type": "shell_download_then_run",
+    "file": "setup.sh"
+  },
+  {
+    "severity": "high",
+    "rule_module": "code_safety",
+    "type": "zig_ptr_cast",
+    "file": "dom-mounter/ffi/zig/src/dom_mounter_enhanced.zig"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/App.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/App.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/AppRouter.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/DesignFormat.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/Export.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/Export.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/GapAnalysis.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/Import.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/LagoGreyExport.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/LagoGreyImageDesigner.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/PortConfigPanel.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/SecurityInspector.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/SimulationMode.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/TeaRouter.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/Update.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/App.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/App.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/AppRouter.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/DesignFormat.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/Export.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/Export.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/GapAnalysis.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/Import.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/LagoGreyExport.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/LagoGreyImageDesigner.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/PortConfigPanel.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/SecurityInspector.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/SimulationMode.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/TeaRouter.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/Update.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/ApiClient.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/AppRouter.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/DesignFormat.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/Export.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/Export.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/GapAnalysis.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/Import.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/LagoGreyExport.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/LagoGreyImageDesigner.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/PipelinePalette.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/PipelineUpdate.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/PortConfigPanel.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/SecurityInspector.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/SimulationMode.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/Socket.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/Socket.res"
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/TeaRouter.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/Tour.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/Update.res"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "scorecard",
+    "type": "DependencyPinning",
+    "file": "."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "structural_drift",
+    "type": "SD007",
+    "file": "0-AI-MANIFEST.a2ml"
+  },
+  {
+    "severity": "high",
+    "rule_module": "workflow_audit",
+    "type": "secret_action_without_presence_gate",
+    "file": "instant-sync.yml"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "workflow_audit",
+    "type": "unpinned_action",
+    "file": "boj-build.yml"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "workflow_audit",
+    "type": "unpinned_action",
+    "file": "codeql.yml"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "workflow_audit",
+    "type": "unpinned_action",
+    "file": "container-stack-smoke.yml"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "workflow_audit",
+    "type": "unpinned_action",
+    "file": "dogfood-gate.yml"
+  },
+  {
+    "severity": "high",
+    "rule_module": "workflow_audit",
+    "type": "unpinned_action",
+    "file": "dogfood-gate.yml"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "workflow_audit",
+    "type": "unpinned_action",
+    "file": "e2e.yml"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "workflow_audit",
+    "type": "unpinned_action",
+    "file": "instant-sync.yml"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "workflow_audit",
+    "type": "unpinned_action",
+    "file": "oikosbot.yml"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "workflow_audit",
+    "type": "unpinned_action",
+    "file": "pages.yml"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "workflow_audit",
+    "type": "unpinned_action",
+    "file": "publish-image.yml"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "workflow_audit",
+    "type": "unpinned_action",
+    "file": "push-email-notify.yml"
+  },
+  {
+    "severity": "medium",
+    "rule_module": "workflow_audit",
+    "type": "unpinned_action",
+    "file": "svalinn-affine-build.yml"
   }
 ]
