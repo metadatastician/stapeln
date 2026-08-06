@@ -135,13 +135,50 @@ install_just() {
         return 0
     fi
 
+# install_just_verified — fetch a PINNED just release and verify it before use.
+#
+# This replaces two `curl https://just.systems/install.sh | bash` calls. Piping
+# a remote script into a shell executes whatever the server returns, with no
+# opportunity to check it; `set -euo pipefail` does not help, because a
+# truncated or substituted body still reaches bash intact. Hypatia reports this
+# as code_safety/shell_download_then_run and the finding is correct.
+#
+# A pinned RELEASE BINARY is used rather than a pinned installer script,
+# because the installer is a moving target: pinning its checksum would break
+# the moment upstream edited it, and the usual response to that breakage is to
+# remove the check.
+#
+# The digest was computed from the artifact on 2026-08-06. casey/just publishes
+# no digest for this asset, so this is trust-on-first-use: it does not prove
+# the artifact was authentic then, but any later substitution now fails loudly
+# instead of silently.
+JUST_VERSION="1.58.0"
+JUST_SHA256="4a5cc2f53e6f0f8c59092a6cc38291eb729d46a7dd95d3ae582008881b84931d"
+
+install_just_verified() {
+    local tmp url
+    tmp="$(mktemp -d)"
+    url="https://github.com/casey/just/releases/download/${JUST_VERSION}/just-${JUST_VERSION}-x86_64-unknown-linux-musl.tar.gz"
+    curl -fsSL --proto '=https' --tlsv1.2 -o "$tmp/just.tar.gz" "$url"
+    if ! printf '%s  %s\n' "$JUST_SHA256" "$tmp/just.tar.gz" | sha256sum -c - >/dev/null 2>&1; then
+        echo "just: CHECKSUM MISMATCH for $url" >&2
+        echo "  expected $JUST_SHA256" >&2
+        echo "  actual   $(sha256sum "$tmp/just.tar.gz" | cut -d" " -f1)" >&2
+        rm -rf "$tmp"
+        return 1
+    fi
+    tar -xzf "$tmp/just.tar.gz" -C "$tmp" just
+    sudo install -m 0755 "$tmp/just" /usr/local/bin/just
+    rm -rf "$tmp"
+}
+
     info "Installing just (task runner)..."
 
     case "$PKG_MGR" in
         dnf)        sudo dnf install -y just ;;
         apt)        sudo apt-get install -y just 2>/dev/null || {
                         # just not in older apt repos — use installer
-                        curl -fsSL https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+                        install_just_verified
                     } ;;
         pacman)     sudo pacman -S --noconfirm just ;;
         apk)        sudo apk add just ;;
@@ -153,7 +190,7 @@ install_just() {
         nix)        nix-env -iA nixpkgs.just ;;
         *)
             info "Using just installer script..."
-            curl -fsSL https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+            install_just_verified
             ;;
     esac
 
