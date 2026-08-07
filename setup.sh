@@ -155,8 +155,16 @@ fetch_and_run_just_installer() {
         return 1
     fi
 
-    sh "$_script" --to "$_dest"
-    _rc=$?
+    # `if` rather than a bare call: this script runs under `set -eu`, and at
+    # the `*)` call site the function is invoked standalone, so a non-zero exit
+    # here would terminate the shell immediately -- skipping the cleanup below
+    # and the graceful "install manually" message in install_just. Inside an
+    # `if` condition `set -e` is suspended, so we can capture the status.
+    if sh "$_script" --to "$_dest"; then
+        _rc=0
+    else
+        _rc=$?
+    fi
     rm -rf "$_tmp"
     return $_rc
 }
