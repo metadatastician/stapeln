@@ -1,40 +1,43 @@
 # SPDX-License-Identifier: MPL-2.0
-# gitleaks configuration for stapeln.
 #
-# Every path below was verified BY HAND to contain fixtures or documentation
-# examples, never a credential. Paths are ANCHORED (^...) and as narrow as
-# possible: a loose pattern here blinds the scanner permanently and silently,
-# which is worse than the false positives it removes.
+# Gitleaks configuration — metadatastician/stapeln
 #
-# NOTE ON SYNTAX: this must be `[allowlist]` (singular). The `[[allowlists]]`
-# plural form is silently IGNORED by the gitleaks version the estate pins —
-# it does not error, it simply changes nothing, so a config written that way
-# looks correct and suppresses nothing.
+# EXTENDS THE ESTATE BASELINE, it does not replace it.
+# `.gitleaks-estate.toml` is staged into the workspace root by
+# hyperpolymath/standards `.github/workflows/secret-scanner-reusable.yml`
+# before the scan runs. gitleaks resolves `[extend] path` against the process
+# CWD (verified — NOT relative to this file), which is the repository root.
 #
-# Verified with a canary: planting a detectable AWS key pair under src/ takes
-# the count from 12 to 13 without this file, and to 1 WITH it — so the twelve
-# are suppressed and a real secret in a normal path is still caught.
+# WHY THIS FILE IS LOCAL RATHER THAN IN THE ESTATE BASELINE.
+# Every entry below is a blind spot. Held here, it blinds this repository only,
+# and the justification sits beside the code it describes. Promoted to the
+# estate baseline it would blind all 400+ repositories — so the baseline keeps
+# only entries that are true everywhere (lockfiles, vendored bundles, published
+# protocol constants).
+#
+# Each entry names WHAT THE VALUE IS. "This file is noisy" is not a reason; if
+# an entry cannot say what the matched value actually is, the secret should be
+# removed from the tree instead.
+#
+# Every finding suppressed here was triaged on 2026-08-06 by reading the
+# matched line with the value redacted. Before adding an entry, plant a
+# realistic secret in the same path and confirm it is STILL detected.
 
 [extend]
-useDefault = true
+path = ".gitleaks-estate.toml"
 
 [allowlist]
-description = """
-Conformance test vectors, worked spec examples, and security documentation.
+description = "metadatastician/stapeln: locally justified exemptions, extending the estate baseline"
 
-verified-container-spec/vectors/** and examples/**: the high-entropy values are
-PUBLIC keys inside trust-store documents. The files carry ids such as
-"valid-trust-store-001" and "test-trust-store" and are consumed by
-verified-container-spec/conformance/profiles/*.json.
 
-OBVIOUS-VULNERABILITIES.md and RED-TEAM-EXERCISE.md: security documents whose
-purpose is to display insecure patterns. Both matches are the literal
-placeholders API_KEY=sk-1234567890 and DATABASE_PASSWORD=supersecret123 inside
-fenced code blocks.
-"""
 paths = [
-  '''^verified-container-spec/vectors/''',
-  '''^verified-container-spec/examples/''',
-  '''^OBVIOUS-VULNERABILITIES\.md$''',
-  '''^RED-TEAM-EXERCISE\.md$''',
+  # Published conformance vectors and worked examples for the container
+  # trust-store spec. Valid/invalid trust stores necessarily carry
+  # key-shaped material; that is what conformance tests assert on.
+  '''(^|/)verified-container-spec/(vectors|examples)/''',
+
+  # Documents whose stated purpose is to contain deliberately planted
+  # insecure examples for a red-team exercise.
+  '''(^|/)(RED-TEAM-EXERCISE|OBVIOUS-VULNERABILITIES)\.md$''',
+
 ]

@@ -5,16 +5,17 @@
 [metadata]
 project = "stapeln"
 version = "0.1.0"
-last-updated = "2026-07-28"
+last-updated = "2026-08-07"
 status = "active"
-session = "measured audit — 2026-07-28"
-measurement-method = "file reads, builds executed, tests run; see STATUS.md"
+session = "measured audit — 2026-08-07"
+commit = "bc04e22"
+measurement-method = "file reads, greps, gh API + CI run history at the commit above; see STATUS.md and DEBT.md"
 
 [project-context]
 name = "Stapeln"
 purpose = """Visual container stack designer — a compiler from a drag-and-drop topology to a verified deployment bundle"""
-completion-percentage = 45
-completion-basis = "measured 2026-07-28; supersedes earlier self-reported figure"
+completion-percentage = 48
+completion-basis = "measured 2026-08-07; up from 45% (2026-07-28) after PR #17 closed the two persistence defects"
 
 [position]
 phase = "implementation"   # design | implementation | testing | maintenance | archived
@@ -24,41 +25,93 @@ maturity = "alpha"  # experimental | alpha | beta | production | lts
 items = [
   """41 REST routes + real Absinthe GraphQL (2 queries, 3 mutations), both funnelling through one `Stacks -> NativeBridge` boundary""",
   """10 UI tabs + 2 auth pages, all render and navigate (TEA pattern)""",
-  """8 genuine Idris2 proofs — `%default total`, ZERO `believe_me`/`postulate`/`assert_total`/holes; `abi.ipkg` module list matches the directory (an honest ipkg, not the fake per-file `--check`)""",
-  """Real Ed25519 + SHA-256 in `ffi/zig/src/crypto.zig` via `std.crypto`, 10 tests""",
-  """Export/Import round-trips the full design via `DesignFormat.res` (components, connections, position, config)""",
-  """339 real tests, ~6,200 lines (105 ExUnit, 107 Idris2, 110 Deno, 17 JS)""",
+  """Full-fidelity design persistence: save, autosave, WS validate, security scan and gap analysis all serialise via `DesignFormat.res`, preserving components, connections, positions and config (PR #17, 2026-08-04)""",
+  """Security scan and gap analysis reach the backend: `saveStack` decodes `data.id` into `result<int, string>`; the stackId=0 defect that 400'd both endpoints is gone (PR #17)""",
+  """8 genuine Idris2 proof modules — `%default total`, ZERO `believe_me`/`postulate`/`assert_total`/holes; `abi.ipkg` module list matches the directory (an honest ipkg, not the fake per-file `--check`)""",
+  """Real Ed25519 + SHA-256 in `ffi/zig/src/crypto.zig` via `std.crypto`, 16 Zig tests""",
+  """Multi-format codegen: `Codegen.generate_all/1` + `PipelineCodegen` six emitters (Containerfile, selur-compose, podman-compose, k8s, Helm, OCI), exposed at POST /api/stacks/:id/generate""",
+  """GitHub Actions runs again — dependency-lockfile remediation (#16/#18) ended the estate startup_failure outage for this repo""",
 ]
+
+[test-inventory]
+measured-at = "bc04e22"
+exunit-cases = 122
+exunit-files = 15
+exunit-command = """grep -rhoE '^\\s*(test|property) "' backend/test"""
+deno-cases = 107
+deno-files = 6
+deno-command = """grep -rhoE 'Deno\\.test\\(' tests"""
+zig-cases = 16
+zig-command = """grep -rhoE '^\\s*test "' ffi/zig"""
+idris2-modules = 8
+idris2-note = "custom Test/Spec.idr harness; discrete cases not grep-enumerable"
+executable-total = 245
+superseded-claim = "an earlier '339 tests' figure circulated; its 107-Idris2 component does not reproduce by any method tried — see DEBT.md T-4"
 
 [blockers-and-issues]
 issues = [
-  """**No CI gate runs any of the 339 tests.** `scripts/readiness-check.sh` is a correct 99-line gate (real builds, real tests, `exit 1` on failure) invoked by no Justfile target, workflow, or GitLab job.""",
-  """**Split-brain serializer.** Export-to-file uses `DesignFormat` and preserves topology; save-to-backend uses `App.res:47-64` hand-rolled string concat and DROPS connections, positions, and all config except `port`. A topology designer that does not persist its topology.""",
-  """**`App.res:99` + `:122`** call `Int.fromString` on a raw JSON body -> `None` -> `stackId = 0`; backend requires `id > 0`. Security scan and gap analysis fail 100% of the time. One line fixes both.""",
-  """Security Inspector and Gap Analysis have empty `init` and no-op handlers (`RunSecurityScan => state`); they make zero HTTP calls.""",
+  """**`scripts/readiness-check.sh` is invoked by nothing.** A correct 5-gate script (clean tree, lockfile hygiene, Deno tests, `rescript build`, `mix deps.get && mix test`) wired to no Justfile target, workflow, or GitLab job.""",
+  """**No GitHub workflow runs `mix test`.** 122 backend tests gate nothing on the forge that gates merges; `mix test` appears only at `.gitlab-ci.yml:144`.""",
+  """**The aspect test step cannot fail** — `e2e.yml:43` ends `|| echo "Aspect test script not found"` but the script exists, so the fallback only masks real failures.""",
+  """**OSSF Scorecard startup_failure daily since at least 2026-08-04** — zero-job runs, invisible to `gh pr checks`. Diagnosis (unconfirmed): job-level `permissions:` on the reusable call omits `actions: read` granted at workflow level.""",
+  """**Secret Scanner, Governance and Instant Sync are red on main** (gitleaks reports 12 findings). Open PRs #20-#24 address the first two.""",
+  """`container-stack/*` are 5 uninitialised submodules; the smoke workflow that 'checks' them has both build steps on `continue-on-error`.""",
+  """The WebSocket channel path has no tests — `stack_channel.ex` changed in #17 with no ChannelCase and no channel test directory.""",
   """`ABI-FFI-README.md` documents 7 `stapeln_*_json` functions implemented nowhere.""",
   """`ffi/zig/src/bridge_cli.zig` — 353 real lines, 5 working ops, has NO build target.""",
-  """`container-stack/*` are 5 uninitialised submodules; the smoke workflow that 'checks' them has both build steps on `continue-on-error`.""",
+  """`README.adoc` status section is dated 2026-02-13 and contradicts STATUS.md; its WCAG 2.3 AAA and OWASP Compliant badges are backed by no audit artefact or gate.""",
+  """`RSR_OUTLINE.adoc` is unmodified template boilerplate describing the generic RSR template, not stapeln; it claimed the licence was "AGPL + Palimpsest dual license". Banner + inline annotations added 2026-08-07; broken `image:[]` markup remains.""",
+  """`just crg-badge` and `just crg-grade` both fail with `sh: 1: Syntax error: "(" unexpected` (Justfile lines 69/80, bash-isms under sh) — the repo ships a CRG generator that cannot generate.""",
+  """**The frontend language is banned by estate policy.** ReScript was retired estate-wide for AffineScript; stapeln's frontend is ~50 `.res` modules and the governance anti-pattern job passes them only as explicit exemptions. Architectural debt: rewrite or declared carve-out. PR #23 begins the declaration.""",
 ]
 
 [critical-next-actions]
 actions = [
-  """Wire scripts/readiness-check.sh into CI — makes 339 existing tests load-bearing in one commit""",
-  """Fix App.res:99 and :122 to parse data.id — unblocks security scan and gap analysis""",
-  """Point SaveStack at DesignFormat.serializeDesign; widen the backend schema to carry connections""",
+  """Wire scripts/readiness-check.sh into just + CI — makes 245 tests load-bearing in one commit""",
+  """Add a GitHub `Backend Tests` workflow running `mix test`""",
+  """Drop the dishonest `|| echo` from the aspect step in e2e.yml""",
+  """Fix the OSSF Scorecard startup_failure (permissions escalation on the reusable call)""",
+  """Add channel tests for the WebSocket path shipped in #17""",
   """Adopt container/stapeln/ as the canonical output bundle and take ownership of its schema""",
-  """Reconcile README / STATUS / TOPOLOGY into this single document""",
-  """Untrack frontend/lib/** and delete ~1,108 lines of unreachable ReScript""",
+  """Restore the six wanted badges once evidence exists — see docs/BADGES.md (SOC 3 / ISO 27001 / CIAQ need only a public reference)""",
+  """Fix the two broken CRG just recipes so the grade badge can be published""",
 ]
+
+[debt]
+register = "DEBT.md"
+domains = ["licence", "documentation", "code", "proof", "test", "cicd", "supply-chain"]
+item-count = 30
+highest-severity = "HIGH"
+high-items = ["D-1", "D-2", "T-1", "T-2", "CI-0", "CI-1", "CI-2"]
+cross-cutting = "several gates are wired so they cannot fail; fixing them makes the board look worse and be better"
+
+[licensing]
+code = "MPL-2.0"
+documentation = "CC-BY-SA-4.0"
+third-licence = "none"
+policy-doc = "LICENSING.md"
+canonical-text = "LICENSE (GitHub-detected); LICENSES/MPL-2.0.txt is a byte-identical duplicate for REUSE"
+spdx-header-rule = "line 1 only — the licence gate reads head -1; move a misplaced identifier, never add a second"
+resolved-2026-08-07 = "9 .github/ template files relicensed AGPL-3.0-or-later -> MPL-2.0; orphan LICENSES/AGPL-3.0-or-later.txt removed; duplicate MPL text synced"
+verified-distribution = "491 MPL-2.0 · 179 CC-BY-SA-4.0 · nothing else"
+historical-false-claims = ["AGPL-3.0-or-later (template drift)", "AGPL + Palimpsest dual (RSR_OUTLINE template text)", "PMPL-1.0-or-later (README badge alt-text)"]
+
+[badges]
+register = "docs/BADGES.md"
+displayed-and-verified = ["License MPL-2.0", "OpenSSF Scorecard", "OpenSSF Best Practices", "ReScript", "Elixir", "Idris2"]
+wanted-pending-evidence = ["WCAG 2.3 AAA", "OWASP", "SOC 3", "ISO 27001", "CIAQ", "Green Hosting"]
+blocked-by-bug = ["CRG grade — just crg-badge/crg-grade broken"]
+rule = "no badge without a resolvable public reference; removed badges are wanted, not abandoned"
 
 [ecosystem]
 stack = ["stapeln", "selur", "vordr", "rokur", "cerro-torre", "svalinn"]
 designer = "stapeln"
 canonical-contract = "container/stapeln/ — 8-file bundle, one file per satellite"
-contract-status = "NOT EMITTED BY STAPELN AND NOT CONSUMED BY ANY SATELLITE as of 2026-07-28"
-runtime-chain = "svalinn(443/80) -> rokur(8081) -> app; vordr watches; cerro-torre signs; selur is network driver"
+contract-status = "NOT EMITTED BY STAPELN; consumed by 1 of 5 satellites (selur parses compose.toml) as of 2026-08-07"
+runtime-chain = "svalinn(443/80) -> app; rokur(9090) is an authorize-start sidecar, not a proxy; vordr watches; cerro-torre signs; selur orchestrates"
+runtime-chain-note = "revised 2026-08-03: the bundle's rokur.toml described a reverse proxy rokur has never implemented"
 
 [maintenance-status]
-last-run-utc = "2026-07-28T00:00:00Z"
+last-run-utc = "2026-08-07T00:00:00Z"
 last-result = "measured"  # unknown | pass | warn | fail | measured
-reference = "dev-notes/stapeln-ecosystem-COMPREHENSIVE-SITREP-2026-07-28.md"
+reference = "STATUS.md, DEBT.md (both at bc04e22)"
