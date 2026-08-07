@@ -61,6 +61,7 @@ issues = [
   """`ffi/zig/src/bridge_cli.zig` — 353 real lines, 5 working ops, has NO build target.""",
   """`README.adoc` status section is dated 2026-02-13 and contradicts STATUS.md; its WCAG 2.3 AAA and OWASP Compliant badges are backed by no audit artefact or gate.""",
   """Nine `.github/` template files declare AGPL-3.0-or-later inside an MPL-2.0 repository (template drift, not deliberate relicensing).""",
+  """**The frontend language is banned by estate policy.** ReScript was retired estate-wide for AffineScript; stapeln's frontend is ~50 `.res` modules and the governance anti-pattern job passes them only as explicit exemptions. Architectural debt: rewrite or declared carve-out. PR #23 begins the declaration.""",
 ]
 
 [critical-next-actions]
@@ -77,9 +78,9 @@ actions = [
 [debt]
 register = "DEBT.md"
 domains = ["licence", "documentation", "code", "proof", "test", "cicd", "supply-chain"]
-item-count = 27
+item-count = 28
 highest-severity = "HIGH"
-high-items = ["D-1", "D-2", "T-1", "T-2", "CI-1", "CI-2"]
+high-items = ["D-1", "D-2", "T-1", "T-2", "CI-0", "CI-1", "CI-2"]
 cross-cutting = "several gates are wired so they cannot fail; fixing them makes the board look worse and be better"
 
 [ecosystem]

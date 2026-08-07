@@ -31,7 +31,7 @@ real cost, no immediate blast radius. `LOW` = tidiness.
 | [Code](#3-code-debt) | 5 | MEDIUM |
 | [Proof](#4-proof-debt) | 2 | MEDIUM |
 | [Test](#5-test-debt) | 4 | HIGH |
-| [CI/CD](#6-cicd-debt) | 5 | HIGH |
+| [CI/CD](#6-cicd-debt) | 6 | HIGH |
 | [Supply chain / security](#7-supply-chain--security-debt) | 2 | MEDIUM |
 
 ---
@@ -97,14 +97,33 @@ measured document, not four drifting ones. (Addressed in this changeset.)
 
 ### D-2 · Unverifiable compliance badges — HIGH
 
-`README.adoc:11-12` display `WCAG 2.3 AAA` and `Security: OWASP Compliant` badges. Both are
-static `img.shields.io` badges — no audit artefact, no gate, and no date backs either claim.
-`docs/ACCESSIBILITY-AUDIT-2026-03-29.adoc` exists but does not certify AAA.
+`README.adoc` displayed **five** badges asserting compliance that nothing in this repository
+verifies:
 
-A badge asserting a compliance level nothing verifies is precisely the "handwaving" the
-project's own doctrine forbids.
+| Badge | Backing |
+|---|---|
+| `WCAG 2.3 AAA` | static shields.io image. `docs/ACCESSIBILITY-AUDIT-2026-03-29.adoc` exists but does not certify AAA |
+| `Security: OWASP Compliant` | static shields.io image, no gate, no date |
+| `SOC 3 Compliant` | linked to `github.com/organizations/metadatastician/settings/compliance` — a **private settings page**, not an attestation |
+| `ISO 27001 Compliant` | same private settings link |
+| `CIAQ Compliant` | same private settings link |
 
-**Next move:** remove both badges, or re-point them at a real, dated audit artefact.
+SOC 3 and ISO 27001 are audited certifications. Asserting them publicly with a dead-end link
+is the badge equivalent of a fake gate, and squarely against the project's own "never commit
+handwaving" doctrine.
+
+Two further defects in the same block, both signs of copy-paste provenance: the licence badge
+**image** read `MPL-2.0` while its **alt text** read `PMPL-1.0-or-later`; and a stray `n` in
+`nimage:` silently broke the OpenSSF Best Practices badge.
+
+**Addressed in this changeset:** all five removed, the licence alt-text and the `nimage:`
+typo fixed, and an inline comment left naming what was removed and what evidence would
+justify re-adding it. The two badges kept — OpenSSF Scorecard and OpenSSF Best Practices —
+resolve to public project pages and are real.
+
+**Next move (owner):** if genuine SOC 3 / ISO 27001 / CIAQ attestations exist, re-add those
+badges pointing at the public certificate. This is the one item in this register where the
+fix should be *reverted* rather than extended, if the evidence turns out to exist.
 
 ### D-3 · Root-level documentation sprawl — MEDIUM
 
@@ -294,6 +313,24 @@ history.
 
 **Next move:** test the hypothesis by adding `actions: read` to the job-level block. If that
 does not fix it, resolve the reusable's declared permissions against the caller's.
+
+### CI-0 · The frontend language is banned by estate policy — HIGH
+
+The `governance / Language / package anti-pattern policy` job enforces a `banned_language_file`
+rule. ReScript was retired estate-wide in favour of **AffineScript**; stapeln's frontend is
+~50 `.res` modules. The job's log shows `.res` files under `dom-mounter/` passing only as
+`⏭️ exempt (cicd_rules/banned_language_file)` — i.e. the policy is satisfied by exemptions,
+not by compliance.
+
+This is the largest single piece of debt in the repository, and it is *architectural*, not
+clerical: it implies either a frontend rewrite or a permanent, explicitly-declared carve-out.
+Open PR #23 (`chore(governance): declare the banned-language migration backlog`) begins the
+declaration. The standing estate rule is **do not add new `.res` files**; existing ones are
+grandfathered via `.hypatia-baseline.json`.
+
+**Next move:** land #23 so the debt is declared rather than merely failing, then get an owner
+ruling on rewrite-vs-carve-out. Do not "fix" this by widening exemptions silently — that
+converts a real policy into a fake one.
 
 ### CI-2 · Three workflows are red on `main` — HIGH
 
