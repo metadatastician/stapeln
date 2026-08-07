@@ -6,7 +6,8 @@
 # Then hands off to `just setup` for project-specific configuration.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/hyperpolymath/stapeln/main/setup.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/hyperpolymath/stapeln/main/setup.sh -o setup.sh
+#   sh setup.sh
 #   # or after cloning:
 #   ./setup.sh
 #
@@ -130,7 +131,7 @@ detect_platform() {
 
 # ── Install just ──
 # Fetch-then-verify-then-run. We deliberately do NOT pipe the installer
-# straight into a shell (`curl ... | bash`): that is CWE-494
+# straight into an interpreter -- that is CWE-494
 # download-and-execute, it hides the payload from inspection, and a
 # truncated or hijacked response executes anyway. Materialising the script
 # first means a failed/short download is caught before anything runs.
