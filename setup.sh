@@ -155,11 +155,15 @@ fetch_and_run_just_installer() {
         return 1
     fi
 
-    # `if` rather than a bare call: this script runs under `set -eu`, and at
-    # the `*)` call site the function is invoked standalone, so a non-zero exit
-    # here would terminate the shell immediately -- skipping the cleanup below
-    # and the graceful "install manually" message in install_just. Inside an
-    # `if` condition `set -e` is suspended, so we can capture the status.
+    # `if` rather than a bare call, so this function is correct regardless of
+    # how it is called. The script runs under `set -eu`. Today the only callers
+    # sit under `install_just || { ... }`, and POSIX suspends `set -e` for the
+    # whole dynamic extent of a command in an || list -- so a bare failing
+    # command here would NOT abort (measured in dash and bash). That safety is
+    # an accident of one caller's syntax: invoke this, or install_just,
+    # standalone and a non-zero exit would terminate the shell before the
+    # cleanup and return below. An `if` condition suspends `set -e` locally, so
+    # the status is captured either way.
     if sh "$_script" --to "$_dest"; then
         _rc=0
     else
