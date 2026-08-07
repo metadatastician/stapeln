@@ -26,12 +26,12 @@ real cost, no immediate blast radius. `LOW` = tidiness.
 
 | Domain | Items | Highest severity |
 |---|---|---|
-| [Licence](#1-licence-debt) | 3 | MEDIUM |
-| [Documentation](#2-documentation-debt) | 6 | HIGH |
+| [Licence](#1-licence-debt) | 3 | **all RESOLVED 2026-08-07** |
+| [Documentation](#2-documentation-debt) | 7 | HIGH |
 | [Code](#3-code-debt) | 5 | MEDIUM |
 | [Proof](#4-proof-debt) | 2 | MEDIUM |
 | [Test](#5-test-debt) | 4 | HIGH |
-| [CI/CD](#6-cicd-debt) | 6 | HIGH |
+| [CI/CD](#6-cicd-debt) | 7 | HIGH |
 | [Supply chain / security](#7-supply-chain--security-debt) | 2 | MEDIUM |
 
 ---
@@ -57,10 +57,12 @@ drift from an estate-wide sweep rather than a deliberate relicensing. AGPL is st
 copyleft; carrying it unremarked inside an MPL-2.0 project invites a licence-compatibility
 question that nobody actually intended to raise.
 
-**Next move:** confirm intent with the owner, then either relicense the nine files to
-MPL-2.0 (expected) or document the mixed-licence arrangement explicitly in `LICENSE` and
-`README.adoc`. Do not bulk-edit headers blind — see the estate rule that an SPDX identifier
-must be moved, never imposed.
+**RESOLVED 2026-08-07.** Owner ruling: stapeln is MPL-2.0 for code and CC-BY-SA-4.0 for
+documentation, with no third licence. All nine identifiers changed to `MPL-2.0`, matching the
+rest of `.github/` (the workflows were already MPL-2.0). Each file had exactly one identifier,
+on line 1, so this was a value change — nothing was inserted, nothing shadowed. Policy is now
+stated in [`LICENSING.md`](LICENSING.md). Verified: `491 MPL-2.0 · 179 CC-BY-SA-4.0`, no other
+identifier in the tree.
 
 ### L-2 · Two divergent copies of the MPL-2.0 text — LOW
 
@@ -69,14 +71,19 @@ checksums** (`815ca599…` vs `f75d2927…`). Evidence: `md5sum LICENSE LICENSES
 Harmless today (GitHub's `/license` API correctly reports `MPL-2.0` from `LICENSE`), but two
 diverging canonical texts is a REUSE-compliance trap.
 
-**Next move:** make `LICENSES/MPL-2.0.txt` byte-identical to `LICENSE`, or make one a symlink.
+The divergence was trivial — a trailing space on line 38 and `http` vs `https` on line 360.
+
+**RESOLVED 2026-08-07.** `LICENSES/MPL-2.0.txt` synced to `LICENSE`. `LICENSE` was chosen as
+canonical because it is the file GitHub's `/license` API detects; leaving it untouched keeps
+that detection stable.
 
 ### L-3 · `LICENSES/AGPL-3.0-or-later.txt` may be unused after L-1 — LOW
 
-If L-1 resolves to "relicense the templates", the AGPL text becomes an orphan and REUSE will
-flag an unused licence file.
+With L-1 resolved, no file in the tree is AGPL-licensed, so the AGPL text was an orphan and
+REUSE would flag it.
 
-**Next move:** delete it as part of the L-1 fix, not before.
+**RESOLVED 2026-08-07.** `LICENSES/AGPL-3.0-or-later.txt` removed. `LICENSES/` now holds
+exactly the two licences this project uses.
 
 ---
 
@@ -121,9 +128,16 @@ typo fixed, and an inline comment left naming what was removed and what evidence
 justify re-adding it. The two badges kept — OpenSSF Scorecard and OpenSSF Best Practices —
 resolve to public project pages and are real.
 
-**Next move (owner):** if genuine SOC 3 / ISO 27001 / CIAQ attestations exist, re-add those
-badges pointing at the public certificate. This is the one item in this register where the
-fix should be *reverted* rather than extended, if the evidence turns out to exist.
+**The removed badges are WANTED, not abandoned.** [`docs/BADGES.md`](docs/BADGES.md) is the
+restoration register: every badge this project wants, what each asserts, and precisely what
+evidence unblocks it. Six await restoration (the five above plus Green Hosting, which was
+live and real but pointed at a sibling project's domain), and a seventh — the CRG grade — is
+blocked by a broken `just` recipe (CI-6).
+
+**Next move (owner):** if genuine SOC 3 / ISO 27001 / CIAQ attestations exist, supply the
+public reference and the badges go straight back. SOC 3 reports in particular are designed to
+be publicly distributable. This is the one item in this register where the fix should be
+*reverted* rather than extended, if the evidence turns out to exist.
 
 ### D-3 · Root-level documentation sprawl — MEDIUM
 
@@ -168,6 +182,22 @@ Seven `stapeln_*_json` functions are documented with no implementation anywhere 
 Carried from the 2026-07-28 audit; re-confirm before acting.
 
 **Next move:** mark the section "planned", or implement. Not both silent.
+
+### D-7 · `RSR_OUTLINE.adoc` is unmodified template boilerplate describing another repo — MEDIUM
+
+The file is titled `= RSR Template Repository` and describes the generic RSR template, not
+stapeln. It states the licence is `LICENSE.txt` — "AGPL + Palimpsest dual license" (wrong on
+both filename and licence), and says "README.adoc | This file", which it is not. Its badge
+line is also malformed: `image:[Palimpsest-MPL-1.0,link=...]` has an empty URL, so it renders
+as nothing.
+
+Left unannotated, it is the third source in this repo suggesting a licence stapeln does not
+use — the reason licence questions kept resurfacing.
+
+**Partly addressed 2026-08-07:** an `[IMPORTANT]` banner now states it describes the template,
+not this project, and both licence rows are annotated inline. **Next move:** decide whether an
+inherited template outline earns its place in the root at all; if it does, fix the broken
+`image:[]` markup.
 
 ---
 
@@ -351,6 +381,24 @@ workflow and stop advertising a check that checks nothing.
 ### CI-4 · `boj-build.yml` step is `continue-on-error` — LOW
 
 `:19`. Same class as CI-3, lower stakes.
+
+### CI-6 · `just crg-badge` and `just crg-grade` are broken — MEDIUM
+
+Both recipes fail immediately:
+
+```
+$ just crg-grade
+sh: 1: Syntax error: "(" unexpected
+error: recipe `crg-grade` failed on line 69 with exit code 2
+```
+
+Same at line 80 for `crg-badge`. The recipes use bash syntax but run under `sh`. The
+consequence is that the project ships its own Component Readiness Grade generator and
+**cannot generate the grade** — which is why no CRG badge appears on the README
+([`docs/BADGES.md`](docs/BADGES.md) item 7).
+
+**Next move:** give the two recipes a bash shebang (`#!/usr/bin/env bash` as a `just` recipe
+prelude) or remove the bash-only constructs. Then publish the grade.
 
 ### CI-5 · GitLab is the only place the backend is tested — MEDIUM
 

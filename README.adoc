@@ -14,11 +14,14 @@ image:https://img.shields.io/badge/proofs-Idris2-6b4fbb.svg[Idris2]
 image:https://api.scorecard.dev/projects/github.com/metadatastician/stapeln/badge[OpenSSF Scorecard,link="https://scorecard.dev/viewer/?uri=github.com/metadatastician/stapeln"]
 image:https://www.bestpractices.dev/projects/8509/badge[OpenSSF Best Practices,link="https://www.bestpractices.dev/projects/8509"]
 
-// Badges removed 2026-08-07 because nothing in this repository verified them:
-// WCAG 2.3 AAA, OWASP Compliant, SOC 3, ISO 27001, CIAQ. Each was a static
-// shields.io image; the three compliance badges linked to a private org settings
-// page rather than an attestation. Re-add any of them alongside a dated, public
-// audit artefact — see DEBT.md D-2.
+// Six further badges are WANTED and awaiting restoration — WCAG 2.3 AAA, OWASP,
+// SOC 3, ISO 27001, CIAQ and Green Hosting — plus a CRG grade badge blocked by a
+// broken `just` recipe. Each is listed in docs/BADGES.md with exactly what is
+// needed to put it back. They were removed on 2026-08-07 only because nothing in
+// this repository verified them; they are not abandoned.
+
+Licensing: **MPL-2.0** for code, **CC-BY-SA-4.0** for documentation — see link:LICENSING.md[LICENSING.md].
+Badges wanted and pending restoration: link:docs/BADGES.md[docs/BADGES.md].
 
 _"Containers for People Who Hate Containers"_
 
