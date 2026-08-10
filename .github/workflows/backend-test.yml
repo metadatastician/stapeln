@@ -26,12 +26,12 @@ jobs:
     # Legal here: this is a `steps:` job, not a `uses:` reusable-workflow call.
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # Versions match the toolchain the suite is developed against
       # (Elixir 1.18.3 / OTP 27.3.4.1) rather than "latest", so a green run
       # here means the same thing as a green run locally.
-      - uses: erlef/setup-beam@v1.24.1
+      - uses: erlef/setup-beam@54075bcc5e249e4758d363f27d099f55d843f124 # v1.24.1
         with:
           elixir-version: '1.18.3'
           otp-version: '27.3.4.1'
