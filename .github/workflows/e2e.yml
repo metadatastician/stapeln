@@ -1,4 +1,3 @@
-# This workflow is managed by gh actions-lock.
 # SPDX-License-Identifier: MPL-2.0
 # This workflow is managed by gh actions-lock.
 name: E2E and Property Tests
@@ -41,4 +40,6 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
       - name: Run aspect tests
-        run: bash tests/aspect/aspect_tests.sh 2>/dev/null || bash tests/aspect_tests.sh 2>/dev/null || echo "Aspect test script not found"
+        # No `|| echo` fallback: tests/aspect/aspect_tests.sh EXISTS, so a
+        # "script not found" fallback could only ever swallow a real failure.
+        run: bash tests/aspect/aspect_tests.sh
