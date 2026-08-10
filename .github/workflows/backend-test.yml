@@ -1,3 +1,4 @@
+# This workflow is managed by gh actions-lock.
 # SPDX-License-Identifier: MPL-2.0
 # This workflow is managed by gh actions-lock.
 #
@@ -5,9 +6,10 @@
 # `mix test` appeared only in .gitlab-ci.yml, while GitHub is the forge that
 # gates merges here — so the largest test suite in the repo was decorative.
 #
-# Action refs are TAGS, not inline SHAs, deliberately: this repo pins through
-# .github/workflows/actions.lock, and an inline SHA removes the action from the
-# lockfile's view and produces a startup_failure. The lockfile IS the pin.
+# Actions are pinned to full commit SHAs with the tag in a trailing comment.
+# Both forms coexist with .github/workflows/actions.lock (verified: `gh
+# actions-lock` reports all workflows valid with these SHAs recorded), and the
+# SHA form is what SonarCloud's security rating requires.
 name: Backend Tests
 
 on:
