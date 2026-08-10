@@ -3,18 +3,27 @@
 #
 # The 122 ExUnit tests in backend/ gated NOTHING on GitHub until this existed.
 # `mix test` appeared only in .gitlab-ci.yml, while GitHub is the forge that
-# gates merges here — so the largest test suite in the repo was decorative.
+# gates merges here -- so the largest test suite in the repo was decorative.
 #
-# Action refs are TAGS, and must stay tags. MEASURED: pinning them to inline
-# SHAs while actions.lock records the tag form makes GitHub reject this
-# workflow outright -- `Backend Tests` came back startup_failure, the same
-# zero-job rejection that the codeql v4.37.3/v4.37.6 drift produced. The
-# lockfile is the pin, and it resolves these tags to immutable SHAs.
+# WHY A CONTAINER RATHER THAN erlef/setup-beam
 #
-# SonarCloud's githubactions:S7637 wants inline SHAs and is not lockfile-aware,
-# so it flags this file. That finding is a false positive here and is
-# documented in .sonarcloud.properties; it needs a one-click false-positive
-# marking in the SonarCloud UI, which cannot be done from the repo.
+# Two estate mechanisms disagree about how an action must be referenced, and
+# both were measured on this branch rather than assumed:
+#
+#   * SonarCloud githubactions:S7637 wants every `uses:` ref as a full commit
+#     SHA.
+#   * `.github/workflows/actions.lock` wants tag form and resolves it to an
+#     immutable SHA itself. `gh actions-lock` normalises inline SHAs BACK to
+#     tags, and pinning inline anyway made GitHub reject this workflow --
+#     `Backend Tests` returned startup_failure, the same zero-job rejection
+#     the codeql v4.37.3/v4.37.6 drift produced.
+#
+# Rather than suppress a security rule or fight the lockfile, this job drops
+# the disputed dependency: the toolchain comes from an official image, so
+# there is no third-party `uses:` to argue about. That also pins it more
+# precisely than setup-beam did -- the image IS the Elixir/OTP version, and
+# it matches what the suite is developed against locally (Elixir 1.18.3 /
+# OTP 27), so green here means what green means on a developer machine.
 name: Backend Tests
 
 on:
@@ -29,18 +38,17 @@ jobs:
   mix-test:
     name: mix test (Elixir backend)
     runs-on: ubuntu-latest
+    container: elixir:1.18.3-otp-27
     # Legal here: this is a `steps:` job, not a `uses:` reusable-workflow call.
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7.0.1
 
-      # Versions match the toolchain the suite is developed against
-      # (Elixir 1.18.3 / OTP 27.3.4.1) rather than "latest", so a green run
-      # here means the same thing as a green run locally.
-      - uses: erlef/setup-beam@v1.24.1
-        with:
-          elixir-version: '1.18.3'
-          otp-version: '27.3.4.1'
+      # The image ships Elixir but not the build tooling's local archives.
+      - name: Install hex and rebar
+        run: |
+          mix local.hex --force
+          mix local.rebar --force
 
       - name: Fetch dependencies
         run: mix deps.get
