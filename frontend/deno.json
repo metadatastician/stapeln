@@ -6,8 +6,8 @@
   },
   "tasks": {
     "dev": "deno run --allow-net --allow-read --allow-env --watch server.js",
-    "build": "rescript build && deno bundle src/App.res.js dist/bundle.js",
-    "clean": "rescript clean",
+    "build": "affinescript compile src/Main.affine -o build/bundle.wasm && deno bundle build/bundle.wasm dist/bundle.js",
+    "clean": "rm -rf build/ dist/",
     "serve": "deno run --allow-net --allow-read server.js"
   },
   "importMap": "./import_map.json",

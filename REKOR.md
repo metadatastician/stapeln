@@ -189,7 +189,7 @@ While Rekor is the default, stapeln can also use:
 
 ### Configuration in Settings (Page 3)
 
-```rescript
+```affinescript
 // Settings.res
 type transparencyLog =
   | RekorPublic  // rekor.sigstore.dev

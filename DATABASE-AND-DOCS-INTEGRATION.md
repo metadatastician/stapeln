@@ -6,7 +6,7 @@
 | Component | Purpose | Technology | stapeln Role |
 |-----------|---------|------------|--------------|
 | **verisimdb** | Multi-modal database | Elixir + Rust | Primary data store |
-| **a2ml** | Attested markup | Idris2 + ReScript | Embedded documentation |
+| **a2ml** | Attested markup | Idris2 + affinescript | Embedded documentation |
 | **k9-svc** | Self-validating config | Nickel | Component definitions |
 
 ---
@@ -377,7 +377,7 @@ volumes: mysql-data
 
 ### stapeln ↔ A2ML Integration
 
-```rescript
+```affinescript
 // frontend/src/A2MLRenderer.res
 // Render A2ML documentation in stapeln UI
 
@@ -707,7 +707,7 @@ end
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│ stapeln (ReScript-TEA + Tauri)                           │
+│ stapeln (affinescript-TEA + Tauri)                           │
 │  ├─ Drag-and-drop UI                                     │
 │  ├─ A2ML documentation renderer                          │
 │  └─ K9 component importer                                │
@@ -769,7 +769,7 @@ stapeln/
 | Component | Role in stapeln | Integration Point |
 |-----------|----------------|-------------------|
 | **verisimdb** | Primary database for all stack metadata, provenance, and validation results | Elixir backend via HTTP |
-| **a2ml** | Component documentation with attestation and validation | ReScript frontend + Idris2 backend |
+| **a2ml** | Component documentation with attestation and validation | affinescript frontend + Idris2 backend |
 | **k9-svc** | Self-validating component definitions with security levels | Elixir backend via Nickel + Must |
 
 **Benefits**:

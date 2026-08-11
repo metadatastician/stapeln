@@ -83,16 +83,27 @@ let fetchJson = (url: string, init: WebAPI.fetchInit): promise<Result.t<JSON.t, 
 // ---------------------------------------------------------------------------
 
 // Save a stack definition. `body` is the JSON-encoded string to POST.
-// Returns the stack ID on success.
-let saveStack = (body: string): promise<Result.t<string, string>> => {
-  fetchText(
+// Returns the created/updated stack's integer ID on success.
+//
+// Was `fetchText` returning the raw response body as a string, which callers
+// then tried to parse with `Int.fromString` — but the body is a JSON object
+// (`{"data":{"id":N,...}}`), not a bare integer literal, so that always
+// produced `None` and a stack id of 0. Uses `fetchJson` + `ApiDecode` so the
+// id is decoded from the right place in the response.
+let saveStack = (body: string): promise<Result.t<int, string>> => {
+  fetchJson(
     baseUrl ++ "/stacks",
     {
       method: "POST",
       headers: authHeaders(),
       body,
     },
-  )
+  )->Promise.then(result => {
+    switch result {
+    | Ok(json) => Promise.resolve(ApiDecode.decodeSaveResponse(json))
+    | Error(err) => Promise.resolve(Error(err))
+    }
+  })
 }
 
 // Load a stack definition by ID. Returns the raw JSON text on success.
