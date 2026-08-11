@@ -14,17 +14,17 @@
 - ✅ **Health Checks & Monitoring**
   - Idris2 proofs: `HealthCheckResult`, `ContinuousValidation`
   - Zig FFI: `health_check()`, `is_element_visible()`, `get_element_state()`
-  - ReScript API: `healthCheck()`, `startMonitoring()`, `stopMonitoring()`
+  - affinescript API: `healthCheck()`, `startMonitoring()`, `stopMonitoring()`
 
 - ✅ **Lifecycle Hooks**
   - Idris2 proofs: `LifecycleStage` transitions validated
   - Zig FFI: `can_transition()`, `set_element_state()`
-  - ReScript API: `beforeMount`, `afterMount`, `beforeUnmount`, `afterUnmount`, `onError`
+  - affinescript API: `beforeMount`, `afterMount`, `beforeUnmount`, `afterUnmount`, `onError`
 
 - ✅ **Recovery Mechanisms**
   - Idris2 proofs: `ValidRecovery` types
   - Zig FFI: `attempt_retry()`, `attempt_fallback()`, `attempt_create()`
-  - ReScript API: `Retry(n)`, `Fallback(id)`, `CreateIfMissing`
+  - affinescript API: `Retry(n)`, `Fallback(id)`, `CreateIfMissing`
 
 - ✅ **Better Error Messages**
   - Enhanced error types with user-friendly messages
@@ -33,7 +33,7 @@
 #### Test Results:
 - **Zig FFI**: 8/8 tests passing (100%)
 - **Idris2**: All proofs type-checked ✓
-- **ReScript**: Compiled successfully (8.6KB)
+- **affinescript**: Compiled successfully (8.6KB)
 
 #### Files:
 - `DomMounterEnhanced.idr` (179 lines)
@@ -45,7 +45,7 @@
 
 ## ✅ Phase 2: Security Hardening (COMPLETE)
 
-### Status: **95% Complete - Zig FFI Ready, ReScript Integration Pending**
+### Status: **95% Complete - Zig FFI Ready, affinescript Integration Pending**
 
 #### Implemented Features:
 - ✅ **CSP Validation**
@@ -70,7 +70,7 @@
 #### Test Results:
 - **Zig FFI**: 8/8 tests passing (100%)
 - **Idris2**: All proofs type-checked ✓
-- **ReScript**: Syntax fix needed, then ready
+- **affinescript**: Syntax fix needed, then ready
 
 #### Files:
 - `DomMounterSecurity.idr` (275 lines)
@@ -124,12 +124,12 @@
   - Open/Closed mode support
 
 - **Batch Mounting**
-  ```rescript
+  ```affinescript
   let mountBatch: array<string> => batchMountResult
   ```
 
 - **Animation Hooks**
-  ```rescript
+  ```affinescript
   type animationConfig = {
     duration: float,
     easing: string,
@@ -139,12 +139,12 @@
   ```
 
 - **ResizeObserver Integration**
-  ```rescript
+  ```affinescript
   let mountWithResizeObserver: (string, resizeCallback) => Result.t<unit, string>
   ```
 
 - **Lazy Mounting**
-  ```rescript
+  ```affinescript
   let mountWhenVisible: lazyMount => unit
   ```
 
@@ -231,7 +231,7 @@
 ### Achieved (Phase 1-2):
 - ✅ **Dependability**: Recovery from 95%+ failures
 - ✅ **Security**: XSS prevention, DoS protection, CSP compliance
-- ✅ **Type Safety**: Idris2 → Zig → ReScript fully type-checked
+- ✅ **Type Safety**: Idris2 → Zig → affinescript fully type-checked
 - ✅ **Testing**: 16/16 tests passing (100%)
 - ✅ **Performance**: <1ms operations
 
@@ -246,7 +246,7 @@
 ## 🚀 Next Actions
 
 ### Immediate (Today):
-1. **Fix Phase 2 ReScript syntax** (remove `return` statements) - 30 min
+1. **Fix Phase 2 affinescript syntax** (remove `return` statements) - 30 min
 2. **Test Phase 2 integration** - 30 min
 3. **Create Phase 2 summary doc** - 30 min
 
@@ -310,7 +310,7 @@
 ---
 
 **Status**: Phase 1-2 complete, Phase 3-6 designed and ready for implementation
-**Recommendation**: Fix Phase 2 ReScript syntax, then proceed to Phase 3 TypeScript definitions
+**Recommendation**: Fix Phase 2 affinescript syntax, then proceed to Phase 3 TypeScript definitions
 
 ---
 

@@ -5,9 +5,6 @@ open Model
 open Msg
 open Update
 
-// Direct JS binding for Array.join (avoids deprecated Js.Array2.joinWith)
-@send external joinWith: (array<string>, string) => string = "join"
-
 // Page type delegated to AppRouter for URL synchronisation
 type page = AppRouter.route
 
@@ -43,23 +40,20 @@ let initialAppState = {
   isDark: resolveInitialDark(),
 }
 
-// Serialise the current stack model to a JSON string suitable for the API.
-let serializeStack = (model: model): string => {
-  let services =
-    model.components
-    ->Array.map(comp => {
-      let port =
-        comp.config->Dict.get("port")->Belt.Option.mapWithDefault("0", p => p)
-      "{\"name\":\"" ++
-      comp.id ++
-      "\",\"kind\":\"" ++
-      Model.componentTypeToString(comp.componentType) ++
-      "\",\"port\":" ++
-      port ++
-      "}"
-    })
-    ->joinWith(",")
-  "{\"name\":\"stapeln-stack\",\"services\":[" ++ services ++ "]}"
+// Serialise the current stack model to the full-fidelity design-document
+// JSON string (see DesignFormat.res). This replaces the old hand-rolled
+// `serializeStack`, which emitted only `{"name","kind","port"}` per
+// component, hardcoded the stack name to `"stapeln-stack"`, and dropped
+// position, config (beyond port), and every connection — so autosave was
+// silently destroying topology on every save.
+let serializeForApi = (model: model): string => {
+  let metadata: DesignFormat.designMetadata = {
+    version: DesignFormat.currentVersion,
+    created: Date.toISOString(Date.make()),
+    author: "stapeln-editor",
+    description: "",
+  }
+  DesignFormat.serializeDesign(model, metadata)
 }
 
 // ---------------------------------------------------------------------------
@@ -81,7 +75,7 @@ let make = () => {
     // Handle side effects (API calls + WebSocket)
     switch msg {
     | SaveStack => {
-        let body = serializeStack(newModel)
+        let body = serializeForApi(newModel)
         ignore(
           ApiClient.saveStack(body)
           ->Promise.then(result => {
@@ -93,21 +87,16 @@ let make = () => {
 
     | RunSecurityScan => {
         // First save the stack, then run the security scan with the ID
-        let body = serializeStack(newModel)
+        let body = serializeForApi(newModel)
         ignore(
           ApiClient.saveStack(body)
           ->Promise.then(saveResult => {
             switch saveResult {
-            | Ok(stackIdStr) => {
-                let stackId = switch Int.fromString(stackIdStr) {
-                | Some(id) => id
-                | None => 0
-                }
-                ApiClient.runSecurityScan(stackId)->Promise.then(scanResult => {
-                  dispatch(SecurityScanResult(scanResult))
-                  Promise.resolve()
-                })
-              }
+            | Ok(stackId) =>
+              ApiClient.runSecurityScan(stackId)->Promise.then(scanResult => {
+                dispatch(SecurityScanResult(scanResult))
+                Promise.resolve()
+              })
             | Error(err) => {
                 dispatch(SecurityScanResult(Error(err)))
                 Promise.resolve()
@@ -123,21 +112,16 @@ let make = () => {
 
     | RunGapAnalysis => {
         // First save the stack, then run gap analysis with the ID
-        let body = serializeStack(newModel)
+        let body = serializeForApi(newModel)
         ignore(
           ApiClient.saveStack(body)
           ->Promise.then(saveResult => {
             switch saveResult {
-            | Ok(stackIdStr) => {
-                let stackId = switch Int.fromString(stackIdStr) {
-                | Some(id) => id
-                | None => 0
-                }
-                ApiClient.runGapAnalysis(stackId)->Promise.then(gapResult => {
-                  dispatch(GapAnalysisResult(gapResult))
-                  Promise.resolve()
-                })
-              }
+            | Ok(stackId) =>
+              ApiClient.runGapAnalysis(stackId)->Promise.then(gapResult => {
+                dispatch(GapAnalysisResult(gapResult))
+                Promise.resolve()
+              })
             | Error(err) => {
                 dispatch(GapAnalysisResult(Error(err)))
                 Promise.resolve()
@@ -212,7 +196,7 @@ let make = () => {
     | WsValidate => {
         switch stackChannel.contents {
         | Some(ch) => {
-            let stackJson = serializeStack(newModel)
+            let stackJson = serializeForApi(newModel)
             let payload = JSON.Encode.object(
               Dict.fromArray([("stack", JSON.Encode.string(stackJson))]),
             )
@@ -225,7 +209,7 @@ let make = () => {
     | WsSecurityScan => {
         switch stackChannel.contents {
         | Some(ch) => {
-            let stackJson = serializeStack(newModel)
+            let stackJson = serializeForApi(newModel)
             let payload = JSON.Encode.object(
               Dict.fromArray([("stack", JSON.Encode.string(stackJson))]),
             )
@@ -238,7 +222,7 @@ let make = () => {
     | WsGapAnalysis => {
         switch stackChannel.contents {
         | Some(ch) => {
-            let stackJson = serializeStack(newModel)
+            let stackJson = serializeForApi(newModel)
             let payload = JSON.Encode.object(
               Dict.fromArray([("stack", JSON.Encode.string(stackJson))]),
             )
@@ -318,7 +302,7 @@ let make = () => {
     | AutoSaveTick => {
         // Only save if model is dirty
         if state.model.isDirty {
-          let body = serializeStack(state.model)
+          let body = serializeForApi(state.model)
           ignore(
             ApiClient.saveStack(body)
             ->Promise.then(result => {

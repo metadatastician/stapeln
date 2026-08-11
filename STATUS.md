@@ -1,77 +1,114 @@
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-# stapeln Status (Source of Truth)
+# Stapeln — Measured Status
 
-**Date:** 2026-03-29
+**Last measured:** 2026-08-07 · **Commit:** `bc04e22`
+**Honest completion:** ~48%
+**Languages:** ReScript/React (frontend) · Elixir/Phoenix (backend) · Zig (FFI) · Idris2 (ABI proofs)
 
-## Product Goal
+> This document records **measured** state: every claim is a file read, a command run, or a
+> CI query executed at the commit above. Where another document in this repo contradicts it,
+> this one is correct and the other is stale. Known debt is indexed in [`DEBT.md`](DEBT.md).
 
-A reasonably IT-capable 12-year-old can help their parents build a secure container stack without prior container knowledge.
+## What stapeln is
 
-## What Works Today
+A **compiler from a visual topology to a verified deployment bundle**. You compose a
+container stack on a drag-and-drop canvas; stapeln validates the topology, scans it for
+security gaps, and lowers it to deployment artefacts. The design document round-trips
+losslessly, so the canvas — not the generated files — is the source of truth.
 
-- **UI Prototype (frontend):** 9 views (51 ReScript modules) in `frontend/src/`, all compiling with 0 errors/warnings.
-- **TEA Architecture:** State, Msg, Update, View pattern in App.res. AppIntegrated.res exists as legacy alternative.
-- **Pipeline Designer (new):** Full 3-panel node-graph editor (PipelineDesigner, PipelineCanvas, PipelinePalette, PipelineOutput) with SVG canvas, bezier connections, minimap, context menus, drag-drop, 6 pre-built templates, code generation preview.
-- **URL-based routing:** AppRouter.res syncs tabs with browser URLs; back/forward navigation works.
-- **Undo/redo system:** Snapshot-based with 50-depth cap, Ctrl+Z/Ctrl+Y, visible buttons with disabled state.
-- **Auto-save:** 30-second interval with dirty tracking and visual "Saved"/"Unsaved" indicator.
-- **Dark mode:** System detection (prefers-color-scheme), localStorage persistence, HTML class sync for Tailwind.
-- **Conversational errors:** UX Manifesto Rule 4 pattern (title + reason + [Fix It] buttons) on all API error paths.
-- **Import/Export:** Working file picker → TEA dispatch cycle. Import errors show conversational fix suggestions.
-- **Security UX Components:** Port config (1,165 lines), security inspector (832 lines), gap analysis (951 lines), simulation mode (1,622 lines) — all fully implemented views, not stubs.
-- **Backend API (MVP):** Phoenix REST endpoints for stacks and validation are defined.
-- **GraphQL API (MVP):** Absinthe schema at `/api/graphql` is defined.
-- **Shared API Boundary:** REST/GraphQL route through `backend/lib/stapeln/native_bridge.ex`.
-- **ABI/FFI Contract:** Idris2 ABI (`src/abi/*`) has 8 genuine proofs (no believe_me). Zig FFI (`ffi/zig/src/main.zig`) provides CRUD + validate + dispatch. Real SHA-256 + Ed25519 in `crypto.zig`.
-- **VeriSimDB Integration:** Remote client with JSONL local fallback, configurable timeouts.
-- **Runtime Boundary:** `stapeln/backend` is the design/control plane. Container lifecycle orchestration is delegated to `container-stack/svalinn` and `container-stack/vordr`.
+It is the designer for a six-repo ecosystem: **selur** (compose orchestration), **vordr**
+(health/crash watching), **rokur** (secrets gate), **svalinn** (edge policy gateway),
+**cerro-torre** (signing and provenance).
 
-## What Is Partial or Scaffolded
+## What genuinely works
 
-- **WebSocket integration:** Socket.res exists but no live channel push/receive logic.
-- **Auth:** JWT + Plug module present but no token refresh, revocation, or session management. No login UI.
-- **Firewall:** Schema present but no nftables integration.
-- **Post-Quantum Crypto:** Module scaffolded; no real XMSS implementation.
-- **Simulation — Network (packet flow):** Packet flow UI fully renders with animation and stats; backend `SimulationEngine` produces deterministic dry-run events.
-- **Simulation — Build:** `BuildSimulator` simulates container build layers, sizes, times, security per-layer. Wired to API.
-- **Simulation — What-If:** `WhatIfEngine` compares pipeline variants (Chainguard swap, add gate, merge runs, pin images). Auto-suggests scenarios.
-- **Simulation — Supply Chain:** `SupplyChainAnalyzer` assesses SLSA levels, image provenance, trust boundaries, reproducibility.
-- **Simulation — Sessions:** `SimulationServer` GenServer manages async simulation sessions with start/poll/cancel.
-- **AttackSurfaceAnalyzer:** Documented in ROADMAP but not yet built (0%).
+- 41 REST routes + Absinthe GraphQL (2 queries, 3 mutations), both funnelling through one
+  `Stacks → NativeBridge` boundary
+- 10 UI tabs + 2 auth pages, all render and navigate (TEA / Elm architecture)
+- **Full-fidelity design persistence** — save, autosave, WebSocket validate, security scan
+  and gap analysis all serialise through `DesignFormat.res`, preserving components,
+  connections, positions and config *(fixed in #17, 2026-08-04)*
+- **Security scan and gap analysis reach the backend** — `saveStack` decodes `data.id` into a
+  typed `result<int, string>`; the `stackId = 0` defect that made both endpoints return 400
+  on every call is gone *(fixed in #17)*
+- 8 Idris2 ABI proof modules with `%default total` and **zero** `believe_me` / `postulate` /
+  `assert_total` / holes; `abi.ipkg`'s module list matches the directory (an honest package
+  build, not a per-file `--check` fake gate)
+- Real Ed25519 + SHA-256 in `ffi/zig/src/crypto.zig` via `std.crypto`, 16 Zig tests
+- Multi-format code generation: `Codegen.generate_all/1` and `PipelineCodegen`'s six emitters
+  (Containerfile, selur-compose, podman-compose, k8s, Helm, OCI bundle), exposed at
+  `POST /api/stacks/:id/generate`
+- GitHub Actions runs again — the dependency-lockfile remediation landed in #16/#18, ending
+  the estate-wide `startup_failure` outage for this repo
 
-## Preserved Future Work
+## Test inventory
 
-- **DOM‑mounter track:** Extracted to `/var$REPOS_DIR/stapeln-dom-mounter`.
-- This work is not on the critical path for the container‑hater MVP.
+Counted at `bc04e22`. Commands are given so the numbers are reproducible.
 
-## Architectural Decision: VeriSimDB (2026-03-23)
+| Suite | Cases | Files | Command |
+|---|---|---|---|
+| Elixir ExUnit | **122** | 15 | `grep -rhoE '^\s*(test\|property) "' backend/test` |
+| Deno / JS | **107** | 6 | `grep -rhoE 'Deno\.test\(' tests` |
+| Zig | **16** | — | `grep -rhoE '^\s*test "' ffi/zig` |
+| Idris2 | 8 proof modules | 8 | custom `Test/Spec.idr` harness — cases not grep-enumerable |
 
-**All Stapeln data will use VeriSimDB, not PostgreSQL.** Dogfooding decision.
-- Dedicated instance: port 8093, volume `stapeln-verisimdb-data`
-- Existing `Stapeln.VeriSimDB.Client` module to be extended for stack CRUD
-- Ecto/DbStore/PostgreSQL layer to be removed (was a conventional shortcut)
-- The PostgreSQL container has been stopped; migrations were verified working but are superseded
+**245 executable test cases** plus 8 Idris2 proof modules. An earlier figure of "339 tests"
+circulated; its Idris2 component (107) does not reproduce by any method tried — see
+[`DEBT.md` T-4](DEBT.md#t-4--the-published-test-count-is-not-reproducible).
 
-## What Is Not Implemented Yet
+## What is broken, missing, or misreported
 
-- **VeriSimDB as primary store:** Client exists for audit logging; needs extending for stack/user/settings CRUD
-- **Backend runtime orchestration API:** Not implemented in `stapeln/backend` by design; runtime operations belong to Svalinn/Vordr.
-- **Validation Engine Depth:** 12 check categories returning real findings; not yet parity with full security roadmap.
-- **Formal Verification Layers:** Idris2 types are now present for ABI contracts, but full proof pipeline is not wired.
+- **`scripts/readiness-check.sh` is invoked by nothing.** A correct 5-gate script — clean
+  tree, lockfile hygiene, Deno tests, `rescript build`, `mix deps.get && mix test` — wired to
+  no Justfile target, workflow, or GitLab job. One caller would make the whole suite
+  load-bearing.
+- **No GitHub workflow runs `mix test`.** The 122 backend tests gate nothing on the forge
+  that gates merges. `mix test` appears only in `.gitlab-ci.yml:144`.
+- **The aspect test step cannot fail** — `e2e.yml:43` ends `|| echo "Aspect test script not
+  found"`, but the script exists, so the fallback can only mask real failures. (The e2e step's
+  soft gate at `:20` is honest: it genuinely needs Podman.)
+- **OSSF Scorecard has `startup_failure`d daily since at least 2026-08-04** — a run with zero
+  jobs, which `gh pr checks` does not surface as failing.
+- **`Secret Scanner`, `Governance` and `Instant Sync` are red on `main`.** Open PRs #20–#24
+  address the first two.
+- **`container-stack/` holds five uninitialised submodules**, and the smoke workflow that
+  "checks" them has both build steps on `continue-on-error`.
+- **`ABI-FFI-README.md` documents 7 `stapeln_*_json` functions implemented nowhere.**
+- **`ffi/zig/src/bridge_cli.zig`** — 353 real lines, 5 working ops, no build target.
+- **The WebSocket channel path has no tests** — `stack_channel.ex` changed in #17 with no
+  `ChannelCase` and no channel test directory.
+- **`README.adoc`'s status section is dated 2026-02-13** and disagrees with this document;
+  its `WCAG 2.3 AAA` and `OWASP Compliant` badges are backed by no audit artefact or gate.
 
-## Known Inconsistencies
+## Next actions
 
-- Some docs claim a “complete” product; these refer to an internal DOM‑mounter workstream.
-- `IMPLEMENTATION-PLAN.md` originated as a legacy `stackur` plan and is now archival context.
-- `ROADMAP.adoc` is an alias/deprecation pointer and not the planning source of truth.
+Ordered by leverage.
 
-## Immediate Focus (Next 4 Weeks)
+1. Wire `scripts/readiness-check.sh` into `just` and CI — makes 245 tests load-bearing in one
+   commit
+2. Add a GitHub `Backend Tests` workflow running `mix test`
+3. Drop the dishonest `|| echo` from the aspect step
+4. Fix the Scorecard `startup_failure` (see [`DEBT.md` CI-1](DEBT.md#ci-1--ossf-scorecard-has-startup_failured-every-day-since-at-least-2026-08-04))
+5. Add channel tests for the WebSocket path shipped in #17
+6. Adopt `container/stapeln/` as the canonical output bundle and take ownership of its schema
+   — the compiler ruling
+7. Resolve the AGPL headers on `.github/` templates
 
-- Truth-align docs and roadmap.
-- Expand backend from MVP to production readiness (durable persistence, broader validation, gRPC/GRC if needed).
-- End-user onboarding flow focused on “container haters.”
-- Execute the six-stream plan in `docs/EXECUTION-PLAN-2026-02-11.md`.
+## CI/CD status
 
-## Readiness Gate Status
+**Actions is live again** (post-#16/#18 lockfile adoption); the estate-wide `startup_failure`
+outage no longer applies to this repo. As of the 2026-08-04 push on `main`:
 
-- Current readiness blocker: repo clean gate fails when local edits are present (currently `container-stack/rokur/README.md`).
+- **Passing:** Hypatia Security Scan, SPARK Theatre Gate, BoJ Server Build Trigger
+- **Failing:** Secret Scanner (gitleaks: 12 findings), Governance, Instant Sync
+- **`startup_failure`:** OSSF Scorecard (daily, recurring)
+
+**Gates that genuinely enforce something:** the Deno property suite (42 tests, hard-gated at
+`e2e.yml:31`), GitLab `trivy` and `gitleaks` (`allow_failure: false`), Hypatia, and the SPARK
+Theatre Gate.
+
+## Related
+
+- [`DEBT.md`](DEBT.md) — full debt register, same commit
+- [`.machine_readable/6a2/STATE.a2ml`](.machine_readable/6a2/STATE.a2ml) — machine mirror
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) · [`TOPOLOGY.md`](TOPOLOGY.md) · [`ROADMAP.md`](ROADMAP.md)

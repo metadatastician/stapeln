@@ -4,6 +4,29 @@ defmodule StapelnWeb.Schema do
 
   alias Stapeln.Stacks
 
+  # Opaque JSON scalar, used for the full-fidelity design document. Absinthe
+  # has no built-in arbitrary-JSON type, so this round-trips through Jason.
+  scalar :json, name: "Json" do
+    parse(fn
+      %Absinthe.Blueprint.Input.String{value: value} ->
+        case Jason.decode(value) do
+          {:ok, decoded} -> {:ok, decoded}
+          {:error, _reason} -> :error
+        end
+
+      %Absinthe.Blueprint.Input.Null{} ->
+        {:ok, nil}
+
+      _other ->
+        :error
+    end)
+
+    serialize(&Jason.encode!/1)
+  end
+
+  # `:service` is the DERIVED view flattened from a stack's `design` document
+  # (see `Stapeln.Design.derive_services/1`) — name/kind/port only. Stacks
+  # created without a design document (legacy shape) populate it directly.
   object :service do
     field(:name, non_null(:string))
     field(:kind, :string)
@@ -15,6 +38,7 @@ defmodule StapelnWeb.Schema do
     field(:name, non_null(:string))
     field(:description, :string)
     field(:services, non_null(list_of(non_null(:service))))
+    field(:design, :json)
     field(:created_at, non_null(:string), resolve: &resolve_datetime(:created_at, &1, &2, &3))
     field(:updated_at, non_null(:string), resolve: &resolve_datetime(:updated_at, &1, &2, &3))
   end

@@ -17,6 +17,17 @@ doctor:
     @grep -rn '/var/mnt/eclipse' --include='*.rs' --include='*.ex' --include='*.res' --include='*.gleam' --include='*.sh' --include='*.toml' . 2>/dev/null | grep -v 'Justfile' | head -5 || echo "  [OK] No hardcoded paths in source"
     @echo "Diagnostics complete."
 
+# Run the Elixir backend test suite (122 tests)
+test-backend:
+    cd backend && mix deps.get && mix test
+
+# The merge gate: repo clean, lockfiles untracked, Deno tests, rescript build,
+# and the backend suite. `scripts/readiness-check.sh` has existed and been
+# correct for months while being invoked by nothing; this is its caller.
+# Gate 1 requires a clean tree, so run this BEFORE committing, not mid-edit.
+readiness:
+    bash scripts/readiness-check.sh
+
 # Guided tour of key features
 tour:
     @echo "=== stapeln Tour ==="

@@ -19,7 +19,7 @@ It is **not on the critical path** for the container‑hater MVP.
 
 ## Where The Code Lives
 
-- ReScript bindings: `src/DomMounter*.res`.
+- affinescript bindings: `src/DomMounter*.res`.
 - Framework adapters: `src/ReactAdapter.res`, `src/SolidAdapter.res`, `src/VueAdapter.res`, `src/WebComponent.res`, `src/SSRAdapter.res`.
 - Idris2 proofs: `src/abi/DomMounter.idr`.
 - Zig FFI: `ffi/zig/src/dom_mounter*.zig`.

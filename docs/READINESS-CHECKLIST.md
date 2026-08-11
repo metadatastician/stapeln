@@ -18,9 +18,9 @@ Pass condition:
 - No unstaged or staged tracked changes.
 - No untracked files.
 
-2. ReScript lockfiles untracked
+2. affinescript lockfiles untracked
 Pass condition:
-- No `rescript.lock` file is tracked in git.
+- No `affinescript.lock` file is tracked in git.
 
 3. Root tests (Deno)
 Pass condition:
@@ -28,7 +28,7 @@ Pass condition:
 
 4. Frontend compile
 Pass condition:
-- `timeout 120s rescript build` in `frontend/` exits 0.
+- `timeout 120s affinescript build` in `frontend/` exits 0.
 
 5. Backend tests
 Pass condition:
@@ -37,5 +37,5 @@ Pass condition:
 ## Current status notes
 
 - Root tests are now offline-safe (local assertions under `tests/test_assert.js`).
-- ReScript lockfiles are ignored via `.gitignore` and removed from tracking.
+- affinescript lockfiles are ignored via `.gitignore` and removed from tracking.
 - `container-stack/` and `selur-compose/` are treated as source docs and should be committed.

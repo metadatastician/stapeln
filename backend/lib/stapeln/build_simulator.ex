@@ -923,8 +923,34 @@ defmodule Stapeln.BuildSimulator do
   defp node_type(node), do: Map.get(node, "type", Map.get(node, :type, ""))
   defp node_config(node), do: Map.get(node, "config", Map.get(node, :config, %{}))
 
+  # Look up a config entry by its string key, falling back to the atom form.
+  #
+  # The obvious one-liner is wrong:
+  #
+  #     Map.get(config, key, Map.get(config, String.to_existing_atom(key), nil))
+  #
+  # Elixir evaluates arguments EAGERLY, and the atom lookup sits in the
+  # `default` position -- so `String.to_existing_atom/1` runs even when the
+  # string key IS present, and raises ArgumentError whenever that atom has
+  # never been created in this VM. `"src"` and `"dst"` are exactly such keys:
+  # no literal `:src` appears anywhere in the codebase, so the atom does not
+  # exist and every copy layer blew up. That was 11 of the 122 backend tests.
+  #
+  # Fetch first, and only reach for the atom form if the string key is absent
+  # -- tolerating the atom not existing, because an atom that was never
+  # created cannot be a key in this map anyway.
   defp config_value(config, key) when is_map(config) do
-    Map.get(config, key, Map.get(config, String.to_existing_atom(key), nil))
+    case Map.fetch(config, key) do
+      {:ok, value} ->
+        value
+
+      :error ->
+        try do
+          Map.get(config, String.to_existing_atom(key), nil)
+        rescue
+          ArgumentError -> nil
+        end
+    end
   end
 
   defp config_value(_, _), do: nil

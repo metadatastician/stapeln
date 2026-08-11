@@ -1,118 +1,117 @@
 # SPDX-License-Identifier: MPL-2.0
-# STATE.a2ml — Project state checkpoint
-# Converted from STATE.scm on 2026-03-15
-
+# Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
+#
+# STATE.a2ml — Stapeln project state (MEASURED, not self-reported)
 [metadata]
 project = "stapeln"
 version = "0.1.0"
-last-updated = "2026-05-20"
+last-updated = "2026-08-07"
 status = "active"
+session = "measured audit — 2026-08-07"
+commit = "bc04e22"
+measurement-method = "file reads, greps, gh API + CI run history at the commit above; see STATUS.md and DEBT.md"
 
 [project-context]
-name = "stapeln"
-completion-percentage = 91
-phase = "D-floor lift in progress toward C"
-crg-grade = "D"
-crg-achieved-date = "2026-04-18"
-crg-grade-previous = "C"
-crg-grade-demoted = "2026-04-18"
-crg-grade-notes = "Demoted C->D per docs/governance/CRG-AUDIT-2026-04-18.adoc. D→C blockers resolved 2026-04-25: docs/READINESS.adoc created; 9 implementation-subtree README.adoc files added (api/ container-stack/ docs/ examples/ ffi/ generated/ scripts/ site/ src/). Dogfooding evidence populated 2026-04-18. Remaining gap: regular Rust test signal in push/PR CI. Pending CI green to formally claim C."
+name = "Stapeln"
+purpose = """Visual container stack designer — a compiler from a drag-and-drop topology to a verified deployment bundle"""
+completion-percentage = 48
+completion-basis = "measured 2026-08-07; up from 45% (2026-07-28) after PR #17 closed the two persistence defects"
 
-[dogfooding-status]
-# Populated 2026-04-18 against real on-disk integrations.
-boj-server-mcp = "2026-04-18 — stapeln-mcp cartridge (284 LOC, Deno mod.js + Idris2 ABI + Zig FFI). Container orchestration MCP shim. Path: boj-server/cartridges/stapeln-mcp/"
-verisimdb-migration = "2026-04-18 — estate-wide dogfooding decision 2026-03-23: stapeln runs on VeriSimDB (port 8093), migrated from PostgreSQL. Matches memory rule 'VeriSimDB mandatory everywhere'."
+[position]
+phase = "implementation"   # design | implementation | testing | maintenance | archived
+maturity = "alpha"  # experimental | alpha | beta | production | lts
 
-[current-position]
-frontend-modules = 51
-frontend-views = 9
-frontend-errors = 0
-frontend-warnings = 0
-backend-api-verified = true
-database-running = false
-database-engine = "verisimdb (port 8093, to be migrated from postgresql)"
-database-decision = "Full VeriSimDB, no PostgreSQL — dogfooding decision 2026-03-23"
-end-to-end-verified = true
-
-[recent-changes]
-session-date = "2026-03-23"
-commits = 7
-methodology = "TSDM+Meander hybrid"
-key-additions = [
-  "Pipeline Designer (9th tab, 3-panel node-graph editor)",
-  "Undo/redo (snapshot-based, 50-depth, Ctrl+Z/Y)",
-  "Auto-save (30s timer, dirty tracking, visual indicator)",
-  "Dark mode (system detection, localStorage, Tailwind sync)",
-  "Conversational errors (UX Manifesto Rule 4, [Fix It] buttons)",
-  "URL routing (AppRouter, browser back/forward, 404 page)",
-  "Security views wired to live backend API",
-  "API proxy in frontend dev server",
-  "PostgreSQL running via Podman, migrations applied",
-  "Security scanner KeyError fixed"
+[verified-working]
+items = [
+  """41 REST routes + real Absinthe GraphQL (2 queries, 3 mutations), both funnelling through one `Stacks -> NativeBridge` boundary""",
+  """10 UI tabs + 2 auth pages, all render and navigate (TEA pattern)""",
+  """Full-fidelity design persistence: save, autosave, WS validate, security scan and gap analysis all serialise via `DesignFormat.res`, preserving components, connections, positions and config (PR #17, 2026-08-04)""",
+  """Security scan and gap analysis reach the backend: `saveStack` decodes `data.id` into `result<int, string>`; the stackId=0 defect that 400'd both endpoints is gone (PR #17)""",
+  """8 genuine Idris2 proof modules — `%default total`, ZERO `believe_me`/`postulate`/`assert_total`/holes; `abi.ipkg` module list matches the directory (an honest ipkg, not the fake per-file `--check`)""",
+  """Real Ed25519 + SHA-256 in `ffi/zig/src/crypto.zig` via `std.crypto`, 16 Zig tests""",
+  """Multi-format codegen: `Codegen.generate_all/1` + `PipelineCodegen` six emitters (Containerfile, selur-compose, podman-compose, k8s, Helm, OCI), exposed at POST /api/stacks/:id/generate""",
+  """GitHub Actions runs again — dependency-lockfile remediation (#16/#18) ended the estate startup_failure outage for this repo""",
 ]
 
-[blockers]
-verisimdb-migration = "Replace Ecto/PostgreSQL with VeriSimDB for all data — dogfooding"
-auth-ui = "JWT backend exists but no login screen"
-attack-surface-analyzer = "Documented in ROADMAP, 0% built"
-websocket = "Socket.res scaffolded, no live channel events"
+[test-inventory]
+measured-at = "bc04e22"
+exunit-cases = 122
+exunit-files = 15
+exunit-command = """grep -rhoE '^\\s*(test|property) "' backend/test"""
+deno-cases = 107
+deno-files = 6
+deno-command = """grep -rhoE 'Deno\\.test\\(' tests"""
+zig-cases = 16
+zig-command = """grep -rhoE '^\\s*test "' ffi/zig"""
+idris2-modules = 8
+idris2-note = "custom Test/Spec.idr harness; discrete cases not grep-enumerable"
+executable-total = 245
+superseded-claim = "an earlier '339 tests' figure circulated; its 107-Idris2 component does not reproduce by any method tried — see DEBT.md T-4"
 
-[next-actions]
-priority-0 = "Migrate persistence from PostgreSQL to VeriSimDB (port 8093)"
-priority-1 = "Build AttackSurfaceAnalyzer.res (MUST-2)"
-priority-2 = "Auth login screen (MUST-9)"
-priority-3 = "Browser visual testing (BoJ browser cartridge needed)"
-priority-4 = "WebSocket live events"
+[blockers-and-issues]
+issues = [
+  """**`scripts/readiness-check.sh` is invoked by nothing.** A correct 5-gate script (clean tree, lockfile hygiene, Deno tests, `rescript build`, `mix deps.get && mix test`) wired to no Justfile target, workflow, or GitLab job.""",
+  """**No GitHub workflow runs `mix test`.** 122 backend tests gate nothing on the forge that gates merges; `mix test` appears only at `.gitlab-ci.yml:144`.""",
+  """**The aspect test step cannot fail** — `e2e.yml:43` ends `|| echo "Aspect test script not found"` but the script exists, so the fallback only masks real failures.""",
+  """**OSSF Scorecard startup_failure daily since at least 2026-08-04** — zero-job runs, invisible to `gh pr checks`. Diagnosis (unconfirmed): job-level `permissions:` on the reusable call omits `actions: read` granted at workflow level.""",
+  """**Secret Scanner, Governance and Instant Sync are red on main** (gitleaks reports 12 findings). Open PRs #20-#24 address the first two.""",
+  """`container-stack/*` are 5 uninitialised submodules; the smoke workflow that 'checks' them has both build steps on `continue-on-error`.""",
+  """The WebSocket channel path has no tests — `stack_channel.ex` changed in #17 with no ChannelCase and no channel test directory.""",
+  """`ABI-FFI-README.md` documents 7 `stapeln_*_json` functions implemented nowhere.""",
+  """`ffi/zig/src/bridge_cli.zig` — 353 real lines, 5 working ops, has NO build target.""",
+  """`README.adoc` status section is dated 2026-02-13 and contradicts STATUS.md; its WCAG 2.3 AAA and OWASP Compliant badges are backed by no audit artefact or gate.""",
+  """`RSR_OUTLINE.adoc` is unmodified template boilerplate describing the generic RSR template, not stapeln; it claimed the licence was "AGPL + Palimpsest dual license". Banner + inline annotations added 2026-08-07; broken `image:[]` markup remains.""",
+  """`just crg-badge` and `just crg-grade` both fail with `sh: 1: Syntax error: "(" unexpected` (Justfile lines 69/80, bash-isms under sh) — the repo ships a CRG generator that cannot generate.""",
+  """**The frontend language is banned by estate policy.** ReScript was retired estate-wide for AffineScript; stapeln's frontend is ~50 `.res` modules and the governance anti-pattern job passes them only as explicit exemptions. Architectural debt: rewrite or declared carve-out. PR #23 begins the declaration.""",
+]
 
-[session-history]
-# 2026-03-23: Pipeline Designer, undo/redo, auto-save, dark mode, conversational errors,
-#             URL routing, security views wired to backend, API proxy, PostgreSQL running.
-# 2026-04-03: Stack trace exposure fixed in rokur/main.js and vordr/http-server.ts.
-#             Error details now logged server-side only, removed from HTTP responses.
-# 2026-04-04: CRG D→C blitz. Added: selur property_test.rs (18 proptest), e2e_test.rs (10),
-#             aspect_test.rs (13); vordr property_test.rs (15 proptest), e2e_test.rs (7).
-#             Deno: unit/container_types_test.ts (27), property/nickel_config_properties_test.ts (20),
-#             e2e/container_lifecycle_test.ts (7), aspect/security_test.ts (10).
-#             Fixed both vordr benchmarks (container_lifecycle + ebpf_overhead — pre-existing API errors).
-#             Removed tests/fuzz/placeholder.txt. All tests pass: 186+80 Deno + 48 new Rust = 314+ total.
-# 2026-04-04: Session 9 dogfooding. Added: tests/property/layer_invariants_test.ts (25 property tests),
-#             .github/workflows/e2e.yml workflow. Completion 87% → 91% (4% for property + test infrastructure).
-# 2026-04-25: D→C blocker sweep. docs/READINESS.adoc created; 9 implementation-subtree
-#             README.adoc files added (api/ container-stack/ docs/ examples/ ffi/
-#             generated/ scripts/ site/ src/).
-# 2026-05-20: Estate test rollout — port 8 of 11. Ported all 5 Deno test files
-#             (unit/container_types_test.ts, property/nickel_config_properties_test.ts,
-#             property/layer_invariants_test.ts, e2e/container_lifecycle_test.ts,
-#             aspect/security_test.ts) + 1 JS test file (tests/stapeln.test.js) to
-#             Idris2 0.8.0. Lives in tests/idris2/ behind stapeln-tests.ipkg, uses
-#             the shared estate Test.Spec harness. 107 / 107 tests pass.
-#             Module → source map: ContainerTypesTest (26), NickelConfigPropertiesTest (15),
-#             SecurityAspectTest (16), LayerInvariantsTest (27), ContainerLifecycleTest (7),
-#             StapelnTest (16). TS sources retained side-by-side for cross-check until
-#             all 11 estate repos are green; they will be retired then.
-# 2026-04-19: Idris2 proof build restored in cerro-torre/verification/idris. After the assert_total
-#             spec-stub removal the modules had stopped type-checking: `chainCommutative` had a real
-#             type error, and five other proofs (verifyChain, chainHeadValid, chainTailValid,
-#             chainImpliesIndividual, chainExtension + their callers in Theorems.idr) were flagged
-#             "not covering" under %default total because they transitively call the partial
-#             `verifyEd25519`/`sha256`/string-primitive spec stubs. Fixes:
-#               - Propagated explicit `partial` markers through every caller of a spec stub so
-#                 partiality stays auditable without disabling %default total.
-#               - Disambiguated Data.List.isPrefixOf vs Data.String.isPrefixOf in SafePath and
-#                 normalizedIsSafe; added Data.Nat + Decidable.Equality imports.
-#               - Added Eq TarEntry so OCILayout's hasManifest `elem` witness type-checks.
-#               - Hoisted TarEntry above its first use (was declared after the postulates that
-#                 referred to it); fixed the `size`-shadow warning in tarBombPrevention.
-#               - Theorems.idr: added Data.Vect import (was leaning on transitive visibility);
-#                 marked computeBundleHash / WellFormed / ProperlySigned / bundleIntegrity /
-#                 signatureChainSoundness / supplyChainIntegrity / thresholdSatisfaction /
-#                 nonRepudiation as partial (inherited from spec stubs).
-#               - `chainCommutative`: demoted from proven to postulate. The with-block proof
-#                 fails because Idris2's with-abstraction is syntactic — the goal
-#                 `verifyChain hash [a,b] = verifyChain hash [b,a]` never contains
-#                 `verifyEd25519 ...` as a literal subterm at abstraction time, and Idris2 refuses
-#                 to reduce `verifyChain [n]` past an opaque verifyEd25519 head. Documented the
-#                 required refactor (`verifyChain = allValid ∘ map verifyPair` with pattern-match
-#                 on Bool head) in the postulate comment + PROOF-NEEDS.md §"chainCommutative
-#                 regression". Postulate count 12 → 13 (regression acknowledged, not hidden).
-#             Net: all 5 modules now build clean under %default total with zero warnings.
+[critical-next-actions]
+actions = [
+  """Wire scripts/readiness-check.sh into just + CI — makes 245 tests load-bearing in one commit""",
+  """Add a GitHub `Backend Tests` workflow running `mix test`""",
+  """Drop the dishonest `|| echo` from the aspect step in e2e.yml""",
+  """Fix the OSSF Scorecard startup_failure (permissions escalation on the reusable call)""",
+  """Add channel tests for the WebSocket path shipped in #17""",
+  """Adopt container/stapeln/ as the canonical output bundle and take ownership of its schema""",
+  """Restore the six wanted badges once evidence exists — see docs/BADGES.md (SOC 3 / ISO 27001 / CIAQ need only a public reference)""",
+  """Fix the two broken CRG just recipes so the grade badge can be published""",
+]
+
+[debt]
+register = "DEBT.md"
+domains = ["licence", "documentation", "code", "proof", "test", "cicd", "supply-chain"]
+item-count = 30
+highest-severity = "HIGH"
+high-items = ["D-1", "D-2", "T-1", "T-2", "CI-0", "CI-1", "CI-2"]
+cross-cutting = "several gates are wired so they cannot fail; fixing them makes the board look worse and be better"
+
+[licensing]
+code = "MPL-2.0"
+documentation = "CC-BY-SA-4.0"
+third-licence = "none"
+policy-doc = "LICENSING.md"
+canonical-text = "LICENSE (GitHub-detected); LICENSES/MPL-2.0.txt is a byte-identical duplicate for REUSE"
+spdx-header-rule = "line 1 only — the licence gate reads head -1; move a misplaced identifier, never add a second"
+resolved-2026-08-07 = "9 .github/ template files relicensed AGPL-3.0-or-later -> MPL-2.0; orphan LICENSES/AGPL-3.0-or-later.txt removed; duplicate MPL text synced"
+verified-distribution = "491 MPL-2.0 · 179 CC-BY-SA-4.0 · nothing else"
+historical-false-claims = ["AGPL-3.0-or-later (template drift)", "AGPL + Palimpsest dual (RSR_OUTLINE template text)", "PMPL-1.0-or-later (README badge alt-text)"]
+
+[badges]
+register = "docs/BADGES.md"
+displayed-and-verified = ["License MPL-2.0", "OpenSSF Scorecard", "OpenSSF Best Practices", "ReScript", "Elixir", "Idris2"]
+wanted-pending-evidence = ["WCAG 2.3 AAA", "OWASP", "SOC 3", "ISO 27001", "CIAQ", "Green Hosting"]
+blocked-by-bug = ["CRG grade — just crg-badge/crg-grade broken"]
+rule = "no badge without a resolvable public reference; removed badges are wanted, not abandoned"
+
+[ecosystem]
+stack = ["stapeln", "selur", "vordr", "rokur", "cerro-torre", "svalinn"]
+designer = "stapeln"
+canonical-contract = "container/stapeln/ — 8-file bundle, one file per satellite"
+contract-status = "NOT EMITTED BY STAPELN; consumed by 1 of 5 satellites (selur parses compose.toml) as of 2026-08-07"
+runtime-chain = "svalinn(443/80) -> app; rokur(9090) is an authorize-start sidecar, not a proxy; vordr watches; cerro-torre signs; selur orchestrates"
+runtime-chain-note = "revised 2026-08-03: the bundle's rokur.toml described a reverse proxy rokur has never implemented"
+
+[maintenance-status]
+last-run-utc = "2026-08-07T00:00:00Z"
+last-result = "measured"  # unknown | pass | warn | fail | measured
+reference = "STATUS.md, DEBT.md (both at bc04e22)"

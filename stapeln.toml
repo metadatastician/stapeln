@@ -8,15 +8,15 @@
 #
 # Components:
 #   backend/     — Elixir/Phoenix (GraphQL + gRPC)
-#   frontend/    — ReScript-TEA + Deno
+#   frontend/    — affinescript-TEA + Deno
 #   ffi/zig/     — Zig FFI (stapeln_ffi + stapeln_crypto)
 #   src/abi/     — Idris2 ABI definitions + proofs
 #   container-stack/selur/    — Rust WASM IPC bridge
 #   container-stack/vordr/    — Rust container orchestration CLI
-#   container-stack/svalinn/  — ReScript/Deno edge gateway
+#   container-stack/svalinn/  — affinescript/Deno edge gateway
 #   container-stack/cerro-torre/ — Ada/SPARK supply-chain signing
 #   container-stack/rokur/    — Deno secrets management gate
-#   dom-mounter/ — ReScript DOM mounting library
+#   dom-mounter/ — affinescript DOM mounting library
 #   ephapax-modules/ — Ephapax linear type modules
 #   ffi/zig/     — Zig FFI (canonical API surface; Idris2 owns ABI)
 
@@ -48,7 +48,7 @@ runtime = "podman"
 # The dependency graph:
 #
 #   base ──┬── elixir-toolchain ── backend-deps ── backend-build ── backend-release
-#          ├── deno-toolchain ── rescript-toolchain ── frontend-build
+#          ├── deno-toolchain ── affinescript-toolchain ── frontend-build
 #          ├── zig-toolchain ── ffi-build
 #          ├── idris2-toolchain ── abi-verify
 #          └── runtime (multi-stage final image)
@@ -110,7 +110,7 @@ artefacts = [
     { src = "_build/prod/rel/stapeln/", dst = "/opt/stapeln/" },
 ]
 
-# ── Deno / ReScript / Frontend ───────────────────────────────────────────
+# ── Deno / affinescript / Frontend ───────────────────────────────────────────
 
 [layers.deno-toolchain]
 description = "Deno runtime"
@@ -118,21 +118,20 @@ extends = "base"
 packages = ["deno"]
 cache = true
 
-[layers.rescript-toolchain]
-description = "Deno + ReScript compiler (node needed for resc compiler)"
+[layers.affinescript-toolchain]
+description = "Deno + AffineScript compiler (OCaml toolchain)"
 extends = "deno-toolchain"
-packages = ["nodejs"]
+packages = ["opam", "ocaml"]
 cache = true
 
 [layers.frontend-build]
-description = "Build ReScript-TEA frontend (SVG canvas, component library)"
-extends = "rescript-toolchain"
+description = "Build affinescript-TEA frontend (SVG canvas, component library)"
+extends = "affinescript-toolchain"
 workdir = "/build/frontend"
 copy = [
     { src = "frontend/package.json", dst = "package.json" },
     { src = "frontend/deno.json", dst = "deno.json" },
     { src = "frontend/deno.lock", dst = "deno.lock" },
-    { src = "frontend/rescript.json", dst = "rescript.json" },
     { src = "frontend/import_map.json", dst = "import_map.json" },
 ]
 commands = [
@@ -141,7 +140,7 @@ commands = [
 cache = true
 
 [layers.frontend-compile]
-description = "Compile ReScript sources and bundle for production"
+description = "Compile affinescript sources and bundle for production"
 extends = "frontend-build"
 workdir = "/build/frontend"
 copy = [
@@ -152,8 +151,8 @@ copy = [
     { src = "frontend/server.js", dst = "server.js" },
 ]
 commands = [
-    "./node_modules/.bin/rescript build",
-    "deno bundle src/Main.res.js build/bundle.js || true",
+    "affinescript compile src/Main.affine -o build/bundle.wasm",
+    "deno bundle build/bundle.wasm build/bundle.js || true",
 ]
 artefacts = [
     { src = "/build/frontend/build/", dst = "/opt/stapeln-frontend/" },
@@ -216,8 +215,8 @@ commands = [
 # ── DOM Mounter ──────────────────────────────────────────────────────────
 
 [layers.dom-mounter-build]
-description = "Build DOM mounter ReScript library"
-extends = "rescript-toolchain"
+description = "Build DOM mounter affinescript library"
+extends = "affinescript-toolchain"
 workdir = "/build/dom-mounter"
 copy = [
     { src = "dom-mounter/package.json", dst = "package.json" },
@@ -314,14 +313,14 @@ copy-from = [
 entrypoint = ["/usr/local/bin/vordr"]
 
 [components.svalinn]
-description = "OCI edge gateway — migrating ReScript → AffineScript (general app) + Ephapax (linear security core); Deno host. Pre-start verification hooks."
+description = "OCI edge gateway — migrating AffineScript (general app) + Ephapax (linear security core); Deno host. Pre-start verification hooks."
 path = "container-stack/svalinn"
-language = "rescript"  # in migration: 11/33 modules ported to .affine; auth/bridge security core targets ephapax (linear). Build still compiles remaining .res.
+language = "AffineScript"  # in migration: 11/33 modules ported to .affine; auth/bridge security core targets ephapax (linear). Build still compiles remaining .res.
 build-system = "deno"
 containerfile = "container-stack/svalinn/Containerfile"
 
 [components.svalinn.layers.build]
-description = "Compile Svalinn ReScript edge gateway"
+description = "Compile Svalinn affinescript edge gateway"
 from = "cgr.dev/chainguard/wolfi-base:latest"
 packages = ["deno", "nodejs"]
 workdir = "/build"
@@ -335,7 +334,7 @@ copy = [
 ]
 commands = [
     "deno install",
-    "cd src && ./node_modules/.bin/rescript build",
+    "cd src && ./node_modules/.bin/affinescript build",
 ]
 
 [components.svalinn.layers.runtime]
@@ -489,7 +488,7 @@ require-linearity-check = true
 
 [targets.development]
 description = "Full development stack — backend + frontend + FFI with debug logging"
-layers = ["base", "elixir-toolchain", "backend-deps", "backend-build", "deno-toolchain", "rescript-toolchain", "frontend-build", "frontend-compile", "zig-toolchain", "ffi-build", "idris2-toolchain", "abi-verify"]
+layers = ["base", "elixir-toolchain", "backend-deps", "backend-build", "deno-toolchain", "affinescript-toolchain", "frontend-build", "frontend-compile", "zig-toolchain", "ffi-build", "idris2-toolchain", "abi-verify"]
 env = { MIX_ENV = "dev", LOG_LEVEL = "debug", PHX_SERVER = "true" }
 expose = [4000, 4001, 3000]
 
@@ -500,7 +499,7 @@ env = { MIX_ENV = "prod", LOG_LEVEL = "info", PHX_SERVER = "true", RELEASE_COOKI
 
 [targets.test]
 description = "Test target — all toolchains + test deps + fuzz harness"
-layers = ["base", "elixir-toolchain", "backend-deps", "backend-build", "deno-toolchain", "rescript-toolchain", "frontend-build", "frontend-compile", "zig-toolchain", "ffi-build", "idris2-toolchain", "abi-verify"]
+layers = ["base", "elixir-toolchain", "backend-deps", "backend-build", "deno-toolchain", "affinescript-toolchain", "frontend-build", "frontend-compile", "zig-toolchain", "ffi-build", "idris2-toolchain", "abi-verify"]
 env = { MIX_ENV = "test", LOG_LEVEL = "debug" }
 commands = [
     "cd /build/backend && mix test",

@@ -6,13 +6,13 @@ This is the **stapeln UI application** (not the DOM‑mounter library).
 ## What This Is
 
 - The visual, end‑user app for designing secure container stacks.
-- Implemented with ReScript (TEA) and served with Deno.
+- Implemented with affinescript (TEA) and served with Deno.
 
 ## Quick Start
 
 ```bash
 cd /var$REPOS_DIR/stapeln/frontend
-rescript build
+affinescript build
 deno task dev
 ```
 

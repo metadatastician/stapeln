@@ -13,7 +13,7 @@
 - `Main.res` - 3 template literals converted
 
 **Example Fix:**
-```rescript
+```affinescript
 // Before:
 style={`
   padding: 2rem;
@@ -35,7 +35,7 @@ style={ReactDOM.Style.make(
 - `Main.res` - 1 string literal converted
 
 **Example Fix:**
-```rescript
+```affinescript
 // Before:
 style="display: flex; gap: 1rem;"
 
@@ -120,7 +120,7 @@ style={ReactDOM.Style.make(~display="flex", ~gap="1rem", ())}
 - ✅ Accessibility-first approach (ARIA, live regions, screen reader support)
 
 **Components Ready for Integration:**
-```rescript
+```affinescript
 // Wrap app with error boundary
 <ErrorBoundary>
   <App />
@@ -148,7 +148,7 @@ style={ReactDOM.Style.make(~display="flex", ~gap="1rem", ())}
 
 ### Code Quality
 - **Style Consistency:** 100% ReactDOM.Style.make usage
-- **ARIA Compliance:** All attributes follow ReScript v11+ standards
+- **ARIA Compliance:** All attributes follow affinescript v11+ standards
 - **Type Safety:** All poly variants correctly typed
 - **Accessibility:** WCAG 2.3 AAA maintained throughout
 

@@ -132,7 +132,7 @@ Refl/assert_total in cerro-torre or vordr proof code.
    `missing_timeout` flags are NOT fixable in-repo (GitHub disallows timeout on `uses:` jobs).
 3. **svalinn greenfield proofs** → **svalinn#34**. 177 `Obj.magic` in auth/MCP/policy;
    gated on the AffineScript migration. svalinn PR #32 also red on pre-existing Type/Lint/Format.
-4. **Estate CLAUDE.md sweep** → **stapeln#93**. propagate ReScript→AffineScript
+4. **Estate CLAUDE.md sweep** → **stapeln#93**. propagate affinescript→AffineScript
    reconciliation to the other repos via the rsr-template-repo (only stapeln+svalinn done here).
 
 The Hypatia advisory scan (444 findings: 20 critical / 149 high / 275 medium) is
@@ -145,4 +145,4 @@ substring-matched and flagged as structural_drift) to keep it green.
 cerro-torre discharges (ociLayoutEnforcement, absolutePathRejection + SafePath fix);
 vordr repair; SPARK gate fix (config-gen + SPARK_Mode consistency); CI root-fixes
 (A2ML carve-out, `.hypatia-baseline.json` for .res/.dats, workflow pin+timeouts);
-CLAUDE.md ReScript→AffineScript reconciliation (stapeln #89 + svalinn #32).
+CLAUDE.md affinescript→AffineScript reconciliation (stapeln #89 + svalinn #32).
