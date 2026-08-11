@@ -10,8 +10,8 @@
 
 ## Phase 1: Frontend Foundation (Week 1-2)
 
-### 1.1 ReScript-TEA Setup
-- [x] Create ReScript project structure
+### 1.1 affinescript-TEA Setup
+- [x] Create affinescript project structure
 - [x] Configure Deno runtime
 - [x] Set up import maps for dependencies
 - [ ] Install/vendor cadre-tea-router
@@ -181,7 +181,7 @@
 - [ ] Color blindness simulation
 
 ### 7.2 Unit Testing
-- [ ] ReScript tests (Tea.Test)
+- [ ] affinescript tests (Tea.Test)
 - [ ] Elixir tests (ExUnit)
 - [ ] Idris2 tests
 - [ ] Rust tests (Cargo test)
@@ -223,7 +223,7 @@
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| **Frontend** | ReScript-TEA | UI state management (Elm Architecture) |
+| **Frontend** | affinescript-TEA | UI state management (Elm Architecture) |
 | | Deno | Secure JavaScript runtime |
 | | cadre-tea-router | Routing for TEA |
 | | SVG | Canvas for drag-and-drop |
@@ -274,7 +274,7 @@
 
 ## Next Steps
 
-1. **Immediate**: Set up ReScript + Deno development environment
+1. **Immediate**: Set up affinescript + Deno development environment
 2. **This week**: Complete Phase 1 (Frontend foundation)
 3. **Next week**: Implement drag-and-drop (Phase 2)
 4. **Two weeks**: Backend setup (Phase 3)

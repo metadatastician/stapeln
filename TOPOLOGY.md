@@ -1,3 +1,9 @@
+> [!WARNING]
+> **SUPERSEDED — this document contains claims falsified by measurement on 2026-07-28.**
+> See `STATUS.md` in this repo for measured state, and
+> `dev-notes/stapeln-ecosystem-COMPREHENSIVE-SITREP-2026-07-28.md` for full evidence.
+> Falsified here: claims ~82% overall, 'Database Integration 100% PostgreSQL' (no ecto/postgrex in mix.exs), and 'Security/Gap views call real API' (they make zero HTTP calls). Retained for history; do not cite.
+
 <!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
 <!-- TOPOLOGY.md — Project architecture map and completion dashboard -->
 <!-- Last updated: 2026-03-23 -->
@@ -14,7 +20,7 @@
                                             |
                                             v
                         +-----------------------------------------+
-                        |         FRONTEND (RESCRIPT TEA)         |
+                        |         FRONTEND (affinescript TEA)         |
                         |  +-----------+  +-------------------+  |
                         |  | 9 Views   |  | Socket.res        |  |
                         |  | (Tabbed)  |  | (WebSocket)       |  |
@@ -76,7 +82,7 @@
 ```
 COMPONENT                          STATUS              NOTES
 ---------------------------------  ------------------  ---------------------------------
-FRONTEND (51 ReScript modules, 0 errors, 0 warnings)
+FRONTEND (51 affinescript modules, 0 errors, 0 warnings)
   Frontend UI (9 views)            #########.  92%     9 tabs inc. Pipeline Designer; dark mode, undo/redo, auto-save
   Frontend-Backend Wiring          #########.  90%     REST proxy wired; security/gap views call real API; auto-trigger
   Pipeline Designer (NEW)          #########.  90%     3-panel node-graph: canvas, palette, output; 6 templates
@@ -120,7 +126,7 @@ OVERALL:                           ########..  ~82%    End-to-end verified: fron
 ## Key Dependencies
 
 ```
-Frontend (ReScript-TEA)
+Frontend (affinescript-TEA)
     |
     +--> ApiClient --> Phoenix REST + GraphQL --> NativeBridge --> Zig FFI
     |                       |                         |               |

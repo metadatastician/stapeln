@@ -24,6 +24,18 @@
 // Tour step definition
 // ---------------------------------------------------------------------------
 
+// Position hint: where to place the tooltip relative to the target.
+// NOTE: declared as its own `type` (not `and`-chained with `tourStep`) —
+// the ReScript 12 parser can't resolve a record field whose name is
+// identical to a same-recursive-group type it is referencing (pre-existing
+// build break, unrelated to this change; see task-2-report.md).
+type position =
+  | Top
+  | Bottom
+  | Left
+  | Right
+  | Center
+
 // Each step has a title, body text, and a target CSS selector used to
 // position the tooltip near the relevant UI element. If the target is
 // not found in the DOM, the tooltip centres itself on screen.
@@ -34,12 +46,6 @@ type tourStep = {
   // Position hint: where to place the tooltip relative to the target
   position: position,
 }
-and position =
-  | Top
-  | Bottom
-  | Left
-  | Right
-  | Center
 
 // ---------------------------------------------------------------------------
 // Step definitions
@@ -315,7 +321,7 @@ let make = () => {
   switch tourState {
   | Hidden | Completed => React.null
   | Active(stepIdx) =>
-    let step = steps[stepIdx]->Option.getOr(steps[0]->Option.getExn)
+    let step = steps[stepIdx]->Belt.Option.getWithDefault(steps[0]->Belt.Option.getExn)
     let targetRect = measureTarget(step.targetSelector)
     let (topPos, leftPos) = computeTooltipPosition(step, targetRect)
     let isFirst = stepIdx === 0

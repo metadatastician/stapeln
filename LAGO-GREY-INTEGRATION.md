@@ -130,11 +130,11 @@ When user drags a component, show base image indicator:
 
 ---
 
-## Component Type in ReScript
+## Component Type in affinescript
 
 Already updated in `frontend/src/Model.res`:
 
-```rescript
+```affinescript
 type componentType =
   | CerroTorre       // Container builder (.ctp bundles)
   | LagoGrey         // Base image designer (Alpine/Chainguard alternative)
@@ -505,7 +505,7 @@ Cerro Torre then builds the final `.ctp` bundle using lago-grey as the base.
 
 **Lago Grey is now fully integrated into stapeln as:**
 
-1. ✅ Component type in ReScript (`LagoGrey`)
+1. ✅ Component type in affinescript (`LagoGrey`)
 2. ✅ Related project in ECOSYSTEM.scm
 3. ✅ Integration point (base-image-designer)
 4. ✅ Visual UI space (Base Image Configuration panel)

@@ -6,7 +6,8 @@
 # Then hands off to `just setup` for project-specific configuration.
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/hyperpolymath/stapeln/main/setup.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/hyperpolymath/stapeln/main/setup.sh -o setup.sh
+#   sh setup.sh
 #   # or after cloning:
 #   ./setup.sh
 #
@@ -129,6 +130,49 @@ detect_platform() {
 }
 
 # ── Install just ──
+# Fetch-then-verify-then-run. We deliberately do NOT pipe the installer
+# straight into an interpreter -- that is CWE-494
+# download-and-execute, it hides the payload from inspection, and a
+# truncated or hijacked response executes anyway. Materialising the script
+# first means a failed/short download is caught before anything runs.
+fetch_and_run_just_installer() {
+    _dest="${1:-/usr/local/bin}"
+    _tmp="$(mktemp -d)" || { fail "Could not create temp dir"; return 1; }
+    _script="$_tmp/just-install.sh"
+
+    if ! curl -fsSL --proto '=https' --tlsv1.2 -o "$_script" \
+            https://just.systems/install.sh; then
+        rm -rf "$_tmp"
+        fail "Could not download the just installer"
+        return 1
+    fi
+
+    # A truncated download is the failure mode that matters here: curl
+    # exits 0 on a short body often enough to be worth checking.
+    if [ ! -s "$_script" ] || ! head -1 "$_script" | grep -q '^#!'; then
+        rm -rf "$_tmp"
+        fail "Downloaded just installer looks malformed — refusing to run it"
+        return 1
+    fi
+
+    # `if` rather than a bare call, so this function is correct regardless of
+    # how it is called. The script runs under `set -eu`. Today the only callers
+    # sit under `install_just || { ... }`, and POSIX suspends `set -e` for the
+    # whole dynamic extent of a command in an || list -- so a bare failing
+    # command here would NOT abort (measured in dash and bash). That safety is
+    # an accident of one caller's syntax: invoke this, or install_just,
+    # standalone and a non-zero exit would terminate the shell before the
+    # cleanup and return below. An `if` condition suspends `set -e` locally, so
+    # the status is captured either way.
+    if sh "$_script" --to "$_dest"; then
+        _rc=0
+    else
+        _rc=$?
+    fi
+    rm -rf "$_tmp"
+    return $_rc
+}
+
 install_just() {
     if command -v just >/dev/null 2>&1; then
         ok "just already installed: $(just --version 2>/dev/null | head -1)"
@@ -141,7 +185,7 @@ install_just() {
         dnf)        sudo dnf install -y just ;;
         apt)        sudo apt-get install -y just 2>/dev/null || {
                         # just not in older apt repos — use installer
-                        curl -fsSL https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+                        fetch_and_run_just_installer /usr/local/bin
                     } ;;
         pacman)     sudo pacman -S --noconfirm just ;;
         apk)        sudo apk add just ;;
@@ -153,7 +197,7 @@ install_just() {
         nix)        nix-env -iA nixpkgs.just ;;
         *)
             info "Using just installer script..."
-            curl -fsSL https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+            fetch_and_run_just_installer /usr/local/bin
             ;;
     esac
 

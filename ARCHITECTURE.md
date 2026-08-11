@@ -5,11 +5,11 @@
 
 stapeln is a visual drag-and-drop container stack designer built with:
 
-- **Frontend**: ReScript-TEA (The Elm Architecture) + Deno
+- **Frontend**: affinescript-TEA (The Elm Architecture) + Deno
 - **Backend**: Elixir (Phoenix) + Ephapax + Idris2 + Rust
 - **Communication**: REST API + WebSocket
 
-## Frontend Architecture (ReScript-TEA)
+## Frontend Architecture (affinescript-TEA)
 
 ### The Elm Architecture (TEA)
 
@@ -260,7 +260,7 @@ end
 ### 1. User Adds Component
 
 ```
-Frontend (ReScript)                Backend (Elixir)
+Frontend (affinescript)                Backend (Elixir)
      │                                   │
      │ Drag component to canvas          │
      │ → AddComponent(Svalinn, {x,y})    │
@@ -333,7 +333,7 @@ Frontend                Backend                Codegen (Rust)
 
 ### Frontend
 
-- **Virtual DOM**: ReScript compiles to efficient JS
+- **Virtual DOM**: affinescript compiles to efficient JS
 - **Debounced updates**: Drag events throttled to 60fps
 - **Canvas optimization**: Only redraw changed components
 - **WebSocket batching**: Group rapid updates
@@ -393,7 +393,7 @@ Frontend                Backend                Codegen (Rust)
 ## References
 
 - [The Elm Architecture](https://guide.elm-lang.org/architecture/)
-- [ReScript-TEA](https://github.com/rescript-lang/rescript-tea)
+- [affinescript-TEA](https://github.com/affinescript-lang/affinescript-tea)
 - [Ephapax](https://github.com/hyperpolymath/ephapax)
 - [Idris2](https://idris2.readthedocs.io/)
 - [Phoenix Channels](https://hexdocs.pm/phoenix/channels.html)

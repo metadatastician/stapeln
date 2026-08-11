@@ -9,7 +9,7 @@ stapeln-frontend provides a production-ready DOM mounting solution built on a th
 
 - **Idris2** for compile-time correctness proofs with dependent types
 - **Zig** for memory-safe C ABI with zero overhead
-- **ReScript** for type-safe functional programming
+- **affinescript** for type-safe functional programming
 
 This architecture ensures correctness at every layer with no runtime cost for verification.
 
@@ -97,7 +97,7 @@ Adapters for multiple frameworks:
                   ├─> Shared library (.so/.dll/.dylib)
                   │
 ┌─────────────────▼───────────────────────┐
-│  ReScript (src/*.res)                   │
+│  affinescript (src/*.res)                   │
 │  - Type-safe bindings                   │
 │  - Functional API                       │
 │  - Framework adapters                   │
@@ -117,7 +117,7 @@ Adapters for multiple frameworks:
 - Cross-compilation built-in
 - No runtime dependencies
 
-**Why ReScript for Bindings?**
+**Why affinescript for Bindings?**
 - Type-safe functional programming
 - Excellent JavaScript interop
 - Fast compilation
@@ -131,7 +131,7 @@ Adapters for multiple frameworks:
 # Required toolchains
 curl -fsSL https://idris2.readthedocs.io/en/latest/tutorial/starting.html | bash  # Idris2
 curl -fsSL https://ziglang.org/download/ | bash  # Zig 0.15.2+
-npm install -g rescript  # ReScript
+npm install -g affinescript  # affinescript
 ```
 
 ### Build from Source
@@ -150,9 +150,9 @@ zig build-lib src/dom_mounter_enhanced.zig -dynamic -OReleaseFast
 zig build-lib src/dom_mounter_security.zig -dynamic -OReleaseFast
 cd ../..
 
-# Build ReScript
+# Build affinescript
 npm install
-npx rescript build
+npx affinescript build
 
 # Run tests
 cd ffi/zig && zig test src/dom_mounter.zig && cd ../..
@@ -170,8 +170,8 @@ npm install @hyperpolymath/stapeln-frontend
 
 ### Basic Mounting
 
-```rescript
-// ReScript
+```affinescript
+// affinescript
 open DomMounter
 
 let result = mount("app-root")
@@ -195,7 +195,7 @@ if (result.tag === 'Ok') {
 
 ### With Lifecycle Hooks
 
-```rescript
+```affinescript
 open DomMounterEnhanced
 
 let hooks: lifecycleHooks = {
@@ -214,7 +214,7 @@ let result = mountWithLifecycle("app-root", hooks)
 
 ### Secure Mounting with CSP
 
-```rescript
+```affinescript
 open DomMounterSecurity
 
 let policy: securityPolicy = {
@@ -287,7 +287,7 @@ const { mounted, error } = useDomMounter('app-root');
 
 #### Shadow DOM
 
-```rescript
+```affinescript
 open DomMounterAdvanced
 
 let result = mountToShadowRoot("app-root", Open)
@@ -295,7 +295,7 @@ let result = mountToShadowRoot("app-root", Open)
 
 #### Batch Mounting
 
-```rescript
+```affinescript
 open DomMounterAdvanced
 
 let result = mountBatch(["header", "main", "footer"])
@@ -305,7 +305,7 @@ Js.Console.log2("Failed:", result.failed)
 
 #### Lazy Loading
 
-```rescript
+```affinescript
 open DomMounterAdvanced
 
 let options: lazyLoadOptions = {
@@ -352,7 +352,7 @@ See [dom_mounter.d.ts](./dom_mounter.d.ts) for complete TypeScript definitions.
   - 8 tests in dom_mounter_enhanced.zig
   - 8 tests in dom_mounter_security.zig
 - **Idris2**: Type-checked and formally verified
-- **ReScript**: Compiles with no errors
+- **affinescript**: Compiles with no errors
 
 ### Running Tests
 
@@ -363,8 +363,8 @@ zig test src/dom_mounter.zig
 zig test src/dom_mounter_enhanced.zig
 zig test src/dom_mounter_security.zig
 
-# ReScript build (type checking)
-npx rescript build
+# affinescript build (type checking)
+npx affinescript build
 ```
 
 ## Performance
@@ -428,7 +428,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for gu
 
 - **Idris2**: Follow Idris2 style guide
 - **Zig**: Use `zig fmt`
-- **ReScript**: Use `rescript format`
+- **affinescript**: Use `affinescript format`
 - **Commit messages**: Conventional Commits
 
 ## Documentation
@@ -456,7 +456,7 @@ See [LICENSE](./LICENSE) for the full license text.
 - The Elm Architecture (TEA) for inspiration
 - Idris2 community for dependent types
 - Zig community for memory-safe C ABI
-- ReScript community for functional programming on the web
+- affinescript community for functional programming on the web
 
 ## Links
 
