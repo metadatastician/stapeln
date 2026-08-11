@@ -22,7 +22,7 @@ The Zig FFI layer exposes stapeln's core validation and stack-inspection logic a
 a C-ABI shared library. This allows:
 
 * The Elixir backend (via NIFs or ports) to call Zig-validated logic directly.
-* The ReScript frontend (via WASM) to run container-safety checks in the browser.
+* The affinescript frontend (via WASM) to run container-safety checks in the browser.
 * External tools to integrate stapeln's miniKanren rule results without requiring
   the full Elixir runtime.
 

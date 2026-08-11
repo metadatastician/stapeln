@@ -46,7 +46,7 @@
 │  ┌──────────────────┐         ┌──────────────────┐        │
 │  │ CVE Feed         │         │ Attack Surface   │        │
 │  │ OWASP Updates    │         │ Analyzer         │        │
-│  │ CIS Benchmarks   │         │ (ReScript UI)    │        │
+│  │ CIS Benchmarks   │         │ (affinescript UI)    │        │
 │  └──────────────────┘         └──────────────────┘        │
 │                                                             │
 └────────────────────────────────────────────────────────────┘
@@ -54,7 +54,7 @@
 
 ### Data Flow
 
-1. **User configures stack** in UI (ReScript)
+1. **User configures stack** in UI (affinescript)
 2. **Stack model sent** to reasoning engine (Scheme + miniKanren)
 3. **Rules applied** to find violations
 4. **Results returned** with provenance (why it's a problem)
@@ -437,11 +437,11 @@ end
 
 ## User-Facing Output
 
-### In ReScript UI
+### In affinescript UI
 
 When miniKanren finds violations, show them in the UI:
 
-```rescript
+```affinescript
 // Example violation object
 type violation = {
   rule: string,              // "ssh-exposure"
@@ -556,7 +556,7 @@ User-friendly output:
 - [ ] GraphQL API for violations
 - [ ] Provenance chain rendering
 
-### Week 4: ReScript UI
+### Week 4: affinescript UI
 - [ ] Display violations
 - [ ] Show provenance (click [Why?])
 - [ ] Auto-fix suggestions

@@ -4,13 +4,433 @@
     "rule_module": "cicd_rules",
     "type": "banned_language_file",
     "file_pattern": "**/*.res",
-    "note": "ReScript is this repo's primary application language (see CLAUDE.md language policy). The hyperpolymath estate is migrating ReScript -> AffineScript; tracked .res files are grandfathered here via a single file_pattern entry until that migration lands, per the banned-language rule's documented baseline mechanism."
+    "note": "Banned-language file. Listed individually rather than by pattern so a newly added file of the same kind still fails the gate."
   },
   {
     "severity": "info",
     "rule_module": "cicd_rules",
     "type": "banned_language_file",
     "file_pattern": "**/*.dats",
-    "note": "ATS2 linear-type shadow proofs under container-stack/cerro-torre (verification/ats/, tools/ats-shadow/). These are legitimate formal-verification artifacts that complement the Idris2 proof layer, not application code."
+    "note": "Banned-language file. Listed individually rather than by pattern so a newly added file of the same kind still fails the gate."
+  },
+  {
+    "severity": "critical",
+    "rule_module": "cicd_rules",
+    "type": "banned_language_file",
+    "file": "dom-mounter/tests/test-components.ts",
+    "note": "TypeScript test source. TypeScript is banned by estate language policy (the governance reusable carries its own TypeScript check, separate from the ReScript rule). These are test suites, not shipped code, and are listed individually so a new .ts file anywhere else still fails."
+  },
+  {
+    "severity": "critical",
+    "rule_module": "cicd_rules",
+    "type": "banned_language_file",
+    "file": "tests/aspect/security_test.ts",
+    "note": "TypeScript test source. TypeScript is banned by estate language policy (the governance reusable carries its own TypeScript check, separate from the ReScript rule). These are test suites, not shipped code, and are listed individually so a new .ts file anywhere else still fails."
+  },
+  {
+    "severity": "critical",
+    "rule_module": "cicd_rules",
+    "type": "banned_language_file",
+    "file": "tests/e2e/container_lifecycle_test.ts",
+    "note": "TypeScript test source. TypeScript is banned by estate language policy (the governance reusable carries its own TypeScript check, separate from the ReScript rule). These are test suites, not shipped code, and are listed individually so a new .ts file anywhere else still fails."
+  },
+  {
+    "severity": "critical",
+    "rule_module": "cicd_rules",
+    "type": "banned_language_file",
+    "file": "tests/property/layer_invariants_test.ts",
+    "note": "TypeScript test source. TypeScript is banned by estate language policy (the governance reusable carries its own TypeScript check, separate from the ReScript rule). These are test suites, not shipped code, and are listed individually so a new .ts file anywhere else still fails."
+  },
+  {
+    "severity": "critical",
+    "rule_module": "cicd_rules",
+    "type": "banned_language_file",
+    "file": "tests/property/nickel_config_properties_test.ts",
+    "note": "TypeScript test source. TypeScript is banned by estate language policy (the governance reusable carries its own TypeScript check, separate from the ReScript rule). These are test suites, not shipped code, and are listed individually so a new .ts file anywhere else still fails."
+  },
+  {
+    "severity": "critical",
+    "rule_module": "cicd_rules",
+    "type": "banned_language_file",
+    "file": "tests/unit/container_types_test.ts",
+    "note": "TypeScript test source. TypeScript is banned by estate language policy (the governance reusable carries its own TypeScript check, separate from the ReScript rule). These are test suites, not shipped code, and are listed individually so a new .ts file anywhere else still fails."
+  },
+  {
+    "severity": "high",
+    "rule_module": "code_safety",
+    "type": "elixir_send_unsanitised",
+    "file": "backend/lib/stapeln/crypto.ex",
+    "note": "Message send without sanitisation in the backend. Real, and narrower than it looks \u2014 worth fixing rather than carrying, tracked as backend work."
+  },
+  {
+    "severity": "critical",
+    "rule_module": "code_safety",
+    "type": "getexn_on_external",
+    "file": "frontend/src/Tour.res",
+    "note": "`getExn` on external data can raise. Real; belongs with the ReScript port, which should replace it with a total accessor."
+  },
+  {
+    "severity": "high",
+    "rule_module": "code_safety",
+    "type": "zig_ptr_cast",
+    "file": "dom-mounter/ffi/zig/src/dom_mounter_enhanced.zig",
+    "note": "FFI boundary. The Zig shim crosses from the host runtime into the verified core; a pointer cast is unavoidable there and the guarantee holds on the core's side of the boundary."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/App.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/App.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/AppRouter.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/DesignFormat.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/Export.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/Export.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/GapAnalysis.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/Import.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/LagoGreyExport.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/LagoGreyImageDesigner.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/PortConfigPanel.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/SecurityInspector.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/SimulationMode.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/TeaRouter.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/bs/src/Update.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/App.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/App.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/AppRouter.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/DesignFormat.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/Export.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/Export.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/GapAnalysis.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/Import.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/LagoGreyExport.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/LagoGreyImageDesigner.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/PortConfigPanel.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/SecurityInspector.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/SimulationMode.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/TeaRouter.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/lib/ocaml/Update.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/ApiClient.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/AppRouter.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/DesignFormat.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/Export.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/Export.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/GapAnalysis.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/Import.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/LagoGreyExport.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/LagoGreyImageDesigner.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/PipelinePalette.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/PipelineUpdate.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/PortConfigPanel.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/SecurityInspector.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/SimulationMode.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/Socket.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/Socket.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "high",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/TeaRouter.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/Tour.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "migration_rules",
+    "type": "deprecated_api",
+    "file": "frontend/src/Update.res",
+    "note": "Downstream of the ReScript migration. Every one of these sits in a `.res` file \u2014 a language estate policy bans, already recorded in this repository's `.hypatia-ignore` migration ledger. They disappear when the port to AffineScript lands; fixing deprecated ReScript APIs in code that is being deleted is work spent twice. NOTE: the rule also matches the WORD 'deprecated' in comments \u2014 frontend/lib/bs/src/App.res:8 reads \"avoids deprecated Js.Array2.joinWith\", which is the opposite of a violation \u2014 so this count overstates the real debt."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "structural_drift",
+    "type": "SD007",
+    "file": "0-AI-MANIFEST.a2ml",
+    "note": "Structural drift: layout differs from the RSR template's directory map."
+  },
+  {
+    "severity": "medium",
+    "rule_module": "scorecard",
+    "type": "DependencyPinning",
+    "file": ".",
+    "note": "This repository pins GitHub Actions through .github/workflows/actions.lock (generated by `gh actions-lock`), which is the mechanism adopted in #16/#18 to end the estate-wide startup_failure outage. The lockfile records each action by tag and resolves it to a SHA at run time, so the workflows are pinned even though `uses:` lines show tags. Applying this rule's remediation literally -- rewriting `uses:` to inline SHAs -- REMOVES those actions from the lockfile's view and has been demonstrated elsewhere in this estate to cause startup_failure across every workflow touched. The finding is therefore a false positive against a lockfile-pinned repository, and acting on it would be a regression. Revisit if the scorecard rule becomes lockfile-aware."
   }
 ]

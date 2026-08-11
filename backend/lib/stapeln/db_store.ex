@@ -66,7 +66,9 @@ defmodule Stapeln.DbStore do
     normalized = normalize_attrs(attrs)
 
     case Client.create_octad("stacks", normalized) do
-      {:ok, octad} -> {:ok, octad_to_stack(octad)}
+      {:ok, octad} ->
+        {:ok, octad_to_stack(octad)}
+
       {:error, reason} ->
         Logger.warning("DbStore.create_stack failed: #{inspect(reason)}")
         {:error, :db_error}
@@ -77,8 +79,12 @@ defmodule Stapeln.DbStore do
   @spec get_stack(String.t()) :: {:ok, map()} | {:error, :not_found}
   def get_stack(id) do
     case Client.get_octad(to_string(id)) do
-      {:ok, octad} -> {:ok, octad_to_stack(octad)}
-      {:error, :not_found} -> {:error, :not_found}
+      {:ok, octad} ->
+        {:ok, octad_to_stack(octad)}
+
+      {:error, :not_found} ->
+        {:error, :not_found}
+
       {:error, reason} ->
         Logger.warning("DbStore.get_stack failed: #{inspect(reason)}")
         {:error, :db_error}
@@ -91,8 +97,12 @@ defmodule Stapeln.DbStore do
     normalized = normalize_attrs(attrs)
 
     case Client.update_octad(to_string(id), Map.put(normalized, :collection, "stacks")) do
-      {:ok, octad} -> {:ok, octad_to_stack(octad)}
-      {:error, :not_found} -> {:error, :not_found}
+      {:ok, octad} ->
+        {:ok, octad_to_stack(octad)}
+
+      {:error, :not_found} ->
+        {:error, :not_found}
+
       {:error, reason} ->
         Logger.warning("DbStore.update_stack failed: #{inspect(reason)}")
         {:error, :db_error}
@@ -126,8 +136,12 @@ defmodule Stapeln.DbStore do
     case parse_user_id(user_id) do
       {:ok, octad_id} ->
         case Client.get_octad(octad_id) do
-          {:ok, octad} -> {:ok, octad_to_user(octad)}
-          {:error, :not_found} -> {:error, :not_found}
+          {:ok, octad} ->
+            {:ok, octad_to_user(octad)}
+
+          {:error, :not_found} ->
+            {:error, :not_found}
+
           {:error, reason} ->
             Logger.warning("DbStore.get_user failed: #{inspect(reason)}")
             {:error, :db_error}
@@ -144,8 +158,8 @@ defmodule Stapeln.DbStore do
     case Client.list_octads("users") do
       {:ok, octads} ->
         case Enum.find(octads, fn o ->
-          get_in(o, ["metadata", "email"]) == email
-        end) do
+               get_in(o, ["metadata", "email"]) == email
+             end) do
           nil -> {:error, :not_found}
           octad -> {:ok, octad_to_user(octad)}
         end
@@ -182,9 +196,11 @@ defmodule Stapeln.DbStore do
     case Client.list_octads("settings") do
       {:ok, octads} ->
         case Enum.find(octads, fn o ->
-          get_in(o, ["metadata", "user_id"]) == user_id
-        end) do
-          nil -> default_settings()
+               get_in(o, ["metadata", "user_id"]) == user_id
+             end) do
+          nil ->
+            default_settings()
+
           octad ->
             stored = get_in(octad, ["metadata", "settings"]) || %{}
             Map.merge(default_settings(), stored)
@@ -209,9 +225,9 @@ defmodule Stapeln.DbStore do
         merged = Map.merge(existing, attrs)
 
         case Client.update_octad(octad_id, %{
-          collection: "settings",
-          settings: merged
-        }) do
+               collection: "settings",
+               settings: merged
+             }) do
           {:ok, _} -> {:ok, Map.merge(default_settings(), merged)}
           {:error, _} -> {:ok, Map.merge(default_settings(), attrs)}
         end
@@ -229,14 +245,14 @@ defmodule Stapeln.DbStore do
     case Client.list_octads("settings") do
       {:ok, octads} ->
         case Enum.find(octads, fn o ->
-          get_in(o, ["metadata", "user_id"]) == user_id
-        end) do
+               get_in(o, ["metadata", "user_id"]) == user_id
+             end) do
           nil ->
             # Create new settings for this user
             case Client.create_octad("settings", %{
-              user_id: user_id,
-              settings: attrs
-            }) do
+                   user_id: user_id,
+                   settings: attrs
+                 }) do
               {:ok, _} -> {:ok, Map.merge(default_settings(), attrs)}
               {:error, _} -> {:ok, Map.merge(default_settings(), attrs)}
             end
@@ -247,10 +263,10 @@ defmodule Stapeln.DbStore do
             merged = Map.merge(existing, attrs)
 
             case Client.update_octad(octad_id, %{
-              collection: "settings",
-              user_id: user_id,
-              settings: merged
-            }) do
+                   collection: "settings",
+                   user_id: user_id,
+                   settings: merged
+                 }) do
               {:ok, _} -> {:ok, Map.merge(default_settings(), merged)}
               {:error, _} -> {:ok, Map.merge(default_settings(), attrs)}
             end
@@ -274,6 +290,7 @@ defmodule Stapeln.DbStore do
       name: meta["name"] || get_in(octad, ["document", "title"]) || "",
       description: meta["description"] || get_in(octad, ["document", "body"]) || "",
       services: meta["services"] || [],
+      design: meta["design"],
       created_at: status["created_at"],
       updated_at: status["modified_at"]
     }

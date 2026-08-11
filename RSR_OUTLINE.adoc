@@ -1,6 +1,19 @@
 // SPDX-License-Identifier: CC-BY-SA-4.0
 = RSR Template Repository
 
+[IMPORTANT]
+====
+**This is an inherited copy of the generic RSR *template* outline. It describes the RSR
+template repository, not stapeln.** Where it disagrees with this project, this project wins.
+
+Specifically: it lists `LICENSE.txt` as "AGPL + Palimpsest dual license". **stapeln is
+MPL-2.0 for code and CC-BY-SA-4.0 for documentation**, and the file is `LICENSE`, not
+`LICENSE.txt`. See link:LICENSING.md[LICENSING.md]. It also says "README.adoc | This file",
+which is true of the template, not of this document.
+
+Retained as a reference for RSR structure. See link:DEBT.md[DEBT.md] D-7.
+====
+
 image:[Palimpsest-MPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"] image:[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-license"]
 :toc:
 :sectnums:
@@ -70,7 +83,7 @@ just validate-rsr
 |Task runner with 50+ recipes
 
 |`LICENSE.txt`
-|AGPL + Palimpsest dual license
+|AGPL + Palimpsest dual license _(template default — stapeln uses `LICENSE`, MPL-2.0)_
 
 |`README.adoc`
 |This file
@@ -158,7 +171,7 @@ project/
 * `justfile`
 * `README.adoc`
 * `RSR_COMPLIANCE.adoc`
-* `LICENSE.txt` (AGPL + Palimpsest)
+* `LICENSE.txt` (AGPL + Palimpsest) _(template default — stapeln uses `LICENSE`, MPL-2.0)_
 * `.well-known/security.txt`
 * `.well-known/ai.txt`
 * `.well-known/humans.txt`

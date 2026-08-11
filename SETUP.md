@@ -16,15 +16,15 @@ curl -fsSL https://deno.land/install.sh | sh
 export PATH="$HOME/.deno/bin:$PATH"
 ```
 
-2. **ReScript Compiler via Deno**
+2. **affinescript Compiler via Deno**
 ```bash
-# Install ReScript using Deno's npm compatibility
+# Install affinescript using Deno's npm compatibility
 deno install --allow-read --allow-write --allow-env --allow-run \
-  -n rescript \
-  npm:rescript@11
+  -n affinescript \
+  npm:affinescript@11
 
 # Verify installation
-rescript -version
+affinescript -version
 ```
 
 3. **Elixir + Phoenix (for backend)**
@@ -48,13 +48,13 @@ sudo dnf install idris2
 rustc --version
 ```
 
-## Frontend Setup (ReScript + Deno)
+## Frontend Setup (affinescript + Deno)
 
 ```bash
 cd ~/Documents/hyperpolymath-repos/stapeln/frontend
 
-# Compile ReScript to JavaScript
-rescript build
+# Compile affinescript to JavaScript
+affinescript build
 
 # Start Deno dev server
 deno task dev
@@ -67,7 +67,7 @@ xdg-open http://localhost:8000
 
 ```bash
 # Watch mode (recompile on save)
-rescript build -w &
+affinescript build -w &
 
 # In another terminal, run dev server
 deno task dev
@@ -133,27 +133,27 @@ cargo tauri build
 
 ## Troubleshooting
 
-### "rescript: command not found"
+### "affinescript: command not found"
 
 The Deno install didn't add to PATH. Add to `~/.bashrc`:
 ```bash
 export PATH="$HOME/.deno/bin:$PATH"
 ```
 
-### "Cannot find module 'npm:@rescript/core'"
+### "Cannot find module 'npm:@affinescript/core'"
 
 Deno's npm compatibility needs the import map. Check `frontend/import_map.json`:
 ```json
 {
   "imports": {
-    "@rescript/core": "https://esm.sh/@rescript/core@1.0.0"
+    "@affinescript/core": "https://esm.sh/@affinescript/core@1.0.0"
   }
 }
 ```
 
-### ReScript compilation errors
+### affinescript compilation errors
 
-Check `frontend/rescript.json` for correct configuration:
+Check `frontend/affinescript.json` for correct configuration:
 - `"module": "es6"`
 - `"suffix": ".res.js"`
 - `"in-source": true`
@@ -176,14 +176,14 @@ STAPELN_WS_URL=ws://localhost:4010/socket
 
 ### VSCode
 ```bash
-# Install ReScript VSCode extension
-code --install-extension chenglou92.rescript-vscode
+# Install affinescript VSCode extension
+code --install-extension chenglou92.affinescript-vscode
 ```
 
 ### Vim/Neovim
 ```vim
-" Install rescript-vim plugin
-Plug 'rescript-lang/vim-rescript'
+" Install affinescript-vim plugin
+Plug 'affinescript-lang/vim-affinescript'
 ```
 
 ## Testing
@@ -205,7 +205,7 @@ mix test
 ### Frontend
 ```bash
 cd frontend
-rescript build
+affinescript build
 deno bundle src/Main.res.js dist/bundle.js
 ```
 
@@ -219,7 +219,7 @@ MIX_ENV=prod mix release
 
 stapeln is 100% Deno-based for JavaScript runtime. We use:
 - ✅ Deno for runtime
-- ✅ Deno's npm: specifier for ReScript compiler
+- ✅ Deno's npm: specifier for affinescript compiler
 - ✅ Deno's import maps for dependencies
 - ❌ No package.json
 - ❌ No node_modules/
