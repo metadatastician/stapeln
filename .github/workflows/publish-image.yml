@@ -70,7 +70,7 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.service }}
           cache-to: type=gha,mode=max,scope=${{ matrix.service }}
       - name: Attest container provenance
-        uses: actions/attest-build-provenance@v4.1.1
+        uses: actions/attest-build-provenance@v4.2.2
         with:
           subject-name: ghcr.io/hyperpolymath/${{ matrix.service }}
           subject-digest: ${{ steps.push.outputs.digest }}
