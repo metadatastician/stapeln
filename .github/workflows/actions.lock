@@ -33,7 +33,7 @@ workflows:
         - 'actions/deploy-pages@v5.0.0'
         - 'actions/upload-pages-artifact@v5.0.0'
     '.github/workflows/publish-image.yml':
-        - 'actions/attest-build-provenance@v4.1.1'
+        - 'actions/attest-build-provenance@v4.2.2'
         - 'actions/checkout@v7.0.1'
         - 'docker/build-push-action@v7.3.0'
         - 'docker/login-action@v4.6.0'
@@ -47,18 +47,18 @@ workflows:
     '.github/workflows/svalinn-affine-build.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/upload-artifact@v7.0.1'
-        - 'ocaml/setup-ocaml@v3.7.0'
+        - 'ocaml/setup-ocaml@v3.7.1'
 dependencies:
-    'actions/attest-build-provenance@v4.1.1':
-        ref: 'v4.1.1'
-        commit: 'sha1-0f67c3f4856b2e3261c31976d6725780e5e4c373'
+    'actions/attest-build-provenance@v4.2.2':
+        ref: 'v4.2.2'
+        commit: 'sha1-4d101475d8b20a2381f78447822ac1eab6504dd8'
         owner_id: 44036562
         repo_id: 760702757
         uses:
-            - 'actions/attest@a1948c3f048ba23858d222213b7c278aabede763'
-    'actions/attest@a1948c3f048ba23858d222213b7c278aabede763':
-        ref: 'v4.1.1'
-        commit: 'sha1-a1948c3f048ba23858d222213b7c278aabede763'
+            - 'actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d'
+    'actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d':
+        ref: 'v4.2.1'
+        commit: 'sha1-508db95dd578ae2727ebd6217d5ba78e4fbda05d'
         owner_id: 44036562
         repo_id: 760701061
     'actions/checkout@v7.0.1':
@@ -138,9 +138,9 @@ dependencies:
         commit: 'sha1-f00dec4597dde6071a7f0fe38414c13b5847f316'
         owner_id: 6759885
         repo_id: 1274526902
-    'ocaml/setup-ocaml@v3.7.0':
-        ref: 'v3.7.0'
-        commit: 'sha1-15d660006c1d3110d77c34b7faa3bddefe8b82f0'
+    'ocaml/setup-ocaml@v3.7.1':
+        ref: 'v3.7.1'
+        commit: 'sha1-605a7e998e76e035b82c14d618a6e1010732c4ce'
         owner_id: 1841483
         repo_id: 220799100
     'peter-evans/repository-dispatch@v4.0.1':
