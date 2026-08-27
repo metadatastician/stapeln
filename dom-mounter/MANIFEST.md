@@ -16,7 +16,7 @@ This file tracks the preserved DOM‑mounter materials and where the active code
 - `docs/DomMounterSecurity.idr`
 - `docs/ECOSYSTEM.scm`
 - `docs/GETTING-STARTED.md`
-- `docs/IMPLEMENTATION-STATUS.md`
+- `docs/IMPLEMENTATION-STATUS.adoc`
 - `docs/META.scm`
 - `docs/MIGRATION-GUIDE.md`
 - `docs/PHASE1-IMPLEMENTATION.md`

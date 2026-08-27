@@ -1,0 +1,597 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Debt Register — stapeln
+:toc:
+:toclevels: 2
+
+
+*Measured:* 2026-08-27 · *Commit:* `1ef613d` · *Method:* file reads, greps, `gh` API
+queries and CI run history executed on that commit. Every claim below cites the command or
+file that produced it. Where a claim could not be verified, it is marked *DIAGNOSIS
+(unconfirmed)* rather than stated as fact.
+
+[NOTE]
+====
+*Sections 1–7 were measured at `bc04e22` on 2026-08-07 and are carried forward
+unchanged unless marked otherwise.* Section 8 records debt found on 2026-08-27
+while shipping the bundle compiler (PRs #39, #41, #43, #44); several items in
+the earlier sections are now *RESOLVED* by that work and are annotated in
+place rather than deleted, so the register stays readable as a history.
+
+Converted from Markdown to AsciiDoc on 2026-08-27, per the estate default that
+documentation is `.adoc`.
+====
+
+____
+This is the single index of known debt. It supersedes nothing — the detailed registers it
+points at remain the source of truth for their domains:
+link:PROOF-NEEDS.md[`PROOF-NEEDS.md`] · link:PROOF-BACKLOG.md[`PROOF-BACKLOG.md`] ·
+link:TEST-NEEDS.md[`TEST-NEEDS.md`] · link:docs/proof-debt.md[`docs/proof-debt.md`] ·
+link:docs/tech-debt-2026-05-26.md[`docs/tech-debt-2026-05-26.md`] ·
+link:.machine_readable/agent_instructions/debt.a2ml[`.machine_readable/agent_instructions/debt.a2ml`].
+____
+
+*Severity scale.* `HIGH` = actively misleads a reader or lets a defect ship. `MEDIUM` =
+real cost, no immediate blast radius. `LOW` = tidiness.
+
+'''''
+
+== Summary
+
+[cols=",,",options="header",]
+|===
+|Domain |Items |Highest severity
+|link:#1-licence-debt[Licence] |3 |*all RESOLVED 2026-08-07*
+|link:#2-documentation-debt[Documentation] |7 |HIGH
+|link:#3-code-debt[Code] |5 |MEDIUM
+|link:#4-proof-debt[Proof] |2 |MEDIUM
+|link:#5-test-debt[Test] |4 |HIGH
+|link:#6-cicd-debt[CI/CD] |7 |HIGH
+|link:++#7-supply-chain--security-debt++[Supply chain / security] |2 |MEDIUM
+|link:++#8-found-2026-08-27-shipping-the-bundle-compiler++[Found 2026-08-27] |6 (2 RESOLVED) |HIGH
+|===
+
+'''''
+
+[[1-licence-debt]]
+== 1. Licence debt
+
+[[l-1--agpl-30-or-later-headers-inside-an-mpl-20-repository--medium]]
+=== L-1 · AGPL-3.0-or-later headers inside an MPL-2.0 repository — MEDIUM
+
+Nine files declare `SPDX-License-Identifier: AGPL-3.0-or-later`. All nine are GitHub
+metadata templates, none is source code:
+
+....
+.github/settings.yml
+.github/ISSUE_TEMPLATE/{bug_report,config,custom,documentation,feature_request,question}.yml
+.github/DISCUSSION_TEMPLATE/{ideas,q-and-a}.yml
+....
+
+Evidence: `grep -rl "SPDX-License-Identifier: AGPL-3.0-or-later" .` (excluding `LICENSES/`).
+Repo-wide SPDX distribution is `482 MPL-2.0 · 178 CC-BY-SA-4.0 · 9 AGPL-3.0-or-later`.
+
+The pattern (AGPL confined entirely to `.github/` scaffolding) is consistent with template
+drift from an estate-wide sweep rather than a deliberate relicensing. AGPL is strong
+copyleft; carrying it unremarked inside an MPL-2.0 project invites a licence-compatibility
+question that nobody actually intended to raise.
+
+*RESOLVED 2026-08-07.* Owner ruling: stapeln is MPL-2.0 for code and CC-BY-SA-4.0 for
+documentation, with no third licence. All nine identifiers changed to `MPL-2.0`, matching the
+rest of `.github/` (the workflows were already MPL-2.0). Each file had exactly one identifier,
+on line 1, so this was a value change — nothing was inserted, nothing shadowed. Policy is now
+stated in link:LICENSING.adoc[`LICENSING.adoc`]. Verified: `491 MPL-2.0 · 179 CC-BY-SA-4.0`, no other
+identifier in the tree.
+
+[[l-2--two-divergent-copies-of-the-mpl-20-text--low]]
+=== L-2 · Two divergent copies of the MPL-2.0 text — LOW
+
+`LICENSE` and `LICENSES/MPL-2.0.txt` are both 16,726-byte MPL-2.0 texts with *different
+checksums* (`815ca599…` vs `f75d2927…`). Evidence: `md5sum LICENSE LICENSES/MPL-2.0.txt`.
+Harmless today (GitHub's `/license` API correctly reports `MPL-2.0` from `LICENSE`), but two
+diverging canonical texts is a REUSE-compliance trap.
+
+The divergence was trivial — a trailing space on line 38 and `http` vs `https` on line 360.
+
+*RESOLVED 2026-08-07.* `LICENSES/MPL-2.0.txt` synced to `LICENSE`. `LICENSE` was chosen as
+canonical because it is the file GitHub's `/license` API detects; leaving it untouched keeps
+that detection stable.
+
+[[l-3--licensesagpl-30-or-latertxt-may-be-unused-after-l-1--low]]
+=== L-3 · `LICENSES/AGPL-3.0-or-later.txt` may be unused after L-1 — LOW
+
+With L-1 resolved, no file in the tree is AGPL-licensed, so the AGPL text was an orphan and
+REUSE would flag it.
+
+*RESOLVED 2026-08-07.* `LICENSES/AGPL-3.0-or-later.txt` removed. `LICENSES/` now holds
+exactly the two licences this project uses.
+
+'''''
+
+[[2-documentation-debt]]
+== 2. Documentation debt
+
+[[d-1--readmeadoc-status-section-is-6-months-stale-and-contradicts-reality--high]]
+=== D-1 · `README.adoc` status section is 6 months stale and contradicts reality — HIGH
+
+`README.adoc:30` reads `== Current Status (as of 2026-02-13)` and `:32` claims
+`++**++Honest completion: ~35%++**++`. The measured figure has been ~45% since 2026-07-28
+(link:STATUS.adoc[`STATUS.adoc`]). The status table also states `Post-quantum crypto ++|++ Not started ++|++ 0%` (`README.adoc:55`) while ~273 lines of post-quantum code exist. Phase headings at
+`:475`, `:492`, `:503` carry their own separate percentages.
+
+This is the repo's front door and the first thing a reader trusts.
+
+*Next move:* replace the embedded status table with a pointer to `STATUS.adoc` — one
+measured document, not four drifting ones. (Addressed in this changeset.)
+
+[[d-2--unverifiable-compliance-badges--high]]
+=== D-2 · Unverifiable compliance badges — HIGH
+
+`README.adoc` displayed *five* badges asserting compliance that nothing in this repository
+verifies:
+
+[cols=",",options="header",]
+|===
+|Badge |Backing
+|`WCAG 2.3 AAA` |static shields.io image. `docs/ACCESSIBILITY-AUDIT-2026-03-29.adoc` exists but does not certify AAA
+|`Security: OWASP Compliant` |static shields.io image, no gate, no date
+|`SOC 3 Compliant` |linked to `github.com/organizations/metadatastician/settings/compliance` — a *private settings page*, not an attestation
+|`ISO 27001 Compliant` |same private settings link
+|`CIAQ Compliant` |same private settings link
+|===
+
+SOC 3 and ISO 27001 are audited certifications. Asserting them publicly with a dead-end link
+is the badge equivalent of a fake gate, and squarely against the project's own "never commit
+handwaving" doctrine.
+
+Two further defects in the same block, both signs of copy-paste provenance: the licence badge
+*image* read `MPL-2.0` while its *alt text* read `PMPL-1.0-or-later`; and a stray `n` in
+`nimage:` silently broke the OpenSSF Best Practices badge.
+
+*Addressed in this changeset:* all five removed, the licence alt-text and the `nimage:`
+typo fixed, and an inline comment left naming what was removed and what evidence would
+justify re-adding it. The two badges kept — OpenSSF Scorecard and OpenSSF Best Practices —
+resolve to public project pages and are real.
+
+*The removed badges are WANTED, not abandoned.* link:docs/BADGES.adoc[`docs/BADGES.adoc`] is the
+restoration register: every badge this project wants, what each asserts, and precisely what
+evidence unblocks it. Six await restoration (the five above plus Green Hosting, which was
+live and real but pointed at a sibling project's domain), and a seventh — the CRG grade — is
+blocked by a broken `just` recipe (CI-6).
+
+*Next move (owner):* if genuine SOC 3 / ISO 27001 / CIAQ attestations exist, supply the
+public reference and the badges go straight back. SOC 3 reports in particular are designed to
+be publicly distributable. This is the one item in this register where the fix should be
+_reverted_ rather than extended, if the evidence turns out to exist.
+
+[[d-3--root-level-documentation-sprawl--medium]]
+=== D-3 · Root-level documentation sprawl — MEDIUM
+
+43 Markdown/AsciiDoc files sat at repository root. Evidence: `ls -1 ++*++.md ++*++.adoc ++|++ wc -l`.
+Two were session artefacts rather than project documentation
+(`SESSION-SUMMARY-2026-02-05.md`, `SESSION-PICKUP-2026-03-21.md`); *both moved to
+`docs/sessions/` in this changeset*, joining the three already there.
+
+41 root documents remain. The residue is genuine sprawl — nine separate security/verification
+documents (`ATTACK-SURFACE-GAPS`, `OBVIOUS-VULNERABILITIES`, `RED-TEAM-EXERCISE`,
+`SECURITY-STACK-AUDIT`, `SECURITY-REASONING-ENGINE`, `VERIFICATION-SPEC`, `REKOR`,
+`PROOF-NEEDS`, `PROOF-BACKLOG`) with no index between them.
+
+*Next move:* keep the root to what a newcomer or a tool looks for (README, LICENSE,
+SECURITY, CONTRIBUTING, CODE_OF_CONDUCT, GOVERNANCE, CHANGELOG, STATUS, DEBT, ROADMAP) and
+move the rest under `docs/` with an index. Not done here: moving nine linked files needs a
+link-rewrite pass, which deserves its own reviewable change.
+
+[[d-4--duplicate-roadmap--low]]
+=== D-4 · Duplicate ROADMAP — LOW
+
+`ROADMAP.md` (208 lines, substantive) and `ROADMAP.adoc` (12 lines) coexist. The `.adoc` is
+self-declared `= stapeln Roadmap Alias (Deprecated)`, so this is documented, not silent —
+but it still means two files answer to one name.
+
+Checked in this changeset: `docs/READINESS.adoc:156` and `:172` both link to `ROADMAP.adoc`,
+so it is *not* yet safe to delete.
+
+*Next move:* repoint `docs/READINESS.adoc` at `ROADMAP.md`, then delete the alias.
+
+[[d-5--the-wiki-is-empty--medium]]
+=== D-5 · The wiki is empty — MEDIUM
+
+The GitHub wiki is enabled and contains exactly one page: `Home.md`, 29 bytes, reading
+"Welcome to the stapeln wiki!" (commit `54904fa`, "Initial Home page"). An enabled-but-empty
+wiki is a dead end for anyone who clicks it.
+
+*Next move:* populate it as the _navigational_ layer over the in-repo docs — or disable it.
+(Populated in this changeset.)
+
+[[d-6--abi-ffi-readmemd-documents-functions-that-do-not-exist--medium]]
+=== D-6 · `ABI-FFI-README.md` documents functions that do not exist — MEDIUM
+
+Seven `stapeln++_*_++json` functions are documented with no implementation anywhere in the tree.
+Carried from the 2026-07-28 audit; re-confirm before acting.
+
+*Next move:* mark the section "planned", or implement. Not both silent.
+
+[[d-7--rsr_outlineadoc-is-unmodified-template-boilerplate-describing-another-repo--medium]]
+=== D-7 · `RSR_OUTLINE.adoc` is unmodified template boilerplate describing another repo — MEDIUM
+
+The file is titled `= RSR Template Repository` and describes the generic RSR template, not
+stapeln. It states the licence is `LICENSE.txt` — "AGPL {plus} Palimpsest dual license" (wrong on
+both filename and licence), and says "README.adoc ++|++ This file", which it is not. Its badge
+line is also malformed: `image:++[++Palimpsest-MPL-1.0,link=...++]++` has an empty URL, so it renders
+as nothing.
+
+Left unannotated, it is the third source in this repo suggesting a licence stapeln does not
+use — the reason licence questions kept resurfacing.
+
+*Partly addressed 2026-08-07:* an `++[++IMPORTANT++]++` banner now states it describes the template,
+not this project, and both licence rows are annotated inline. *Next move:* decide whether an
+inherited template outline earns its place in the root at all; if it does, fix the broken
+`image:++[]++` markup.
+
+'''''
+
+[[3-code-debt]]
+== 3. Code debt
+
+[[c-1--stack_channelex-changes-shipped-with-zero-test-coverage--medium]]
+=== C-1 · `stack_channel.ex` changes shipped with zero test coverage — MEDIUM
+
+PR ++#++17 (merged 2026-08-04) added `to_stack_map/1` and a `%++{++services: ...}` re-wrap to
+`backend/lib/stapeln_web/channels/stack_channel.ex`. There is no
+`backend/test/stapeln_web/channels/` directory and no `ChannelCase` in `test/support/`, so
+the WebSocket path — including the "legacy raw-services shape keeps working" back-compat
+requirement — is argued but not demonstrated. Raised in review before merge; not addressed.
+
+*Next move:* add `ChannelCase` {plus} `stack_channel_test.exs` covering design-doc string
+payload, legacy services-map payload, and a malformed payload.
+
+[[c-2--apidecode-accepts-a-non-positive-id--low]]
+=== C-2 · `ApiDecode` accepts a non-positive id — LOW
+
+`frontend/src/ApiDecode.res` maps `data.id` through `Float.toInt` without a `++>++ 0` guard. The
+backend never emits `0`, so "no path yields `stackId = 0`" is currently incidental rather
+than structural — and `stackId = 0` was the exact defect PR ++#++17 existed to kill.
+
+*Next move:* guard `n ++>++ 0` and integral; add the `id: 0 → Error` test case.
+
+[[c-3--frontend-test-placed-in-an-invented-tree--low]]
+=== C-3 · Frontend test placed in an invented tree — LOW
+
+`frontend/tests/unit/api_decode_test.js` was added alongside an already-existing root-level
+`tests/unit/`. Two unit-test roots, and no runner covers the new one.
+
+*Next move:* move it to `tests/unit/`.
+
+[[c-4--bridge_clizig-has-no-build-target--medium]]
+=== C-4 · `bridge_cli.zig` has no build target — MEDIUM
+
+353 lines, 5 working operations, unreachable from any build. Carried from 2026-07-28.
+
+*Next move:* add the build target or move the file out of `src/`.
+
+[[c-5--committed-build-artefacts--low]]
+=== C-5 · Committed build artefacts — LOW
+
+`frontend/lib/++**++` holds build output tracked in git despite `.gitignore` listing `lib/`.
+Compiled `.res.js` files are _deliberately_ committed (the repo has no build step in CI), so
+this needs an explicit ruling rather than a blind `git rm`.
+
+*Next move:* rule on it, then make `.gitignore` and reality agree.
+
+'''''
+
+[[4-proof-debt]]
+== 4. Proof debt
+
+[[p-1--proof-coverage-is-narrow-but-honest--medium]]
+=== P-1 · Proof coverage is narrow but honest — MEDIUM
+
+8 Idris2 proof modules exist under `src/abi/` with `%default total` and *zero*
+`believe_me` / `postulate` / `assert_total` / holes — genuinely honest proofs, unusual in
+this estate. The debt is scope, not integrity: they cover the ABI layer only.
+
+Detail lives in link:PROOF-NEEDS.md[`PROOF-NEEDS.md`] (324 lines) and
+link:PROOF-BACKLOG.md[`PROOF-BACKLOG.md`] (148 lines).
+
+*Next move:* none urgent. Keep the honesty property under gate (see T-2).
+
+[[p-2--no-gate-proves-the-proofs-still-check--medium]]
+=== P-2 · No gate proves the proofs still check — MEDIUM
+
+`stapeln-tests.ipkg` exists, but no workflow runs an Idris2 build. A proof nothing re-checks
+decays silently.
+
+*Next move:* add an `idris2 --build` step; ensure it can fail (per estate rule, per-file
+`--check` is a fake gate — use the `.ipkg`).
+
+'''''
+
+[[5-test-debt]]
+== 5. Test debt
+
+[[t-1--scriptsreadiness-checksh-is-invoked-by-nothing--high]]
+=== T-1 · `scripts/readiness-check.sh` is invoked by nothing — HIGH
+
+A correct 5-gate script (clean tree, lockfile hygiene, Deno tests, `rescript build`,
+`mix deps.get && mix test`) that exits non-zero on failure. Evidence:
+`grep -rln readiness-check .github/workflows/ Justfile .gitlab-ci.yml` → *no matches*.
+
+The single highest-leverage fix in the repo: one caller makes the whole suite load-bearing.
+
+*Next move:* `just readiness` {plus} a workflow job. (Planned as campaign Task 3.)
+
+[[t-2--mix-test-runs-on-gitlab-only--high]]
+=== T-2 · `mix test` runs on GitLab only — HIGH
+
+122 ExUnit tests across 15 files. `mix test` appears in `.gitlab-ci.yml:144` and in *no*
+GitHub workflow. GitHub Actions is the forge that gates merges here.
+
+*Next move:* add a `Backend Tests` workflow.
+
+[[t-3--two-of-three-deno-suites-are-soft-gated--medium]]
+=== T-3 · Two of three Deno suites are soft-gated — MEDIUM
+
+* `.github/workflows/e2e.yml:20` — e2e suite, `++||++ echo "::warning::…"`. *Honest*: genuinely
+needs Podman.
+* `.github/workflows/e2e.yml:43` — aspect suite, `++||++ echo "Aspect test script not found"`.
+*Dishonest*: `tests/aspect/aspect_tests.sh` exists, so the fallback can only mask real
+failures.
+* Property suite (42 tests) is hard-gated. Good.
+
+*Next move:* drop the `++||++ echo` from the aspect step; leave e2e soft and say why.
+
+[[t-4--the-published-test-count-is-not-reproducible--medium]]
+=== T-4 · The published test count is not reproducible — MEDIUM
+
+`STATUS.adoc` (2026-07-28) claims _"339 real tests (105 ExUnit, 107 Idris2, 110 Deno, 17 JS)"_.
+Measured on `bc04e22`:
+
+[cols=",,",options="header",]
+|===
+|Suite |Count |Method
+|ExUnit |*122* in 15 files |`grep -rhoE '^++\++s++*++(test{vbar}property) "' backend/test`
+|Deno/JS |*107* in 6 files |`grep -rhoE 'Deno++\++.test++\++(' tests`
+|Zig |*16* |`grep -rhoE '^++\++s++*++test "' ffi/zig`
+|Idris2 |8 modules, *1* named `test++*++` binding |`grep -rhoE '^++\++s++*++test++[++A-Za-z0-9++_]*++ :' tests/idris2`
+|===
+
+ExUnit grew 105 → 122 (PR ++#++17 added tests, as claimed). The *107 Idris2 tests* figure is
+the one that does not reproduce by any method tried: the Idris2 suite is 8 modules driven by
+a custom `Test/Spec.idr` harness, and discrete cases are not enumerable by grep.
+
+A defensible headline is *245 executable test cases* (122 {plus} 107 {plus} 16) plus 8 Idris2 proof
+modules — not 339. This is a _measurement-methodology_ discrepancy, not an accusation of
+fabrication, but the repo should publish a number a reader can reproduce.
+
+*Next move:* publish the per-suite table with its commands (done in `STATUS.adoc` here).
+
+'''''
+
+[[6-cicd-debt]]
+== 6. CI/CD debt
+
+[[ci-1--ossf-scorecard-has-startup_failured-every-day-since-at-least-2026-08-04--high]]
+=== CI-1 · OSSF Scorecard has `startup_failure`d every day since at least 2026-08-04 — HIGH
+
+Four consecutive daily runs, all `startup_failure`, all 0s. Evidence:
+`gh run list --workflow scorecard.yml`.
+
+*DIAGNOSIS (unconfirmed):* `.github/workflows/scorecard.yml` declares workflow-level
+`permissions:` including `actions: read`, but the `scorecard` job — which is a `uses:` call
+to `hyperpolymath/standards/.github/workflows/scorecard-reusable.yml@bd0df9ea…` — re-declares
+its own `permissions:` block *omitting `actions: read`*. A job-level block replaces the
+workflow-level one; if the reusable workflow requests `actions: read`, the call is a
+permission escalation and GitHub rejects the workflow before any job runs. This matches a
+known estate failure pattern.
+
+Note the failure mode: a parse/permission rejection produces a run with *zero jobs*, which
+`gh pr checks` does not surface as a failing check. It is invisible unless you look at run
+history.
+
+*Next move:* test the hypothesis by adding `actions: read` to the job-level block. If that
+does not fix it, resolve the reusable's declared permissions against the caller's.
+
+[[ci-0--the-frontend-language-is-banned-by-estate-policy--high]]
+=== CI-0 · The frontend language is banned by estate policy — HIGH
+
+The `governance / Language / package anti-pattern policy` job enforces a `banned_language_file`
+rule. ReScript was retired estate-wide in favour of *AffineScript*; stapeln's frontend is
+~50 `.res` modules. The job's log shows `.res` files under `dom-mounter/` passing only as
+`⏭️ exempt (cicd_rules/banned_language_file)` — i.e. the policy is satisfied by exemptions,
+not by compliance.
+
+This is the largest single piece of debt in the repository, and it is _architectural_, not
+clerical: it implies either a frontend rewrite or a permanent, explicitly-declared carve-out.
+Open PR ++#++23 (`chore(governance): declare the banned-language migration backlog`) begins the
+declaration. The standing estate rule is *do not add new `.res` files*; existing ones are
+grandfathered via `.hypatia-baseline.json`.
+
+*Next move:* land ++#++23 so the debt is declared rather than merely failing, then get an owner
+ruling on rewrite-vs-carve-out. Do not "fix" this by widening exemptions silently — that
+converts a real policy into a fake one.
+
+[[ci-2--three-workflows-are-red-on-main--high]]
+=== CI-2 · Three workflows are red on `main` — HIGH
+
+As of the 2026-08-04 push: `Secret Scanner` *failure*, `Governance` *failure*,
+`Instant Sync` *failure*. (`Hypatia Security Scan`, `SPARK Theatre Gate`, `BoJ Server Build Trigger` pass.) Open PRs ++#++20–++#++24 appear to be addressing the first two.
+
+*Next move:* land ++#++20–++#++24, then re-measure. Red `main` normalises red.
+
+[[ci-3--container-stack-smokeyml-cannot-fail--medium]]
+=== CI-3 · `container-stack-smoke.yml` cannot fail — MEDIUM
+
+Both build steps carry `continue-on-error: true` (`:53`, `:59`), over five uninitialised
+submodules. A gate that cannot fail is not a gate.
+
+*Next move:* initialise the submodules and remove `continue-on-error`, or delete the
+workflow and stop advertising a check that checks nothing.
+
+[[ci-4--boj-buildyml-step-is-continue-on-error--low]]
+=== CI-4 · `boj-build.yml` step is `continue-on-error` — LOW
+
+`:19`. Same class as CI-3, lower stakes.
+
+[[ci-6--just-crg-badge-and-just-crg-grade-are-broken--medium]]
+=== CI-6 · `just crg-badge` and `just crg-grade` are broken — MEDIUM
+
+Both recipes fail immediately:
+
+....
+$ just crg-grade
+sh: 1: Syntax error: "(" unexpected
+error: recipe `crg-grade` failed on line 69 with exit code 2
+....
+
+Same at line 80 for `crg-badge`. The recipes use bash syntax but run under `sh`. The
+consequence is that the project ships its own Component Readiness Grade generator and
+*cannot generate the grade* — which is why no CRG badge appears on the README
+(link:docs/BADGES.adoc[`docs/BADGES.adoc`] item 7).
+
+*Next move:* give the two recipes a bash shebang (`++#++!/usr/bin/env bash` as a `just` recipe
+prelude) or remove the bash-only constructs. Then publish the grade.
+
+[[ci-5--gitlab-is-the-only-place-the-backend-is-tested--medium]]
+=== CI-5 · GitLab is the only place the backend is tested — MEDIUM
+
+See T-2. Also `.gitlab-ci.yml` has three `allow_failure: true` jobs (`:43`, `:64`, `:77`)
+against two hard ones (`:29`, `:36`).
+
+*Next move:* treat GitHub as the gate of record; mirror the hard jobs there.
+
+'''''
+
+[[7-supply-chain--security-debt]]
+== 7. Supply chain / security debt
+
+[[s-1--gitleaks-reports-12-findings-on-main--medium]]
+=== S-1 · Gitleaks reports 12 findings on `main` — MEDIUM
+
+The `scan / gitleaks` job fails with `leaks found: 12`. Open PRs ++#++20 and ++#++21 assert all
+twelve are test fixtures and propose an allowlist.
+
+*Next move:* land the allowlist *only* after each of the twelve is individually
+confirmed a fixture. An allowlist applied without that check converts a real gate into a
+fake one. Note the estate rule: gitleaks' allowlist pattern `(doc++|++docx)$` substring-matches
+`.adoc` — verify the allowlist does not blind the scanner to whole file types.
+
+[[s-2--five-uninitialised-submodules-under-container-stack--medium]]
+=== S-2 · Five uninitialised submodules under `container-stack/` — MEDIUM
+
+`container-stack/++{++cerro-torre,rokur,selur,svalinn,vordr}` are submodule stubs. The smoke
+workflow "checking" them cannot fail (CI-3). Consumers cannot build the container path.
+
+*Next move:* initialise, or vendor the interfaces, or remove and depend on the published
+artefacts.
+
+'''''
+
+[[8-found-2026-08-27-shipping-the-bundle-compiler]]
+== 8. Found 2026-08-27, shipping the bundle compiler
+
+[[a-1--the-affinescript-port-contains-zero-functions--high]]
+=== A-1 · The AffineScript port contains ZERO functions — HIGH
+
+All 47 `.affine` files exist and all 47 pass `affinescript check`. Both facts are
+true and together they are *misleading*:
+
+[source]
+----
+20,995 .affine lines
+  19,203 (91.5%)  retained ReScript inside /* ORIGINAL RESCRIPT */ comments
+   1,792 ( 8.5%)  real AffineScript
+       0          function declarations, across ALL 47 files
+----
+
+It type-checks *because 91.5% of each file is an inert comment block*.
+
+*Cause, not effort.* `tools/res-to-affine` silently degraded to a line-regex
+scanner because its tree-sitter grammar was absent (`tools/vendor/` is
+gitignored by design, and the default grammar path resolves relative to the
+CURRENT DIRECTORY). It then reported the engine it had been _asked_ for rather
+than the one that ran, and *exited 0* — so the sweep logged 47 successes.
+
+Fixed at source: https://github.com/hyperpolymath/affinescript/pull/730[affinescript#730].
+
+*Scope.* The estate campaign covers ~3,996 files across ~80 repos. Any sweep run
+without the grammar produced function-free skeletons and reported success.
+
+Reproduce: `grep -chE '^\s*(pub )?fn ' frontend/src/*.affine | awk '{s+=$1} END{print s}'`
+
+=== A-2 · Porting is blocked by unsound AffineScript codegen — HIGH
+
+https://github.com/hyperpolymath/affinescript/issues/731[affinescript#731]: a
+`match` whose arms differ only in a *nested* constructor emits identical guards,
+so later arms are unreachable and the first arm's result is returned silently.
+It type-checks; only the emitted JavaScript is wrong.
+
+Found hand-porting `ApiDecode.affine`, where a `JFloat` id returned `Ok(2.7)`
+from a function declared `-> Result<Int, String>` — a Float escaping into an Int
+position.
+
+Nested patterns are the normal shape of decoders and of every TEA `update`
+function, so *porting more files now would produce code that passes review and
+runs wrong.* One file (`ApiDecode.affine`) is ported to completion by hand as a
+proven exemplar.
+
+=== A-3 · `frontend/lib/bs/` is a stale, broken, tracked build — MEDIUM
+
+A partial ReScript build of 30 of 47 modules whose `App.res.js` imports *nine
+modules that do not exist in it* (`ApiClient`, `LoginPage`, `RegisterPage`,
+`SettingsPage`, `AttackSurfacePage`, `PipelineDesigner`, `PipelineModel`,
+`PipelineUpdate`, `ConversationalError`).
+
+Nothing loads it — `index.html` loads `src/*.js`, which _is_ complete and
+self-consistent — but it is tracked in git and will mislead the next reader into
+thinking the app is broken. Delete it or regenerate it.
+
+=== A-4 · The empty-linter does not scan `.affine` or Ada — MEDIUM
+
+`Empty-linter (invisible characters)` is *advisory by owner ruling* (2026-08-27:
+warn, do not gate), so its inability to fail is intended and is not itself debt.
+
+The debt is coverage. Its extension list omits `.affine`, `.ads`, `.adb`, `.ncl`
+and `.scm` while including `.res` — so *the ReScript→AffineScript migration moves
+code out of its coverage*, and stapeln's 20,995 `.affine` lines are unscanned.
+
+It also runs in only *384 of 644* repos, inlined as an independent copy in each
+repo's `dogfood-gate.yml` rather than called as a shared reusable — so improving
+it means touching 384 files.
+
+=== A-5 · RESOLVED — four defects a review found
+
+Fixed in #43, each with a regression test: TOML *injection* via caller-supplied
+metadata (a newline in `author` wrote arbitrary keys into `manifest.toml`); an
+unreachable port default (`0 || 8080` is `0`, because zero is truthy in Elixir);
+a parser crash on a JSON `null` (`Map.get(m, k, [])` returns `nil` when the key
+is present-with-null); and two validators that disagreed about the same bundle.
+
+=== A-6 · RESOLVED — an intermittent test failure, root-caused
+
+`Stapeln.AuthTest` failed sporadically with `{:error, :email_taken}`. `UserStore`
+persisted to `/tmp` in *every* environment while the tests build addresses from
+`System.unique_integer/1`, which restarts low each run — so a run collided with
+its own history. The `setup` block claimed "Ensure clean state" and returned
+`:ok`, doing nothing. Fixed in #44; `setup` now asserts rather than comments.
+
+'''''
+
+== Cross-cutting note: the honest-red principle
+
+Several items above (T-3, CI-3, CI-4) share one shape: *a gate wired so it cannot fail.*
+The project's own doctrine is that a proof gate must be able to fail, and that an honest red
+beats a fake green. Fixing these will make the board _look worse_ and _be_ better. That is
+the intended direction.
+
+A-1 is the same shape one layer up: not a gate that cannot fail, but a *tool* that
+could not fail — it exited 0 after degrading. And A-4 is the deliberate exception,
+where advisory-not-gating is the ruling rather than an oversight.
+
+'''''
+
+== Related
+
+* link:STATUS.adoc[`STATUS.adoc`] — measured state, same commit
+* link:.machine_readable/6a2/STATE.a2ml[`.machine_readable/6a2/STATE.a2ml`] — machine mirror
+* link:ROADMAP.md[`ROADMAP.md`] — intended direction
+* link:SECURITY.md[`SECURITY.md`] — disclosure policy

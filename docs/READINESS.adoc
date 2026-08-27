@@ -13,7 +13,7 @@ state of readiness against those criteria. Updated from README.adoc status table
 Freshness correction (verified 2026-06-13): the *Idris2 proofs* status below
 ("stubs only / zero proven lemmas") is **stale**. The estate now has 33 `.idr`
 files with **no** `believe_me`/`postulate`/`sorry` markers, and cerro-torre's
-lifecycle postulates were discharged (see `STATUS.md`, 2026-03-29). Treat the
+lifecycle postulates were discharged (see `STATUS.adoc`, 2026-03-29). Treat the
 Idris2 rows below as "real proofs, coverage still expanding," not "stubs."
 ====
 
@@ -170,7 +170,7 @@ The minimum viable production path (in dependency order):
 
 * link:READINESS-CHECKLIST.md[READINESS-CHECKLIST.md] — automated pass/fail gates (repo health, tests, build)
 * link:../ROADMAP.adoc[ROADMAP.adoc] — phased milestone timeline
-* link:../STATUS.md[STATUS.md] — canonical live status (more granular)
+* link:../STATUS.adoc[STATUS.adoc] — canonical live status (more granular)
 * link:../PROOF-NEEDS.md[PROOF-NEEDS.md] — outstanding formal verification requirements
 * link:../TEST-NEEDS.md[TEST-NEEDS.md] — testing gaps
 * link:../SECURITY-STACK-AUDIT.md[SECURITY-STACK-AUDIT.md] — compliance scores per standard

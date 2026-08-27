@@ -6,7 +6,7 @@ This file is retained for compatibility with tooling that expects `ROADMAP.adoc`
 Authoritative planning documents:
 
 * `ROADMAP.md` (primary roadmap)
-* `STATUS.md` (source-of-truth status)
+* `STATUS.adoc` (source-of-truth status)
 * `docs/EXECUTION-PLAN-2026-02-11.md` (current six-stream execution plan)
 
 Use those files for all active planning and progress updates.

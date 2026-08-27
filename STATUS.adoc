@@ -1,0 +1,240 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Stapeln — Measured Status
+:toc:
+:toclevels: 2
+
+*Last measured:* 2026-08-27 · *Commit:* `1ef613d`
+
+[NOTE]
+====
+This document records *measured* state. Every claim below is a file read, a
+command run, or a CI query executed at the commit above, and the command is
+given so the number can be reproduced. Where another document in this repo
+contradicts it, this one is correct and the other is stale.
+
+Known debt is indexed in link:DEBT.adoc[`DEBT.adoc`].
+====
+
+== What stapeln is
+
+A *compiler from a visual topology to a verified deployment bundle*. You compose
+a container stack on a drag-and-drop canvas; stapeln validates the topology,
+scans it for security gaps, and lowers it to deployment artefacts. The design
+document round-trips losslessly, so the canvas — not the generated files — is
+the source of truth.
+
+It is the designer for a six-repo ecosystem: *selur* (compose orchestration),
+*vordr* (health/crash watching), *rokur* (secrets gate), *svalinn* (edge policy
+gateway), *cerro-torre* (signing and provenance).
+
+== The headline: it is now actually a compiler
+
+As of 2026-08-27 the ruling is implemented in both directions.
+
+[source,console]
+----
+POST /api/stacks/:id/generate?format=stapeln_bundle
+----
+
+emits nine files, and `Stapeln.BundleParser.raise_design/1` reads them back:
+
+[source]
+----
+.gatekeeper.yaml   compose.example.toml   compose.toml   ct-build.sh
+deploy.k9.ncl      manifest.toml          rokur.toml     vordr.toml
+stapeln.design.json
+----
+
+The round-trip property `design == raise(lower(design))` is enforced by tests
+(PR #41), and the guard is *mutation-verified*: deleting the design from the
+emitted bundle turns 7 of 13 round-trip tests red.
+
+[cols="1,3", options="header"]
+|===
+| Shipped | What it does
+
+| PR #39 (ST3)
+| Emits the nine-file bundle. Templates are byte-identical copies of
+  `rsr-template-repo:build/container/stapeln/`, so `diff` against the canonical
+  bundle stays meaningful.
+
+| PR #41 (ST4)
+| Raises a bundle back to its design, cross-checking that the emitted services
+  match the design's components.
+
+| PR #43
+| Four defects a review found: TOML injection via caller metadata, an
+  unreachable port default, a parser crash on a JSON `null`, and two validators
+  that disagreed.
+
+| PR #44
+| Root-caused an intermittent auth-test failure.
+|===
+
+=== Required metadata, and why
+
+`generate/2` *refuses* to run without `author`, `email`, `license` and `owner`.
+These four are not defaulted because `manifest.toml` is the file cerro-torre
+reads to attribute a build. Defaulting them would be worse than leaving
+`{{AUTHOR}}` in place: the placeholder guard would then pass on a bundle that is
+placeholder-free and confidently wrong.
+
+== Test inventory
+
+Counted at `1ef613d`. Commands given so the numbers reproduce.
+
+[cols="2,1,4", options="header"]
+|===
+| Suite | Cases | Command
+
+| Elixir ExUnit
+| *162*
+| `mix test` — also the count CI reports
+
+| Deno / JS
+| 112
+| `grep -rhoE '\.test\(' tests \| wc -l`
+
+| Zig
+| 16
+| `grep -rhoE '^\s*test "' ffi/zig \| wc -l`
+
+| Idris2
+| 16 modules
+| custom `Test/Spec.idr` harness — cases not grep-enumerable
+|===
+
+*The 162 ExUnit tests now gate merges.* `backend-test.yml` runs `mix test` on
+every PR and is green on `main` — closing what this document previously recorded
+as debt T-2 ("no GitHub workflow runs `mix test`").
+
+== The frontend: what actually runs
+
+[cols="2,1,4", options="header"]
+|===
+| | Count | State
+
+| ReScript modules
+| 47
+| *This is the app that runs.* `src/*.js` is complete and self-consistent; all
+  47 modules have compiled output and `index.html` loads it.
+
+| Routed views
+| 12
+| topology, stack, pipeline, LagoGrey designer, port config, security, attack
+  surface, gap analysis, simulation, settings, login, register
+
+| `lib/bs/` build
+| 30
+| *Stale dead weight.* A partial build whose `App.res.js` imports nine modules
+  that do not exist in it. Nothing loads it. Tracked in git, so it will mislead
+  the next reader.
+|===
+
+=== The AffineScript migration is 8.5% done, not complete
+
+This is the correction most worth reading. All 47 `.affine` files exist and all
+47 pass `affinescript check` — but that is *true and misleading*:
+
+[source]
+----
+20,995 .affine lines
+  19,203 (91.5%)  retained ReScript inside /* ORIGINAL RESCRIPT */ comments
+   1,792 ( 8.5%)  real AffineScript
+       0          function declarations, across ALL 47 files
+----
+
+It type-checks *because 91.5% of each file is an inert comment block*. Every
+file carries a `TODO: port the remaining forms` marker; none is fully ported.
+
+The cause was not that porting is hard. `tools/res-to-affine` silently degraded
+to a line-regex scanner because its tree-sitter grammar was absent, reported the
+engine it had been *asked* for rather than the one that ran, and exited 0 — so
+the sweep logged 47 successes. Fixed at source in
+https://github.com/hyperpolymath/affinescript/pull/730[affinescript#730].
+
+*Porting is currently blocked* on
+https://github.com/hyperpolymath/affinescript/issues/731[affinescript#731]:
+nested constructor patterns emit identical guards, so later match arms are
+unreachable. Nested patterns are the normal shape of decoders and of every TEA
+`update` function, so porting more now would produce code that type-checks and
+runs wrong.
+
+One file, `ApiDecode.affine`, has been ported to completion by hand as a proven
+exemplar — it type-checks, compiles, and carries no retained-ReScript block.
+
+== CI/CD
+
+[cols="3,1,3", options="header"]
+|===
+| Check | State | Note
+
+| Backend Tests
+| PASS
+| 162 ExUnit tests; gates PRs
+
+| E2E and Property Tests
+| PASS
+|
+
+| Hypatia Security Scan, Secret Scanner, CodeQL, Dogfood Gate, SPARK Theatre Gate
+| PASS
+|
+
+| `governance / Workflow security linter`
+| PASS
+| Was red. `gh actions-lock` prepends its banner above the SPDX line and the
+  linter greps `head -1`, so all 18 workflows read as unlicensed. Fixed in #40.
+
+| `governance / Allowlist Preflight`
+| FAIL
+| Estate-wide: the PAT was never distributed. Red in 331 of 332 repos.
+
+| `governance / Language / package anti-pattern policy`
+| FAIL
+| The declared ReScript carve-out (debt CI-0)
+
+| `governance / Validate Hypatia Baseline`
+| FAIL
+| The moving-ruleset problem; the gate clones hypatia at HEAD
+
+| OikosBot Sustainability Analysis
+| FAIL
+| Pre-existing
+|===
+
+=== The empty-linter is advisory, by ruling
+
+`Empty-linter (invisible characters)` appears as a green tick on every PR. It
+emits `::warning` annotations and *never exits non-zero*, so it cannot fail.
+
+That is *intended* — the owner ruled on 2026-08-27 that it should warn rather
+than gate. Recorded here because a permanently-green check reads as assurance,
+and it should not be mistaken for one.
+
+Two caveats worth knowing:
+
+* It runs in *384 of 644* repos, inlined as an independent copy in each repo's
+  `dogfood-gate.yml` rather than called as a shared reusable.
+* It scans neither `.affine` nor Ada, Nickel or Scheme. Since `.res` *is*
+  scanned, the ReScript→AffineScript migration moves code *out* of its coverage.
+
+== Next actions
+
+Ordered by leverage.
+
+. Unblock the AffineScript port — affinescript#731 (nested-pattern codegen)
+. Fix the componentType decoder — an unknown type currently *deletes* the whole
+  component on load, silently (stapeln#42); this blocks adding the `Rokur`
+  variant
+. Delete the stale `lib/bs/` build, or regenerate it
+. Resolve the duplicate ROADMAP (debt D-4): `ROADMAP.adoc` is a deprecated alias
+  while `ROADMAP.md` holds the content — inverted from the estate default
+. Restore badges as their evidence lands — link:docs/BADGES.adoc[`docs/BADGES.adoc`]
+
+== Related
+
+* link:DEBT.adoc[`DEBT.adoc`] — full debt register
+* `.machine_readable/6a2/STATE.a2ml` — machine mirror
+* link:ARCHITECTURE.md[`ARCHITECTURE.md`] · link:TOPOLOGY.md[`TOPOLOGY.md`] ·
+  link:ROADMAP.md[`ROADMAP.md`]
