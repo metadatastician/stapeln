@@ -130,4 +130,68 @@ defmodule StapelnWeb.StackControllerTest do
     conn = post(recycle(conn), ~p"/api/stacks/#{id}/gap-analysis", %{})
     assert %{"data" => _report} = json_response(conn, 200)
   end
+
+  describe "POST /api/stacks/:id/generate?format=stapeln_bundle" do
+    setup %{conn: conn} do
+      conn = post(conn, ~p"/api/stacks", %{"name" => "bundle-demo", "services" => [%{"name" => "web"}]})
+      assert %{"data" => %{"id" => id}} = json_response(conn, 201)
+      {:ok, id: id, conn: recycle(conn)}
+    end
+
+    @bundle_meta %{
+      "author" => "A. Author",
+      "email" => "a@example.org",
+      "license" => "MPL-2.0",
+      "owner" => "acme"
+    }
+
+    test "returns all nine bundle files, none containing a placeholder", %{conn: conn, id: id} do
+      conn =
+        post(conn, ~p"/api/stacks/#{id}/generate", Map.put(@bundle_meta, "format", "stapeln_bundle"))
+
+      assert %{"data" => %{"format" => "stapeln_bundle", "content" => files}} =
+               json_response(conn, 200)
+
+      assert Enum.sort(Map.keys(files)) == Stapeln.BundleCodegen.bundle_files()
+      assert map_size(files) == 9
+
+      for {name, content} <- files do
+        refute content =~ ~r/\{\{[A-Z_]+\}\}/, "#{name} shipped with a placeholder"
+      end
+    end
+
+    test "400s, naming the missing fields, when the required metadata is absent", %{
+      conn: conn,
+      id: id
+    } do
+      conn = post(conn, ~p"/api/stacks/#{id}/generate", %{"format" => "stapeln_bundle"})
+
+      assert %{"error" => message} = json_response(conn, 400)
+
+      for expected <- ~w(author email license owner) do
+        assert message =~ expected
+      end
+    end
+
+    test "an unknown format is a 400, not a silently-substituted Containerfile", %{
+      conn: conn,
+      id: id
+    } do
+      # Regression guard. This previously fell through to :containerfile, so a
+      # typo returned 200 with a Containerfile and a `format` field echoing a
+      # format the server never produced.
+      conn = post(conn, ~p"/api/stacks/#{id}/generate", %{"format" => "stapeln_bundl"})
+
+      assert %{"error" => message} = json_response(conn, 400)
+      assert message =~ "unknown format"
+      assert message =~ "stapeln_bundle"
+    end
+
+    test "the documented formats all still resolve", %{conn: conn, id: id} do
+      for fmt <- ~w(containerfile docker_compose selur_compose podman_compose all) do
+        conn = post(recycle(conn), ~p"/api/stacks/#{id}/generate", %{"format" => fmt})
+        assert %{"data" => %{"format" => ^fmt}} = json_response(conn, 200)
+      end
+    end
+  end
 end

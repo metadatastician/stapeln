@@ -77,44 +77,89 @@ defmodule StapelnWeb.StackController do
     end
   end
 
+  @generate_formats %{
+    "containerfile" => :containerfile,
+    "docker_compose" => :docker_compose,
+    "selur_compose" => :selur_compose,
+    "podman_compose" => :podman_compose,
+    "stapeln_bundle" => :stapeln_bundle,
+    "all" => :all
+  }
+
   def generate(conn, %{"id" => raw_id} = params) do
     format_str = Map.get(params, "format", "containerfile")
 
-    format =
-      case format_str do
-        "containerfile" -> :containerfile
-        "docker_compose" -> :docker_compose
-        "selur_compose" -> :selur_compose
-        "podman_compose" -> :podman_compose
-        "all" -> :all
-        _ -> :containerfile
-      end
+    # An unrecognised format used to fall through to :containerfile. That meant
+    # `?format=stapeln_bundl` (or any typo) returned a Containerfile with HTTP
+    # 200 and a `format` field echoing something the server never produced --
+    # a silent wrong answer. Unknown formats are now a 400 that names what IS
+    # supported.
+    case Map.fetch(@generate_formats, format_str) do
+      :error ->
+        bad_request(
+          conn,
+          "unknown format #{inspect(format_str)}; supported: " <>
+            (@generate_formats |> Map.keys() |> Enum.sort() |> Enum.join(", "))
+        )
 
+      {:ok, format} ->
+        do_generate(conn, raw_id, format, format_str, params)
+    end
+  end
+
+  defp do_generate(conn, raw_id, format, format_str, params) do
     with {:ok, id} <- parse_id(raw_id),
-         {:ok, stack} <- Stacks.fetch(id) do
-      result =
-        if format == :all do
-          Stapeln.Codegen.generate_all(stack)
-        else
-          Stapeln.Codegen.generate(stack, format)
-        end
-
+         {:ok, stack} <- Stacks.fetch(id),
+         {:ok, result} <- run_codegen(stack, format, params) do
       case result do
-        {:ok, content} when is_binary(content) ->
+        content when is_binary(content) ->
           json(conn, %{data: %{format: format_str, content: content}})
 
-        {:ok, content_map} when is_map(content_map) ->
-          formatted =
-            content_map
-            |> Enum.map(fn {fmt, content} -> {Atom.to_string(fmt), content} end)
-            |> Map.new()
-
-          json(conn, %{data: %{format: "all", content: formatted}})
+        content_map when is_map(content_map) ->
+          json(conn, %{data: %{format: format_str, content: stringify_keys(content_map)}})
       end
     else
       {:error, :invalid_id} -> bad_request(conn, "invalid stack id")
       {:error, :not_found} -> not_found(conn)
+      {:error, reason} when is_binary(reason) -> bad_request(conn, reason)
     end
+  end
+
+  defp run_codegen(stack, :all, _params), do: Stapeln.Codegen.generate_all(stack)
+
+  defp run_codegen(stack, :stapeln_bundle, params) do
+    Stapeln.BundleCodegen.generate(stack, bundle_opts(params))
+  end
+
+  defp run_codegen(stack, format, _params), do: Stapeln.Codegen.generate(stack, format)
+
+  # author/email/license/owner are required by BundleCodegen and deliberately
+  # not defaulted here -- see that module's docs. Passing them through as-is
+  # lets it own the validation and the error message.
+  # Static pairs rather than String.to_existing_atom/1: the latter raises if the
+  # atom happens not to be loaded yet, turning a missing form field into a 500.
+  @bundle_param_keys [
+    {"author", :author},
+    {"email", :email},
+    {"license", :license},
+    {"owner", :owner},
+    {"forge", :forge},
+    {"registry", :registry},
+    {"repo", :repo},
+    {"version", :version}
+  ]
+
+  defp bundle_opts(params) do
+    for {param, key} <- @bundle_param_keys,
+        value = Map.get(params, param),
+        do: {key, value}
+  end
+
+  defp stringify_keys(map) do
+    Map.new(map, fn
+      {k, v} when is_atom(k) -> {Atom.to_string(k), v}
+      {k, v} -> {k, v}
+    end)
   end
 
   def sign_stack(conn, %{"id" => raw_id}) do
