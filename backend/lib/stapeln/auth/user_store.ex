@@ -7,12 +7,42 @@ defmodule Stapeln.Auth.UserStore do
 
   Stores users as maps with id, email, and password_hash fields.
   Data persists to /tmp/stapeln-user-store.json for dev convenience.
+
+  ## Persistence is DISABLED under `mix test`, on purpose
+
+  It used to persist there in every environment, including test, and that made
+  `Stapeln.AuthTest` intermittently fail with `{:error, :email_taken}`.
+
+  The mechanism: the tests build addresses from
+  `System.unique_integer([:positive])`, which is unique **within a VM** and
+  restarts from a low value on every run. The store, meanwhile, kept the file
+  across runs. So a run that wrote `test-3@example.com` left it on disk, and a
+  later run generating the same low integer collided with its own history.
+
+  Measured rather than inferred: the accumulated file held `test-3`, `test-7`,
+  `test-16`, `test-67`, `test-80` and `test-83` -- all low integers, exactly
+  the range a fresh VM reissues. That is why the failure was intermittent and
+  why it survived being "not reproducible" several times in a row.
+
+  `/tmp` is also shared between concurrent jobs on the same machine, so the
+  file was a cross-run AND cross-process channel between tests that are
+  declared `async: true`.
+
+  Configure with `config :stapeln, Stapeln.Auth.UserStore, persist_path: nil`
+  to disable, or a path to enable. `config/test.exs` sets nil.
   """
 
   use GenServer
 
   @name __MODULE__
-  @persist_path "/tmp/stapeln-user-store.json"
+  @default_persist_path "/tmp/stapeln-user-store.json"
+
+  @doc false
+  def persist_path do
+    :stapeln
+    |> Application.get_env(__MODULE__, [])
+    |> Keyword.get(:persist_path, @default_persist_path)
+  end
 
   def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, opts, name: @name)
@@ -81,8 +111,24 @@ defmodule Stapeln.Auth.UserStore do
   defp ok_or_not_found({:ok, _} = ok), do: ok
   defp ok_or_not_found(:error), do: {:error, :not_found}
 
+  # A nil persist_path means "keep the store purely in memory". Returning the
+  # same shape File.read/1 would on a missing file keeps the caller unchanged.
+  defp read_persisted do
+    case persist_path() do
+      nil -> {:error, :enoent}
+      path -> File.read(path)
+    end
+  end
+
+  defp write_persisted(encoded) do
+    case persist_path() do
+      nil -> :ok
+      path -> File.write(path, encoded)
+    end
+  end
+
   defp load_state do
-    case File.read(@persist_path) do
+    case read_persisted() do
       {:ok, body} ->
         case Jason.decode(body) do
           {:ok, %{"next_id" => next_id, "users" => users}} ->
@@ -127,7 +173,7 @@ defmodule Stapeln.Auth.UserStore do
     }
 
     with encoded <- Jason.encode!(payload) do
-      File.write(@persist_path, encoded)
+      write_persisted(encoded)
     end
   end
 end
