@@ -62,11 +62,17 @@ let componentTypeToImage = (ct: componentType): string => {
   | Svalinn => "ghcr.io/hyperpolymath/svalinn:latest"
   | Selur => "ghcr.io/hyperpolymath/selur:latest"
   | Vordr => "ghcr.io/hyperpolymath/vordr:latest"
+  | Rokur => "ghcr.io/hyperpolymath/rokur:latest"
   | Podman => "cgr.dev/chainguard/wolfi-base:latest"
   | Docker => "cgr.dev/chainguard/wolfi-base:latest"
   | Nerdctl => "cgr.dev/chainguard/wolfi-base:latest"
   | Volume => "busybox:latest"
   | Network => "busybox:latest"
+  // No image is guessed for a type this build does not understand. A
+  // plausible-looking default here would export a manifest that pulls the
+  // WRONG container, which is worse than an export that plainly cannot be
+  // completed. The scratch image is empty and inert, and the name says why.
+  | UnknownType(name) => "scratch # unrecognised component type: " ++ name
   }
 }
 
