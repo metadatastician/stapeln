@@ -3,6 +3,14 @@
 //
 // Round-trip tests for componentType encode/decode — stapeln#42.
 //
+// JAVASCRIPT, NOT TYPESCRIPT, deliberately. TypeScript is banned estate-wide
+// (Hypatia cicd_rules/banned_language_file); the sibling
+// container_types_test.ts predates the ban and is grandfathered, a new file
+// is not. JS is permitted "only where AffineScript cannot", and a Deno test
+// that imports COMPILED ReScript output is squarely that: there is no
+// AffineScript binding for these artefacts, and writing the test in
+// AffineScript would mean testing something other than what ships.
+//
 // WHY THIS FILE IMPORTS THE COMPILED OUTPUT RATHER THAN MIRRORING IT.
 //
 // The encode table lives in Model.res and the decode table in
@@ -35,12 +43,12 @@ import { assert, assertEquals } from "jsr:@std/assert";
 // This is a harness detail, not a workaround for a defect: the module is
 // browser code and legitimately expects a browser. Worth knowing that
 // importing Model.res.js has a side effect at all.
-// deno-lint-ignore no-explicit-any
-(globalThis as any).window = {
+
+globalThis.window = {
   localStorage: {
-    getItem: (_k: string) => null,
-    setItem: (_k: string, _v: string) => {},
-    removeItem: (_k: string) => {},
+    getItem: () => null,
+    setItem: () => {},
+    removeItem: () => {},
   },
 };
 
@@ -73,10 +81,10 @@ const WIRE_NAMES = [
   "nerdctl",
   "Volume",
   "Network",
-] as const;
+];
 
 /** A minimal component JSON object of the shape DesignFormat expects. */
-function componentJson(type_: string) {
+function componentJson(type_) {
   return {
     id: "c-1",
     type: type_,
