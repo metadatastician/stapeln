@@ -143,15 +143,63 @@ defmodule Stapeln.BundleCodegen do
   # ---------------------------------------------------------------------------
 
   defp build_tokens(stack, opts) do
+    with :ok <- assert_required(opts),
+         :ok <- assert_safe(opts) do
+      {:ok, do_build_tokens(stack, opts)}
+    end
+  end
+
+  defp assert_required(opts) do
     case Enum.reject(@required_opts, &present?(opts[&1])) do
       [] ->
-        {:ok, do_build_tokens(stack, opts)}
+        :ok
 
       missing ->
         {:error,
          "missing required option(s): #{Enum.map_join(missing, ", ", &to_string/1)}. " <>
            "These four are not defaulted because guessing an author, email, licence " <>
            "or owner writes a falsehood into manifest.toml, which is a provenance document."}
+    end
+  end
+
+  # Substitution is textual, so an option value carrying a quote, a backslash or
+  # a newline does not merely look odd -- it changes the STRUCTURE of the file
+  # it lands in. Measured:
+  #
+  #   author: A "Q" Author   ->  maintainer = "A "Q" Author <...>"   (invalid TOML)
+  #   author: "A\nInjected = true"
+  #                          ->  maintainer = "A
+  #                              Injected = true                     (TOML INJECTION)
+  #
+  # The second is the serious one: a caller-supplied author can inject arbitrary
+  # keys into manifest.toml, the file cerro-torre reads to attribute a build.
+  #
+  # REJECTED RATHER THAN ESCAPED, deliberately. These tokens are substituted
+  # into TOML, YAML, Nickel AND shell (ct-build.sh), which have four different
+  # and partly incompatible escaping rules -- REGISTRY alone reaches three of
+  # them. There is no single correct escaping, so any choice would be wrong in
+  # at least one file. Rejecting is format-agnostic, fails closed, and matches
+  # how the required options already behave: refuse rather than emit something
+  # plausible and wrong.
+  @unsafe ~r/["\\]|[\x00-\x1F\x7F]/
+
+  defp assert_safe(opts) do
+    offenders =
+      opts
+      |> Enum.filter(fn {_k, v} -> is_binary(v) and Regex.match?(@unsafe, v) end)
+      |> Enum.map(fn {k, _v} -> to_string(k) end)
+
+    case offenders do
+      [] ->
+        :ok
+
+      names ->
+        {:error,
+         "option(s) #{Enum.join(names, ", ")} contain a quote, backslash or control " <>
+           "character. These are substituted textually into TOML, YAML, Nickel and " <>
+           "shell files, where such a character changes the file's structure rather " <>
+           "than its content -- a newline in `author` injects arbitrary keys into " <>
+           "manifest.toml. Supply a value without them."}
     end
   end
 
@@ -163,7 +211,7 @@ defmodule Stapeln.BundleCodegen do
     %{
       "PROJECT_NAME" => project,
       "SERVICE_NAME" => (primary && Codegen.service_name(primary)) || project,
-      "PORT" => to_string((primary && Codegen.service_port(primary)) || @default_port),
+      "PORT" => to_string(primary_port(primary)),
       "PROJECT_DESCRIPTION" => description(stack, project),
       "CURRENT_DATE" => Date.utc_today() |> Date.to_iso8601(),
       "VERSION" => opt(opts, :version, @default_version),
@@ -175,6 +223,27 @@ defmodule Stapeln.BundleCodegen do
       "LICENSE" => to_string(opts[:license]),
       "OWNER" => to_string(opts[:owner])
     }
+  end
+
+  # NOT `Codegen.service_port(svc) || @default_port`. In Elixir only nil and
+  # false are falsy, so ZERO IS TRUTHY -- and service_port/1 returns 0 for a
+  # port string it cannot parse (codegen.ex, the `{n, ""}` match failing).
+  # `0 || 8080` evaluates to 0, so the default was unreachable and the bundle
+  # emitted APP_PORT = "0". Measured, not theorised: a stack carrying
+  # %{"port" => "abc"} produced exactly that.
+  #
+  # Reachable only via the direct-services path; a design-derived stack goes
+  # through Design.derive_port/1, which normalises to an integer first, and
+  # service_port/1 maps integer 0 to nil because it requires p > 0. Fixing it
+  # anyway -- a guard that depends on an upstream normaliser staying in place
+  # is not a guard.
+  defp primary_port(nil), do: @default_port
+
+  defp primary_port(svc) do
+    case Codegen.service_port(svc) do
+      p when is_integer(p) and p > 0 -> p
+      _ -> @default_port
+    end
   end
 
   defp stack_name(stack) do
