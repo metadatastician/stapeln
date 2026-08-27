@@ -1,18 +1,18 @@
-> [!WARNING]
-> **SUPERSEDED — this document contains claims falsified by measurement on 2026-07-28.**
-> See `STATUS.adoc` in this repo for measured state, and
-> `dev-notes/stapeln-ecosystem-COMPREHENSIVE-SITREP-2026-07-28.md` for full evidence.
-> Falsified here: claims ~82% overall, 'Database Integration 100% PostgreSQL' (no ecto/postgrex in mix.exs), and 'Security/Gap views call real API' (they make zero HTTP calls). Retained for history; do not cite.
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= stapeln — Project Topology
 
-<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-<!-- TOPOLOGY.md — Project architecture map and completion dashboard -->
-<!-- Last updated: 2026-03-23 -->
+[WARNING]
+====
+*SUPERSEDED — this document contains claims falsified by measurement on 2026-07-28.*
+See `STATUS.adoc` in this repo for measured state, and
+`dev-notes/stapeln-ecosystem-COMPREHENSIVE-SITREP-2026-07-28.md` for full evidence.
+Falsified here: claims ~82% overall, 'Database Integration 100% PostgreSQL' (no ecto/postgrex in mix.exs), and 'Security/Gap views call real API' (they make zero HTTP calls). Retained for history; do not cite.
+====
 
-# stapeln — Project Topology
 
-## System Architecture
+== System Architecture
 
-```
+....
                         +-----------------------------------------+
                         |              OPERATOR / ADMIN           |
                         |        (Visual Designer / Drag-and-Drop)|
@@ -75,11 +75,11 @@
                      |   Podman / Docker / nerdctl + nftables  |
                      |   Post-Quantum: Ed25519 + XMSS hybrid   |
                      +-----------------------------------------+
-```
+....
 
-## Completion Dashboard
+== Completion Dashboard
 
-```
+....
 COMPONENT                          STATUS              NOTES
 ---------------------------------  ------------------  ---------------------------------
 FRONTEND (51 affinescript modules, 0 errors, 0 warnings)
@@ -117,15 +117,15 @@ ABI / FFI
 
 DATA & DOCS
   VeriSimDB Integration            ######....  60%     JSONL fallback + remote client; no query UI
-  Documentation                    ########..  80%     STATUS.adoc truth-aligned; TOPOLOGY.md updated 2026-03-23
+  Documentation                    ########..  80%     STATUS.adoc truth-aligned; TOPOLOGY.adoc updated 2026-03-23
 
 ---------------------------------------------------------------------------
 OVERALL:                           ########..  ~82%    End-to-end verified: frontend→proxy→backend→PostgreSQL
-```
+....
 
-## Key Dependencies
+== Key Dependencies
 
-```
+....
 Frontend (affinescript-TEA)
     |
     +--> ApiClient --> Phoenix REST + GraphQL --> NativeBridge --> Zig FFI
@@ -150,22 +150,23 @@ Frontend (affinescript-TEA)
     +--> Export: JSON, Compose, K8s, Helm
     |
     +--> Simulation --> Packet Flow Engine
-```
+....
 
-## Boundary Contract
+== Boundary Contract
 
-- `stapeln/backend` is the **design/control plane** for stack definitions and validation reports.
-- `container-stack/svalinn` + `container-stack/vordr` are the **runtime plane** for container lifecycle operations.
-- `container-stack/rokur` is the planned secrets/policy gate for runtime operations before container start.
+* `stapeln/backend` is the *design/control plane* for stack definitions and validation reports.
+* `container-stack/svalinn` {plus} `container-stack/vordr` are the *runtime plane* for container lifecycle operations.
+* `container-stack/rokur` is the planned secrets/policy gate for runtime operations before container start.
 
-## Update Protocol
+== Update Protocol
 
 This file is maintained by both humans and AI agents. When updating:
 
-1. **After completing a component**: Change its bar and percentage
-2. **After adding a component**: Add a new row in the appropriate section
-3. **After architectural changes**: Update the ASCII diagram
-4. **Date**: Update the `Last updated` comment at the top of this file
+[arabic]
+. *After completing a component*: Change its bar and percentage
+. *After adding a component*: Add a new row in the appropriate section
+. *After architectural changes*: Update the ASCII diagram
+. *Date*: Update the `Last updated` comment at the top of this file
 
-Progress bars use: `#` (filled) and `.` (empty), 10 characters wide.
+Progress bars use: `++#++` (filled) and `.` (empty), 10 characters wide.
 Percentages: 0%, 10%, 20%, ... 100% (in 10% increments).

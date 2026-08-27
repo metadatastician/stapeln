@@ -22,7 +22,7 @@ src/
 
 WARNING: All Idris2 proofs in `src/abi/Proofs.idr` are currently *declarations
 only* — zero lemmas are proven. This is a production blocker. See `docs/READINESS.adoc`
-and `PROOF-NEEDS.md` for the outstanding proof obligations.
+and `PROOF-NEEDS.adoc` for the outstanding proof obligations.
 
 The `Types.idr` and `Layout.idr` files establish the type definitions that the
 Zig implementation must match. `Foreign.idr` declares the C-ABI surface.

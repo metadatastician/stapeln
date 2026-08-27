@@ -38,6 +38,19 @@ paths = [
 
   # Documents whose stated purpose is to contain deliberately planted
   # insecure examples for a red-team exercise.
-  '''(^|/)(RED-TEAM-EXERCISE|OBVIOUS-VULNERABILITIES)\.md$''',
+  #
+  # Matches BOTH extensions, and the `.txt` suffix the estate scanner's
+  # AsciiDoc-mirror step appends. Three reasons, each learned the hard way:
+  #
+  #  * These were `.md` and are now `.adoc` (2026-08-27). An extension-bound
+  #    allowlist silently stops matching when a file is renamed, and the
+  #    finding it was suppressing becomes live. That is what happened here.
+  #  * gitleaks does not scan `.adoc` at all, so
+  #    `secret-scanner-reusable.yml` copies every AsciiDoc file to
+  #    `<name>.adoc.txt` in a temp mirror and scans THAT. A pattern anchored
+  #    `\.adoc$` would never match the file actually being scanned.
+  #  * `.md` is retained so the entry keeps working against history and any
+  #    tooling that still resolves the old name.
+  '''(^|/)(RED-TEAM-EXERCISE|OBVIOUS-VULNERABILITIES)\.(md|adoc)(\.txt)?$''',
 
 ]

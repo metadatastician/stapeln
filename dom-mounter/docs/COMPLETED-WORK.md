@@ -134,7 +134,7 @@ file_io.zig              -      - File I/O (3/3 tests ✓)
 ## 📚 Documentation Created
 
 1. **BUILD-SUMMARY.md** - Complete build report
-2. **ABI-FFI-README.md** - Architecture documentation
+2. **ABI-FFI-README.adoc** - Architecture documentation
 3. **COMPLETED-WORK.md** - This file
 4. **test-import-export.html** - Interactive test page
 
@@ -252,7 +252,7 @@ stapeln/frontend/
 │   └── build.zig             ✓ Zig 0.15 compatible
 ├── test-import-export.html   ✓ Browser test page
 ├── BUILD-SUMMARY.md          ✓ Build report
-├── ABI-FFI-README.md         ✓ Architecture docs
+├── ABI-FFI-README.adoc         ✓ Architecture docs
 └── COMPLETED-WORK.md         ✓ This file
 ```
 

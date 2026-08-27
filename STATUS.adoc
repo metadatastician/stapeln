@@ -229,12 +229,12 @@ Ordered by leverage.
   variant
 . Delete the stale `lib/bs/` build, or regenerate it
 . Resolve the duplicate ROADMAP (debt D-4): `ROADMAP.adoc` is a deprecated alias
-  while `ROADMAP.md` holds the content — inverted from the estate default
+  while `ROADMAP.adoc` holds the content — inverted from the estate default
 . Restore badges as their evidence lands — link:docs/BADGES.adoc[`docs/BADGES.adoc`]
 
 == Related
 
 * link:DEBT.adoc[`DEBT.adoc`] — full debt register
 * `.machine_readable/6a2/STATE.a2ml` — machine mirror
-* link:ARCHITECTURE.md[`ARCHITECTURE.md`] · link:TOPOLOGY.md[`TOPOLOGY.md`] ·
-  link:ROADMAP.md[`ROADMAP.md`]
+* link:ARCHITECTURE.adoc[`ARCHITECTURE.adoc`] · link:TOPOLOGY.adoc[`TOPOLOGY.adoc`] ·
+  link:ROADMAP.adoc[`ROADMAP.adoc`]

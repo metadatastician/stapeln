@@ -25,7 +25,7 @@ These five are the priority. Each row says precisely what unblocks it.
 |===
 |*Asserts* |The UI meets WCAG 2.3 at level AAA
 |*Why removed* |Static image. `docs/ACCESSIBILITY-AUDIT-2026-03-29.adoc` exists but does not certify AAA
-|*Closest existing asset* |That audit, plus link:../ACCESSIBILITY.md[`ACCESSIBILITY.md`]
+|*Closest existing asset* |That audit, plus link:../ACCESSIBILITY.adoc[`ACCESSIBILITY.adoc`]
 |*To restore* |Complete a dated AAA conformance audit and commit it, then link the badge to the audit file rather than to nothing. If the honest level is AA, badge *AA* — an accurate AA badge is worth more than an unbacked AAA one
 |*Owner action* |Confirm the target level
 |===
@@ -37,7 +37,7 @@ These five are the priority. Each row says precisely what unblocks it.
 |===
 |*Asserts* |Compliance with OWASP guidance (ASVS level unstated)
 |*Why removed* |Static image, no gate, no date, no named standard
-|*Closest existing asset* |link:../SECURITY-STACK-AUDIT.md[`SECURITY-STACK-AUDIT.md`], link:../ATTACK-SURFACE-GAPS.md[`ATTACK-SURFACE-GAPS.md`], the live Hypatia scan
+|*Closest existing asset* |link:../SECURITY-STACK-AUDIT.adoc[`SECURITY-STACK-AUDIT.adoc`], link:../ATTACK-SURFACE-GAPS.adoc[`ATTACK-SURFACE-GAPS.adoc`], the live Hypatia scan
 |*To restore* |Name the standard and level (e.g. _OWASP ASVS 4.0 L2_), record the assessment, link to it. "Compliant" with nothing after it is unfalsifiable
 |*Owner action* |Pick the standard and level to claim
 |===
