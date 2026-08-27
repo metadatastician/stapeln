@@ -215,8 +215,8 @@ function viewDetailedBadge(proofs) {
 function IdrisBadge(props) {
   let proofs = props.proofs;
   let __style = props.style;
-  let style = __style !== undefined ? __style : "Standard";
-  switch (style) {
+  let __style_value = __style !== undefined ? __style : "Standard";
+  switch (__style_value) {
     case "Compact" :
       return viewCompactBadge();
     case "Standard" :

@@ -123,6 +123,7 @@ function viewToast(toast, dispatch) {
       }),
       JsxRuntime.jsx("button", {
         children: "×",
+        "aria-label": "Dismiss " + toastLabel(toast.toastType) + " notification",
         style: {
           background: "transparent",
           border: "none",
@@ -139,7 +140,10 @@ function viewToast(toast, dispatch) {
         })
       })
     ],
+    "aria-atomic": true,
+    "aria-live": "polite",
     className: "toast",
+    role: "status",
     style: {
       alignItems: "center",
       animation: "slideIn 0.3s ease-out",

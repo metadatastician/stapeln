@@ -34,11 +34,15 @@ let selur = "#4A148C";
 
 let vordr = "#B71C1C";
 
+let rokur = "#004D40";
+
 let podman = "#6A1B9A";
 
 let docker = "#1565C0";
 
 let nerdctl = "#2E7D32";
+
+let unknown = "#455A64";
 
 let Colors = {
   lightBg: lightBg,
@@ -56,9 +60,11 @@ let Colors = {
   svalinn: svalinn,
   selur: selur,
   vordr: vordr,
+  rokur: rokur,
   podman: podman,
   docker: docker,
-  nerdctl: nerdctl
+  nerdctl: nerdctl,
+  unknown: unknown
 };
 
 function ariaLabel(text) {
@@ -80,37 +86,44 @@ function ariaBraille(text) {
 function renderStackBlock(component, isDark) {
   let match = component.componentType;
   let bgColor;
-  switch (match) {
-    case "CerroTorre" :
-      bgColor = cerroTorre;
-      break;
-    case "LagoGrey" :
-      bgColor = lagoGrey;
-      break;
-    case "Svalinn" :
-      bgColor = svalinn;
-      break;
-    case "Selur" :
-      bgColor = selur;
-      break;
-    case "Vordr" :
-      bgColor = vordr;
-      break;
-    case "Podman" :
-      bgColor = podman;
-      break;
-    case "Docker" :
-      bgColor = docker;
-      break;
-    case "Nerdctl" :
-      bgColor = nerdctl;
-      break;
-    case "Volume" :
-      bgColor = "#757575";
-      break;
-    case "Network" :
-      bgColor = "#9E9E9E";
-      break;
+  if (typeof match !== "object") {
+    switch (match) {
+      case "CerroTorre" :
+        bgColor = cerroTorre;
+        break;
+      case "LagoGrey" :
+        bgColor = lagoGrey;
+        break;
+      case "Svalinn" :
+        bgColor = svalinn;
+        break;
+      case "Selur" :
+        bgColor = selur;
+        break;
+      case "Vordr" :
+        bgColor = vordr;
+        break;
+      case "Rokur" :
+        bgColor = rokur;
+        break;
+      case "Podman" :
+        bgColor = podman;
+        break;
+      case "Docker" :
+        bgColor = docker;
+        break;
+      case "Nerdctl" :
+        bgColor = nerdctl;
+        break;
+      case "Volume" :
+        bgColor = "#757575";
+        break;
+      case "Network" :
+        bgColor = "#9E9E9E";
+        break;
+    }
+  } else {
+    bgColor = unknown;
   }
   let componentName = Model.componentTypeToString(component.componentType);
   return JsxRuntime.jsxs("section", {
@@ -176,6 +189,11 @@ function renderParagonStack(model, isDark) {
       "Vordr",
       "Vörðr",
       "Container orchestrator"
+    ],
+    [
+      "Rokur",
+      "Rokur",
+      "Secrets gate — fails closed if secrets are missing"
     ],
     [
       "Podman",

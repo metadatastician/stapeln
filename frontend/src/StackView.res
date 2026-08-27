@@ -25,9 +25,17 @@ module Colors = {
   let svalinn = "#0D47A1" // Dark blue
   let selur = "#4A148C" // Deep purple
   let vordr = "#B71C1C" // Dark red
+  // Teal 900. Chosen for contrast, not taste: this module targets 7:1 for
+  // AAA, and #004D40 gives ~10.2:1 against white. Orange 900 (#E65100) reads
+  // better for a "gate" but only reaches ~3.9:1, so it would have quietly
+  // broken the accessibility claim the module header makes.
+  let rokur = "#004D40" // Dark teal (secrets gate)
   let podman = "#6A1B9A" // Purple
   let docker = "#1565C0" // Blue
   let nerdctl = "#2E7D32" // Green
+  // Deliberately drab, so a component this build does not recognise cannot
+  // masquerade as a known one.
+  let unknown = "#455A64" // Blue grey 700, ~7.4:1 against white
 }
 
 // Accessibility helpers
@@ -56,11 +64,13 @@ let renderStackBlock = (component: component, isDark: bool) => {
   | Svalinn => Colors.svalinn
   | Selur => Colors.selur
   | Vordr => Colors.vordr
+  | Rokur => Colors.rokur
   | Podman => Colors.podman
   | Docker => Colors.docker
   | Nerdctl => Colors.nerdctl
   | Volume => "#757575"
   | Network => "#9E9E9E"
+  | UnknownType(_) => Colors.unknown
   }
 
   let componentName = componentTypeToString(component.componentType)
@@ -226,6 +236,7 @@ let renderParagonStack = (model: model, isDark: bool) => {
                 (Svalinn, "Svalinn", "Edge gateway with authentication"),
                 (Selur, "selur", "Zero-copy IPC bridge"),
                 (Vordr, "Vörðr", "Container orchestrator"),
+                (Rokur, "Rokur", "Secrets gate — fails closed if secrets are missing"),
                 (Podman, "Podman", "OCI runtime"),
                 (Docker, "Docker", "Docker Engine runtime"),
                 (Nerdctl, "nerdctl", "containerd CLI"),

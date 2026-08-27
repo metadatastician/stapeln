@@ -57,15 +57,15 @@ function ConversationalError(props) {
   let __severity = props.severity;
   let __fixes = props.fixes;
   let reason = props.reason;
-  let fixes = __fixes !== undefined ? __fixes : [];
-  let severity = __severity !== undefined ? __severity : "Warning";
-  let color = severityColor(severity);
+  let __fixes_value = __fixes !== undefined ? __fixes : [];
+  let __severity_value = __severity !== undefined ? __severity : "Warning";
+  let color = severityColor(__severity_value);
   return JsxRuntime.jsxs("div", {
     children: [
       JsxRuntime.jsxs("div", {
         children: [
           JsxRuntime.jsx("div", {
-            children: severityIcon(severity),
+            children: severityIcon(__severity_value),
             style: {
               background: color,
               borderRadius: "50%",
@@ -114,7 +114,7 @@ function ConversationalError(props) {
           display: "flex",
           gap: "12px",
           marginBottom: reason !== undefined ? "12px" : (
-              fixes.length !== 0 ? "16px" : "0"
+              __fixes_value.length !== 0 ? "16px" : "0"
             )
         }
       }),
@@ -125,12 +125,12 @@ function ConversationalError(props) {
             fontSize: "13px",
             lineHeight: "1.5",
             margin: "0",
-            marginBottom: fixes.length !== 0 ? "16px" : "0",
+            marginBottom: __fixes_value.length !== 0 ? "16px" : "0",
             paddingLeft: "40px"
           }
         }) : null,
-      fixes.length !== 0 ? JsxRuntime.jsx("div", {
-          children: Belt_Array.mapWithIndex(Belt_Array.slice(fixes, 0, 3), (idx, fix) => JsxRuntime.jsx("button", {
+      __fixes_value.length !== 0 ? JsxRuntime.jsx("div", {
+          children: Belt_Array.mapWithIndex(Belt_Array.slice(__fixes_value, 0, 3), (idx, fix) => JsxRuntime.jsx("button", {
             children: fix.label,
             "aria-label": fix.label,
             style: {
@@ -157,7 +157,7 @@ function ConversationalError(props) {
     "aria-live": "assertive",
     role: "alert",
     style: {
-      background: severityBg(severity),
+      background: severityBg(__severity_value),
       border: "2px solid " + color,
       borderRadius: "12px",
       marginBottom: "16px",
