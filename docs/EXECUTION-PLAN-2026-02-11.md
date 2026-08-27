@@ -91,7 +91,7 @@ Priority: P0
 Duration: Immediate
 
 Tasks:
-- Keep `STATUS.md` as source-of-truth and update date/status regularly.
+- Keep `STATUS.adoc` as source-of-truth and update date/status regularly.
 - Mark `ROADMAP.adoc` as alias/deprecated pointer to `ROADMAP.md`.
 - Remove legacy naming confusion (`stackur`) from active planning docs.
 - Ensure all "complete" claims map to implemented code paths.

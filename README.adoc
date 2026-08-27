@@ -16,12 +16,12 @@ image:https://www.bestpractices.dev/projects/8509/badge[OpenSSF Best Practices,l
 
 // Six further badges are WANTED and awaiting restoration — WCAG 2.3 AAA, OWASP,
 // SOC 3, ISO 27001, CIAQ and Green Hosting — plus a CRG grade badge blocked by a
-// broken `just` recipe. Each is listed in docs/BADGES.md with exactly what is
+// broken `just` recipe. Each is listed in docs/BADGES.adoc with exactly what is
 // needed to put it back. They were removed on 2026-08-07 only because nothing in
 // this repository verified them; they are not abandoned.
 
-Licensing: **MPL-2.0** for code, **CC-BY-SA-4.0** for documentation — see link:LICENSING.md[LICENSING.md].
-Badges wanted and pending restoration: link:docs/BADGES.md[docs/BADGES.md].
+Licensing: **MPL-2.0** for code, **CC-BY-SA-4.0** for documentation — see link:LICENSING.adoc[LICENSING.adoc].
+Badges wanted and pending restoration: link:docs/BADGES.adoc[docs/BADGES.adoc].
 
 _"Containers for People Who Hate Containers"_
 
@@ -34,9 +34,9 @@ That means no prior container knowledge is required, and security guidance is cl
 
 **Measured completion: ~48%** (2026-08-07, commit `bc04e22`)
 
-link:STATUS.md[**`STATUS.md`** is the canonical source of truth] — it records only claims
+link:STATUS.adoc[**`STATUS.adoc`** is the canonical source of truth] — it records only claims
 backed by a file read, a command run, or a CI query, and it names the command so you can
-reproduce the number. link:DEBT.md[**`DEBT.md`**] indexes known debt across licence,
+reproduce the number. link:DEBT.adoc[**`DEBT.adoc`**] indexes known debt across licence,
 documentation, code, proof, test, CI/CD and supply chain.
 
 A per-component table used to live here. It drifted six months out of date and was wrong in

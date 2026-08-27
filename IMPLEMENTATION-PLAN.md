@@ -4,7 +4,7 @@
 > Status: archival reference only.
 >
 > Active planning sources:
-> - `STATUS.md`
+> - `STATUS.adoc`
 > - `ROADMAP.md`
 > - `docs/EXECUTION-PLAN-2026-02-11.md`
 

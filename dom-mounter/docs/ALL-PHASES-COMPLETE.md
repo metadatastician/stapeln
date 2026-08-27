@@ -137,7 +137,7 @@ We've built a **production-grade, formally verified DOM mounting system** with:
 - `MIGRATION-GUIDE.md` (comprehensive migration paths)
 - `BENCHMARKS.md` (detailed performance analysis)
 - `DOM-MOUNTER-ENHANCEMENTS.md` (original design doc)
-- `IMPLEMENTATION-STATUS.md` (progress tracking)
+- `IMPLEMENTATION-STATUS.adoc` (progress tracking)
 - `ALL-PHASES-COMPLETE.md` (this file)
 
 ---
@@ -187,7 +187,7 @@ dom_mounter.d.ts              400 lines  Phase 3
 ```
 PHASE1-IMPLEMENTATION.md       450 lines
 DOM-MOUNTER-ENHANCEMENTS.md    850 lines
-IMPLEMENTATION-STATUS.md       380 lines
+IMPLEMENTATION-STATUS.adoc       380 lines
 MIGRATION-GUIDE.md             350 lines
 BENCHMARKS.md                  280 lines
 ALL-PHASES-COMPLETE.md         This file
@@ -355,7 +355,7 @@ DomMounter.mountEnhanced(config);
 | `BENCHMARKS.md` | Performance analysis | 280 |
 | `PHASE1-IMPLEMENTATION.md` | Core reliability details | 450 |
 | `DOM-MOUNTER-ENHANCEMENTS.md` | Original design doc | 850 |
-| `IMPLEMENTATION-STATUS.md` | Progress tracking | 380 |
+| `IMPLEMENTATION-STATUS.adoc` | Progress tracking | 380 |
 | `ALL-PHASES-COMPLETE.md` | This comprehensive summary | 600 |
 
 ---

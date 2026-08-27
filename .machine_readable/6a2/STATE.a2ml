@@ -9,7 +9,7 @@ last-updated = "2026-08-07"
 status = "active"
 session = "measured audit — 2026-08-07"
 commit = "bc04e22"
-measurement-method = "file reads, greps, gh API + CI run history at the commit above; see STATUS.md and DEBT.md"
+measurement-method = "file reads, greps, gh API + CI run history at the commit above; see STATUS.adoc and DEBT.adoc"
 
 [project-context]
 name = "Stapeln"
@@ -46,7 +46,7 @@ zig-command = """grep -rhoE '^\\s*test "' ffi/zig"""
 idris2-modules = 8
 idris2-note = "custom Test/Spec.idr harness; discrete cases not grep-enumerable"
 executable-total = 245
-superseded-claim = "an earlier '339 tests' figure circulated; its 107-Idris2 component does not reproduce by any method tried — see DEBT.md T-4"
+superseded-claim = "an earlier '339 tests' figure circulated; its 107-Idris2 component does not reproduce by any method tried — see DEBT.adoc T-4"
 
 [blockers-and-issues]
 issues = [
@@ -59,7 +59,7 @@ issues = [
   """The WebSocket channel path has no tests — `stack_channel.ex` changed in #17 with no ChannelCase and no channel test directory.""",
   """`ABI-FFI-README.md` documents 7 `stapeln_*_json` functions implemented nowhere.""",
   """`ffi/zig/src/bridge_cli.zig` — 353 real lines, 5 working ops, has NO build target.""",
-  """`README.adoc` status section is dated 2026-02-13 and contradicts STATUS.md; its WCAG 2.3 AAA and OWASP Compliant badges are backed by no audit artefact or gate.""",
+  """`README.adoc` status section is dated 2026-02-13 and contradicts STATUS.adoc; its WCAG 2.3 AAA and OWASP Compliant badges are backed by no audit artefact or gate.""",
   """`RSR_OUTLINE.adoc` is unmodified template boilerplate describing the generic RSR template, not stapeln; it claimed the licence was "AGPL + Palimpsest dual license". Banner + inline annotations added 2026-08-07; broken `image:[]` markup remains.""",
   """`just crg-badge` and `just crg-grade` both fail with `sh: 1: Syntax error: "(" unexpected` (Justfile lines 69/80, bash-isms under sh) — the repo ships a CRG generator that cannot generate.""",
   """**The frontend language is banned by estate policy.** ReScript was retired estate-wide for AffineScript; stapeln's frontend is ~50 `.res` modules and the governance anti-pattern job passes them only as explicit exemptions. Architectural debt: rewrite or declared carve-out. PR #23 begins the declaration.""",
@@ -73,12 +73,12 @@ actions = [
   """Fix the OSSF Scorecard startup_failure (permissions escalation on the reusable call)""",
   """Add channel tests for the WebSocket path shipped in #17""",
   """Adopt container/stapeln/ as the canonical output bundle and take ownership of its schema""",
-  """Restore the six wanted badges once evidence exists — see docs/BADGES.md (SOC 3 / ISO 27001 / CIAQ need only a public reference)""",
+  """Restore the six wanted badges once evidence exists — see docs/BADGES.adoc (SOC 3 / ISO 27001 / CIAQ need only a public reference)""",
   """Fix the two broken CRG just recipes so the grade badge can be published""",
 ]
 
 [debt]
-register = "DEBT.md"
+register = "DEBT.adoc"
 domains = ["licence", "documentation", "code", "proof", "test", "cicd", "supply-chain"]
 item-count = 30
 highest-severity = "HIGH"
@@ -89,7 +89,7 @@ cross-cutting = "several gates are wired so they cannot fail; fixing them makes 
 code = "MPL-2.0"
 documentation = "CC-BY-SA-4.0"
 third-licence = "none"
-policy-doc = "LICENSING.md"
+policy-doc = "LICENSING.adoc"
 canonical-text = "LICENSE (GitHub-detected); LICENSES/MPL-2.0.txt is a byte-identical duplicate for REUSE"
 spdx-header-rule = "line 1 only — the licence gate reads head -1; move a misplaced identifier, never add a second"
 resolved-2026-08-07 = "9 .github/ template files relicensed AGPL-3.0-or-later -> MPL-2.0; orphan LICENSES/AGPL-3.0-or-later.txt removed; duplicate MPL text synced"
@@ -97,7 +97,7 @@ verified-distribution = "491 MPL-2.0 · 179 CC-BY-SA-4.0 · nothing else"
 historical-false-claims = ["AGPL-3.0-or-later (template drift)", "AGPL + Palimpsest dual (RSR_OUTLINE template text)", "PMPL-1.0-or-later (README badge alt-text)"]
 
 [badges]
-register = "docs/BADGES.md"
+register = "docs/BADGES.adoc"
 displayed-and-verified = ["License MPL-2.0", "OpenSSF Scorecard", "OpenSSF Best Practices", "ReScript", "Elixir", "Idris2"]
 wanted-pending-evidence = ["WCAG 2.3 AAA", "OWASP", "SOC 3", "ISO 27001", "CIAQ", "Green Hosting"]
 blocked-by-bug = ["CRG grade — just crg-badge/crg-grade broken"]
@@ -114,4 +114,4 @@ runtime-chain-note = "revised 2026-08-03: the bundle's rokur.toml described a re
 [maintenance-status]
 last-run-utc = "2026-08-07T00:00:00Z"
 last-result = "measured"  # unknown | pass | warn | fail | measured
-reference = "STATUS.md, DEBT.md (both at bc04e22)"
+reference = "STATUS.adoc, DEBT.adoc (both at bc04e22)"
