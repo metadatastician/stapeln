@@ -57,7 +57,7 @@ issues = [
   """**Secret Scanner, Governance and Instant Sync are red on main** (gitleaks reports 12 findings). Open PRs #20-#24 address the first two.""",
   """`container-stack/*` are 5 uninitialised submodules; the smoke workflow that 'checks' them has both build steps on `continue-on-error`.""",
   """The WebSocket channel path has no tests — `stack_channel.ex` changed in #17 with no ChannelCase and no channel test directory.""",
-  """`ABI-FFI-README.md` documents 7 `stapeln_*_json` functions implemented nowhere.""",
+  """`ABI-FFI-README.adoc` documents 7 `stapeln_*_json` functions implemented nowhere.""",
   """`ffi/zig/src/bridge_cli.zig` — 353 real lines, 5 working ops, has NO build target.""",
   """`README.adoc` status section is dated 2026-02-13 and contradicts STATUS.adoc; its WCAG 2.3 AAA and OWASP Compliant badges are backed by no audit artefact or gate.""",
   """`RSR_OUTLINE.adoc` is unmodified template boilerplate describing the generic RSR template, not stapeln; it claimed the licence was "AGPL + Palimpsest dual license". Banner + inline annotations added 2026-08-07; broken `image:[]` markup remains.""",

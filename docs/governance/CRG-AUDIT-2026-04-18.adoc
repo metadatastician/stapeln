@@ -107,7 +107,7 @@ RSR compliance verdict: *met with caveats*. D floor is defensible.
 
 Evidence from state/docs and local execution:
 
-- `TEST-NEEDS.md` claims broad C-style matrix and reports 300+ tests.
+- `TEST-NEEDS.adoc` claims broad C-style matrix and reports 300+ tests.
 - Local runs on 2026-04-18:
   * `deno test tests/property/ --allow-all --no-check` -> PASS (`42 passed`)
   * `deno test tests/e2e/ --allow-all --no-check` -> PASS (`7 passed`)

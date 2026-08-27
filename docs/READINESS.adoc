@@ -171,6 +171,6 @@ The minimum viable production path (in dependency order):
 * link:READINESS-CHECKLIST.md[READINESS-CHECKLIST.md] — automated pass/fail gates (repo health, tests, build)
 * link:../ROADMAP.adoc[ROADMAP.adoc] — phased milestone timeline
 * link:../STATUS.adoc[STATUS.adoc] — canonical live status (more granular)
-* link:../PROOF-NEEDS.md[PROOF-NEEDS.md] — outstanding formal verification requirements
-* link:../TEST-NEEDS.md[TEST-NEEDS.md] — testing gaps
-* link:../SECURITY-STACK-AUDIT.md[SECURITY-STACK-AUDIT.md] — compliance scores per standard
+* link:../PROOF-NEEDS.adoc[PROOF-NEEDS.adoc] — outstanding formal verification requirements
+* link:../TEST-NEEDS.adoc[TEST-NEEDS.adoc] — testing gaps
+* link:../SECURITY-STACK-AUDIT.adoc[SECURITY-STACK-AUDIT.adoc] — compliance scores per standard

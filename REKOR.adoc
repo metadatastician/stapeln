@@ -1,33 +1,35 @@
-<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-# Rekor Integration in stapeln
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Rekor Integration in stapeln
 
-## What is Rekor?
+== What is Rekor?
 
-**Rekor is NOT something we are developing.** It's an existing transparency log from the Sigstore project.
+*Rekor is NOT something we are developing.* It's an existing transparency log from the Sigstore project.
 
-### Official Info
-- **Project**: Sigstore Rekor
-- **Purpose**: Transparency log for software supply chain
-- **Website**: https://sigstore.dev
-- **Public Instance**: https://rekor.sigstore.dev
-- **GitHub**: https://github.com/sigstore/rekor
-- **License**: Apache-2.0
+=== Official Info
 
-### What Does It Do?
+* *Project*: Sigstore Rekor
+* *Purpose*: Transparency log for software supply chain
+* *Website*: https://sigstore.dev
+* *Public Instance*: https://rekor.sigstore.dev
+* *GitHub*: https://github.com/sigstore/rekor
+* *License*: Apache-2.0
 
-Rekor provides an **immutable, append-only ledger** for software artifacts:
+=== What Does It Do?
 
-1. **Record signatures** - When you sign a container with Cerro Torre
-2. **Timestamp proofs** - Cryptographic proof of when signing occurred
-3. **Merkle tree** - Verifiable inclusion proofs (like Certificate Transparency)
-4. **Public auditability** - Anyone can verify the log
-5. **Non-repudiation** - Signer can't deny they signed it
+Rekor provides an *immutable, append-only ledger* for software artifacts:
 
-### Why We Use It in stapeln
+[arabic]
+. *Record signatures* - When you sign a container with Cerro Torre
+. *Timestamp proofs* - Cryptographic proof of when signing occurred
+. *Merkle tree* - Verifiable inclusion proofs (like Certificate Transparency)
+. *Public auditability* - Anyone can verify the log
+. *Non-repudiation* - Signer can't deny they signed it
 
-**Cerro Torre** (the verified container builder) uses Rekor to:
+=== Why We Use It in stapeln
 
-```
+*Cerro Torre* (the verified container builder) uses Rekor to:
+
+....
 ┌─────────────────────────────────────────────────┐
 │ 1. Developer builds container with Cerro Torre  │
 └─────────────┬───────────────────────────────────┘
@@ -62,15 +64,17 @@ Rekor provides an **immutable, append-only ledger** for software artifacts:
 │    ✅ Entry UUID: abc123...                     │
 │    ✅ Verified at: 2026-02-05 08:45:23 UTC      │
 └─────────────────────────────────────────────────┘
-```
+....
 
-## How stapeln Uses Rekor
+== How stapeln Uses Rekor
 
-### 1. Cerro Torre Integration
+[[1-cerro-torre-integration]]
+=== 1. Cerro Torre Integration
 
 When you build a container in stapeln:
 
-```bash
+[source,bash]
+----
 # stapeln calls Cerro Torre
 ct pack myapp.toml --sign --transparency-log
 
@@ -79,13 +83,15 @@ ct pack myapp.toml --sign --transparency-log
 # 2. Signs with Ed25519 key
 # 3. Uploads to Rekor
 # 4. Stores Rekor entry in .ctp metadata
-```
+----
 
-### 2. Verification in stapeln
+[[2-verification-in-stapeln]]
+=== 2. Verification in stapeln
 
 When you deploy a stack, stapeln:
 
-```bash
+[source,bash]
+----
 # 1. Reads .ctp bundle
 ct verify myapp.ctp
 
@@ -94,13 +100,14 @@ curl https://rekor.sigstore.dev/api/v1/log/entries/{uuid}
 
 # 3. Verifies Merkle inclusion proof
 # 4. Displays green checkmark ✅ in UI
-```
+----
 
-### 3. Supply Chain Visualization (Page 1)
+[[3-supply-chain-visualization-page-1]]
+=== 3. Supply Chain Visualization (Page 1)
 
 stapeln shows Rekor data at the bottom of Paragon View:
 
-```
+....
 ┌───────────────────────────────────────────────────────┐
 │ Supply Chain Provenance                               │
 ├───────────────────────────────────────────────────────┤
@@ -117,15 +124,16 @@ stapeln shows Rekor data at the bottom of Paragon View:
 │                                                       │
 │  [View Full Provenance] [Verify Signatures]          │
 └───────────────────────────────────────────────────────┘
-```
+....
 
-## Rekor API Integration
+== Rekor API Integration
 
-### REST API Endpoints
+=== REST API Endpoints
 
 stapeln talks to Rekor via REST:
 
-```javascript
+[source,javascript]
+----
 // Get log entry by UUID
 GET https://rekor.sigstore.dev/api/v1/log/entries/{uuid}
 
@@ -137,11 +145,12 @@ POST https://rekor.sigstore.dev/api/v1/log/entries/retrieve
 
 // Get inclusion proof
 GET https://rekor.sigstore.dev/api/v1/log/proof?entryUUID={uuid}
-```
+----
 
-### GraphQL Integration in stapeln
+=== GraphQL Integration in stapeln
 
-```graphql
+[source,graphql]
+----
 type RekorEntry {
   uuid: ID!
   logIndex: Int!
@@ -176,54 +185,63 @@ query GetRekorEntry($uuid: ID!) {
     }
   }
 }
-```
+----
 
-## Alternative Transparency Logs
+== Alternative Transparency Logs
 
 While Rekor is the default, stapeln can also use:
 
-1. **Self-hosted Rekor** - Run your own instance
-2. **Google Trillian** - Lower-level transparency log
-3. **Certificate Transparency logs** - For TLS certs
-4. **Custom transparency logs** - Implement Merkle tree API
+[arabic]
+. *Self-hosted Rekor* - Run your own instance
+. *Google Trillian* - Lower-level transparency log
+. *Certificate Transparency logs* - For TLS certs
+. *Custom transparency logs* - Implement Merkle tree API
 
-### Configuration in Settings (Page 3)
+=== Configuration in Settings (Page 3)
 
-```affinescript
+[source,affinescript]
+----
 // Settings.res
 type transparencyLog =
   | RekorPublic  // rekor.sigstore.dev
   | RekorSelfHosted(string)  // Custom URL
   | Trillian(string)
   | Custom(string)
-```
+----
 
-## Benefits of Rekor Integration
+== Benefits of Rekor Integration
 
-| Benefit | Description |
-|---------|-------------|
-| **Immutability** | Can't delete or modify log entries |
-| **Auditability** | Anyone can verify the log |
-| **Non-repudiation** | Signer can't deny they signed |
-| **Timestamp proof** | Cryptographic proof of when signing occurred |
-| **Supply chain transparency** | Full visibility into artifact provenance |
-| **SLSA compliance** | Required for SLSA Level 3+ |
+[cols=",",options="header",]
+|===
+|Benefit |Description
+|*Immutability* |Can't delete or modify log entries
+|*Auditability* |Anyone can verify the log
+|*Non-repudiation* |Signer can't deny they signed
+|*Timestamp proof* |Cryptographic proof of when signing occurred
+|*Supply chain transparency* |Full visibility into artifact provenance
+|*SLSA compliance* |Required for SLSA Level 3{plus}
+|===
 
-## Comparison: Rekor vs. Other Solutions
+[[comparison-rekor-vs-other-solutions]]
+== Comparison: Rekor vs. Other Solutions
 
-| Feature | Rekor | Docker Content Trust | Notary v2 |
-|---------|-------|---------------------|-----------|
-| **Transparency log** | ✅ | ❌ | ❌ |
-| **Open source** | ✅ Apache-2.0 | ✅ Apache-2.0 | ✅ Apache-2.0 |
-| **Merkle tree proofs** | ✅ | ❌ | ❌ |
-| **Public auditability** | ✅ | ❌ | ❌ |
-| **SLSA support** | ✅ | ❌ | ⚠️ Partial |
-| **In-toto attestations** | ✅ | ❌ | ⚠️ Partial |
-| **Sigstore ecosystem** | ✅ | ❌ | ⚠️ Migrating |
+[cols=",,,",options="header",]
+|===
+|Feature |Rekor |Docker Content Trust |Notary v2
+|*Transparency log* |✅ |❌ |❌
+|*Open source* |✅ Apache-2.0 |✅ Apache-2.0 |✅ Apache-2.0
+|*Merkle tree proofs* |✅ |❌ |❌
+|*Public auditability* |✅ |❌ |❌
+|*SLSA support* |✅ |❌ |⚠️ Partial
+|*In-toto attestations* |✅ |❌ |⚠️ Partial
+|*Sigstore ecosystem* |✅ |❌ |⚠️ Migrating
+|===
 
-## Cerro Torre + Rekor Workflow
+[[cerro-torre--rekor-workflow]]
+== Cerro Torre {plus} Rekor Workflow
 
-```bash
+[source,bash]
+----
 # 1. Pack container (calls Rekor internally)
 ct pack myapp.toml \
   --sign \
@@ -251,21 +269,21 @@ ct verify myapp.ctp
 
 # 3. Deploy in stapeln
 # stapeln reads Rekor metadata from .ctp and displays in UI
-```
+----
 
-## Resources
+== Resources
 
-- **Sigstore Homepage**: https://sigstore.dev
-- **Rekor GitHub**: https://github.com/sigstore/rekor
-- **Rekor API Docs**: https://www.sigstore.dev/rekor
-- **SLSA Framework**: https://slsa.dev
-- **In-toto Attestations**: https://in-toto.io
+* *Sigstore Homepage*: https://sigstore.dev
+* *Rekor GitHub*: https://github.com/sigstore/rekor
+* *Rekor API Docs*: https://www.sigstore.dev/rekor
+* *SLSA Framework*: https://slsa.dev
+* *In-toto Attestations*: https://in-toto.io
 
-## Summary
+== Summary
 
-- ❌ **Rekor is NOT something we're developing**
-- ✅ **Rekor is an existing Sigstore project**
-- ✅ **stapeln integrates WITH Rekor** via Cerro Torre
-- ✅ **Public instance at rekor.sigstore.dev**
-- ✅ **Provides transparency log for supply chain**
-- ✅ **Required for SLSA Level 3+ compliance**
+* ❌ *Rekor is NOT something we're developing*
+* ✅ *Rekor is an existing Sigstore project*
+* ✅ *stapeln integrates WITH Rekor* via Cerro Torre
+* ✅ *Public instance at rekor.sigstore.dev*
+* ✅ *Provides transparency log for supply chain*
+* ✅ *Required for SLSA Level 3{plus} compliance*

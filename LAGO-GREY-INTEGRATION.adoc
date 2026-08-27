@@ -1,25 +1,26 @@
-<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-# Lago Grey Integration: Base Image Designer
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Lago Grey Integration: Base Image Designer
 
-**Status**: Design specification for integrating lago-grey as base image component
+*Status*: Design specification for integrating lago-grey as base image component
 
----
+'''''
 
-## What is Lago Grey?
+== What is Lago Grey?
 
-**lago-grey** is hyperpolymath's alternative to Alpine Linux and Chainguard Images - a minimal, secure base image builder for containers.
+*lago-grey* is hyperpolymath's alternative to Alpine Linux and Chainguard Images - a minimal, secure base image builder for containers.
 
-Named after **Lago Grey** (Grey Lake) in Chilean Patagonia, matching the Nordic mountain naming theme:
-- Cerro Torre (tower mountain)
-- Svalinn (Norse shield)
-- Vörðr (Norse guardian)
-- Lago Grey (grey lake)
+Named after *Lago Grey* (Grey Lake) in Chilean Patagonia, matching the Nordic mountain naming theme:
 
----
+* Cerro Torre (tower mountain)
+* Svalinn (Norse shield)
+* Vörðr (Norse guardian)
+* Lago Grey (grey lake)
 
-## Position in stapeln Stack
+'''''
 
-```
+== Position in stapeln Stack
+
+....
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Cerro Torre (Build)      ┃  ← Container builder (.ctp bundles)
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
@@ -36,22 +37,24 @@ Named after **Lago Grey** (Grey Lake) in Chilean Patagonia, matching the Nordic 
 ┌──────────────────────────┐
 │ Your Application         │  ← App containers
 └──────────────────────────┘
-```
+....
 
-**Flow**:
-1. **Lago Grey** creates minimal, secure base images (like `lago-grey:latest`)
-2. **Cerro Torre** builds your application containers on top of lago-grey base
-3. **stapeln** orchestrates both in the stack designer
+*Flow*:
 
----
+[arabic]
+. *Lago Grey* creates minimal, secure base images (like `lago-grey:latest`)
+. *Cerro Torre* builds your application containers on top of lago-grey base
+. *stapeln* orchestrates both in the stack designer
 
-## UI Integration: Base Image Designer Tab
+'''''
 
-### Page 1: Paragon View
+== UI Integration: Base Image Designer Tab
 
-When user selects a component (e.g., nginx), show **Base Image** section:
+=== Page 1: Paragon View
 
-```
+When user selects a component (e.g., nginx), show *Base Image* section:
+
+....
 ┌────────────────────────────────────────────────────────────┐
 │ Selected: nginx                                             │
 ├────────────────────────────────────────────────────────────┤
@@ -80,13 +83,13 @@ When user selects a component (e.g., nginx), show **Base Image** section:
 │                                                             │
 │ [Customize Image] [Use Default] [Preview]                  │
 └────────────────────────────────────────────────────────────┘
-```
+....
 
-### Page 2: Cisco View
+=== Page 2: Cisco View
 
 When user drags a component, show base image indicator:
 
-```
+....
 ┌───────────────────────┐
 │  nginx                │
 │  Port: 80, 443        │
@@ -94,11 +97,12 @@ When user drags a component, show base image indicator:
 │  Base: lago-grey:2MB  │  ← Shows which base image
 │  ✅ Secure            │
 └───────────────────────┘
-```
+....
 
-### Page 3: Settings → Default Base Images
+[[page-3-settings--default-base-images]]
+=== Page 3: Settings → Default Base Images
 
-```
+....
 ┌────────────────────────────────────────────────────────────┐
 │ Default Base Images                                         │
 ├────────────────────────────────────────────────────────────┤
@@ -126,15 +130,16 @@ When user drags a component, show base image indicator:
 │                                                             │
 │ [Save Defaults] [Reset to Recommended]                      │
 └────────────────────────────────────────────────────────────┘
-```
+....
 
----
+'''''
 
-## Component Type in affinescript
+== Component Type in affinescript
 
 Already updated in `frontend/src/Model.res`:
 
-```affinescript
+[source,affinescript]
+----
 type componentType =
   | CerroTorre       // Container builder (.ctp bundles)
   | LagoGrey         // Base image designer (Alpine/Chainguard alternative)
@@ -146,17 +151,17 @@ type componentType =
   | Nerdctl          // Container runtime
   | Volume           // Persistent storage
   | Network          // Networking
-```
+----
 
----
+'''''
 
-## Base Image Designer Interface
+== Base Image Designer Interface
 
-### Lago Grey Configuration Panel
+=== Lago Grey Configuration Panel
 
-When user clicks **[Customize Image]** in the Base Image section:
+When user clicks *++[++Customize Image++]++* in the Base Image section:
 
-```
+....
 ┌────────────────────────────────────────────────────────────┐
 │ 🏔️  Lago Grey: Base Image Designer                         │
 ├────────────────────────────────────────────────────────────┤
@@ -206,15 +211,15 @@ When user clicks **[Customize Image]** in the Base Image section:
 │                                                             │
 │ [Build Image] [Preview Dockerfile] [Security Scan]         │
 └────────────────────────────────────────────────────────────┘
-```
+....
 
----
+'''''
 
-## Attack Surface Analyzer Integration
+== Attack Surface Analyzer Integration
 
 When analyzing security, show base image risks:
 
-```
+....
 ┌────────────────────────────────────────────────────────────┐
 │ 🎯 Attack Surface Analysis: nginx component                │
 ├────────────────────────────────────────────────────────────┤
@@ -258,15 +263,16 @@ When analyzing security, show base image risks:
 │                                                             │
 │ Recommendation: ✅ Lago Grey is the best choice            │
 └────────────────────────────────────────────────────────────┘
-```
+....
 
----
+'''''
 
-## GraphQL Schema Extension
+== GraphQL Schema Extension
 
 Add base image fields to Component type:
 
-```graphql
+[source,graphql]
+----
 type Component {
   id: ID!
   type: ComponentType!
@@ -305,15 +311,16 @@ extend type Mutation {
     config: BaseImageInput!
   ): Component!
 }
-```
+----
 
----
+'''''
 
-## Backend Integration (Elixir)
+== Backend Integration (Elixir)
 
-### Lago Grey Module
+=== Lago Grey Module
 
-```elixir
+[source,elixir]
+----
 # backend/lib/stapeln/lago_grey.ex
 # SPDX-License-Identifier: CC-BY-SA-4.0
 
@@ -368,15 +375,16 @@ defmodule Stapeln.LagoGrey do
     if condition, do: score + points, else: score
   end
 end
-```
+----
 
----
+'''''
 
-## miniKanren Security Rules
+== miniKanren Security Rules
 
 Add base image security rules:
 
-```scheme
+[source,scheme]
+----
 ;; security-rules/base-image.scm
 ;; SPDX-License-Identifier: CC-BY-SA-4.0
 
@@ -410,57 +418,61 @@ Add base image security rules:
   '((use-lago-grey)
     (use-distroless)
     (remove-unnecessary-packages)))
-```
+----
 
----
+'''''
 
-## Comparison: Base Image Options
+== Comparison: Base Image Options
 
-| Feature | Lago Grey | Alpine | Chainguard | Distroless |
-|---------|-----------|--------|------------|------------|
-| **Size** | 2 MB | 7 MB | 3 MB | 2 MB |
-| **Package Manager** | ❌ None | ✅ apk | ✅ apk | ❌ None |
-| **Shell** | ❌ No | ✅ busybox | ❌ No | ❌ No |
-| **libc** | musl | musl | glibc | glibc |
-| **Typical CVEs** | 0 | 5-15 | 0-2 | 0 |
-| **Immutable** | ✅ Yes | ❌ No | ❌ No | ✅ Yes |
-| **SBOM** | ✅ Yes | ⚠️  Optional | ✅ Yes | ✅ Yes |
-| **Signatures** | ✅ Rekor | ⚠️  Optional | ✅ Sigstore | ✅ Cosign |
-| **hyperpolymath** | ✅ Yes | ❌ No | ❌ No | ❌ No |
+[cols=",,,,",options="header",]
+|===
+|Feature |Lago Grey |Alpine |Chainguard |Distroless
+|*Size* |2 MB |7 MB |3 MB |2 MB
+|*Package Manager* |❌ None |✅ apk |✅ apk |❌ None
+|*Shell* |❌ No |✅ busybox |❌ No |❌ No
+|*libc* |musl |musl |glibc |glibc
+|*Typical CVEs* |0 |5-15 |0-2 |0
+|*Immutable* |✅ Yes |❌ No |❌ No |✅ Yes
+|*SBOM* |✅ Yes |⚠️ Optional |✅ Yes |✅ Yes
+|*Signatures* |✅ Rekor |⚠️ Optional |✅ Sigstore |✅ Cosign
+|*hyperpolymath* |✅ Yes |❌ No |❌ No |❌ No
+|===
 
-**Winner**: **Lago Grey** for security-first minimal images
+*Winner*: *Lago Grey* for security-first minimal images
 
----
+'''''
 
-## User Experience Flow
+== User Experience Flow
 
-### Scenario: User creates new nginx component
+=== Scenario: User creates new nginx component
 
-1. **Drag nginx** from palette to canvas
-2. **Auto-selects** lago-grey as base image (from Settings default)
-3. **Shows indicator**: "Base: lago-grey 2MB ✅"
-4. **Security score**: Automatically higher because of minimal base
-5. **User clicks** component to configure
-6. **Base Image section** shows:
-   - Current: lago-grey (recommended)
-   - Alternatives: Alpine, Chainguard, Distroless
-   - [Customize] button
-7. **User clicks [Customize]**
-8. **Lago Grey designer opens** with toggles:
-   - Include shell? ❌ (recommended: no)
-   - Include ca-certs? ✅ (recommended: yes)
-9. **Real-time size update**: "2.1 MB (with your selections)"
-10. **Security score update**: "98/100 ✅"
-11. **User clicks [Build Image]**
-12. **stapeln** generates lago-grey config and includes in Cerro Torre build
+[arabic]
+. *Drag nginx* from palette to canvas
+. *Auto-selects* lago-grey as base image (from Settings default)
+. *Shows indicator*: "Base: lago-grey 2MB ✅"
+. *Security score*: Automatically higher because of minimal base
+. *User clicks* component to configure
+. *Base Image section* shows:
+* Current: lago-grey (recommended)
+* Alternatives: Alpine, Chainguard, Distroless
+* ++[++Customize++]++ button
+. *User clicks ++[++Customize++]++*
+. *Lago Grey designer opens* with toggles:
+* Include shell? ❌ (recommended: no)
+* Include ca-certs? ✅ (recommended: yes)
+. *Real-time size update*: "2.1 MB (with your selections)"
+. *Security score update*: "98/100 ✅"
+. *User clicks ++[++Build Image++]++*
+. *stapeln* generates lago-grey config and includes in Cerro Torre build
 
----
+'''''
 
-## Integration with Cerro Torre
+== Integration with Cerro Torre
 
 When exporting to Cerro Torre:
 
-```toml
+[source,toml]
+----
 # compose.toml generated by stapeln
 [services.nginx]
 image = "nginx:latest"
@@ -472,53 +484,52 @@ include_tzdata = true
 include_shell = false
 use_musl = true
 non_root_user = true
-```
+----
 
 Cerro Torre then builds the final `.ctp` bundle using lago-grey as the base.
 
----
+'''''
 
-## Future Enhancements
+== Future Enhancements
 
-1. **Visual Base Image Layers**
-   - Show each layer in the image
-   - Click to expand/inspect
-   - Visual diff between lago-grey and Alpine
+[arabic]
+. *Visual Base Image Layers*
+* Show each layer in the image
+* Click to expand/inspect
+* Visual diff between lago-grey and Alpine
+. *Base Image Templates*
+* "Python app base" (lago-grey {plus} python3)
+* "Node.js app base" (lago-grey {plus} node)
+* "Static binary base" (lago-grey minimal)
+. *Multi-Architecture Support*
+* amd64, arm64, riscv64
+* Show size per architecture
+. *Performance Comparison*
+* Startup time benchmarks
+* Memory usage comparison
+* Pull time (2 MB vs 7 MB matters!)
 
-2. **Base Image Templates**
-   - "Python app base" (lago-grey + python3)
-   - "Node.js app base" (lago-grey + node)
-   - "Static binary base" (lago-grey minimal)
+'''''
 
-3. **Multi-Architecture Support**
-   - amd64, arm64, riscv64
-   - Show size per architecture
+== Summary
 
-4. **Performance Comparison**
-   - Startup time benchmarks
-   - Memory usage comparison
-   - Pull time (2 MB vs 7 MB matters!)
+*Lago Grey is now fully integrated into stapeln as:*
 
----
+[arabic]
+. ✅ Component type in affinescript (`LagoGrey`)
+. ✅ Related project in ECOSYSTEM.scm
+. ✅ Integration point (base-image-designer)
+. ✅ Visual UI space (Base Image Configuration panel)
+. ✅ Security analysis integration
+. ✅ GraphQL schema extension
+. ✅ Elixir backend module
+. ✅ miniKanren security rules
+. ✅ Cerro Torre export integration
 
-## Summary
+*Result*: Users can design minimal, secure base images (2 MB vs Alpine's 7 MB) with a game-like interface, get real-time security scoring, and deploy with confidence.
 
-**Lago Grey is now fully integrated into stapeln as:**
+'''''
 
-1. ✅ Component type in affinescript (`LagoGrey`)
-2. ✅ Related project in ECOSYSTEM.scm
-3. ✅ Integration point (base-image-designer)
-4. ✅ Visual UI space (Base Image Configuration panel)
-5. ✅ Security analysis integration
-6. ✅ GraphQL schema extension
-7. ✅ Elixir backend module
-8. ✅ miniKanren security rules
-9. ✅ Cerro Torre export integration
-
-**Result**: Users can design minimal, secure base images (2 MB vs Alpine's 7 MB) with a game-like interface, get real-time security scoring, and deploy with confidence.
-
----
-
-**Document Version**: 1.0
-**Last Updated**: 2026-02-05
-**Status**: Design complete, ready for implementation
+*Document Version*: 1.0
+*Last Updated*: 2026-02-05
+*Status*: Design complete, ready for implementation

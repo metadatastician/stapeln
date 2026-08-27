@@ -1,13 +1,14 @@
-<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-# stapeln Visual UI Mockups: "Spaceship Customizer" Style
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= stapeln Visual UI Mockups: "Spaceship Customizer" Style
 
-**Design Philosophy**: Like customizing a spaceship in a game - choose components, see stats update in real-time, get warnings about vulnerabilities
+*Design Philosophy*: Like customizing a spaceship in a game - choose components, see stats update in real-time, get warnings about vulnerabilities
 
----
+'''''
 
-## Page 1: Component Selection & Attack Surface Analyzer
+[[page-1-component-selection--attack-surface-analyzer]]
+== Page 1: Component Selection & Attack Surface Analyzer
 
-```
+....
 ┌─────────────────────────────────────────────────────────────────────┐
 │ stapeln - Container Stack Designer                    [user@host] ⚙️│
 ├─────────────────────────────────────────────────────────────────────┤
@@ -80,13 +81,13 @@
 │  └─────────────────────────────────────────────────────────────┘   │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
-```
+....
 
----
+'''''
 
-## Page 2: "Spaceship Customizer" - Cisco Network View
+== Page 2: "Spaceship Customizer" - Cisco Network View
 
-```
+....
 ┌─────────────────────────────────────────────────────────────────────┐
 │ stapeln - Network Topology View                      [Simulate Mode]│
 ├─────────────────────────────────────────────────────────────────────┤
@@ -184,15 +185,15 @@
 │  └────────────────────────────────────────────────────────────┘    │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
-```
+....
 
----
+'''''
 
-## Simulation Mode (Packet Tracer Style)
+== Simulation Mode (Packet Tracer Style)
 
-When user clicks **[Simulate]**:
+When user clicks *++[++Simulate++]++*:
 
-```
+....
 ┌─────────────────────────────────────────────────────────────────────┐
 │ stapeln - Simulation Mode                        ⏸️  [Stop] [Reset] │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -254,11 +255,11 @@ When user clicks **[Simulate]**:
 │  └──────────────────────────────────────────────────────────────┘  │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
-```
+....
 
 If simulation detects a problem:
 
-```
+....
 │  │   ┌─────────────┐                                            │  │
 │  │   │   nginx     │  ❌ ERROR!                                │  │
 │  │   │   :8080     │  💥 Port already in use!                 │  │
@@ -274,13 +275,13 @@ If simulation detects a problem:
 │  │  3. [Manual] Choose a different port                         │  │
 │  │                                                               │  │
 │  │  [Apply Fix #1] [Choose Fix] [Cancel Deployment]            │  │
-```
+....
 
----
+'''''
 
-## Attack Surface Analyzer - "Spaceship Stats" Style
+== Attack Surface Analyzer - "Spaceship Stats" Style
 
-```
+....
 ┌─────────────────────────────────────────────────────────────────────┐
 │ 🎯 Attack Surface Analysis                                          │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -368,15 +369,15 @@ If simulation detects a problem:
 │  └─────────────────────────────────────────────────────────────┘  │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
-```
+....
 
----
+'''''
 
-## Interactive "Choose Your Configuration" Screen
+== Interactive "Choose Your Configuration" Screen
 
 Like a game where you customize your spaceship:
 
-```
+....
 ┌─────────────────────────────────────────────────────────────────────┐
 │ 🚀 Configure Your Container Stack                                   │
 ├─────────────────────────────────────────────────────────────────────┤
@@ -452,41 +453,45 @@ Like a game where you customize your spaceship:
 │  [Save Configuration] [Simulate First] [Cancel]                     │
 │                                                                      │
 └──────────────────────────────────────────────────────────────────────┘
-```
+....
 
----
+'''''
 
-## Key Visual Design Elements
+== Key Visual Design Elements
 
-### 1. Color-Coded Risk Levels
+[[1-color-coded-risk-levels]]
+=== 1. Color-Coded Risk Levels
 
-```
+....
 ✅ Green  = Safe, no issues
 🟡 Yellow = Warnings, should fix
 🟠 Orange = High risk, fix soon
 🔴 Red    = Critical, fix now!
 💜 Purple = Recommendations (nice-to-have)
-```
+....
 
-### 2. Real-Time Stat Bars (like RPG games)
+[[2-real-time-stat-bars-like-rpg-games]]
+=== 2. Real-Time Stat Bars (like RPG games)
 
-```
+....
 Security:     ████████░░░░░░  67/100
 Performance:  ███████████████  92/100
 Reliability:  ██████████░░░░  73/100
-```
+....
 
-### 3. Impact Indicators
+[[3-impact-indicators]]
+=== 3. Impact Indicators
 
-```
+....
 [Auto-Fix]  ⬆️ Security +15 points
 [Configure] ⬆️ Reliability +18 points
 [Enable]    ⬇️ Security -10 points (show trade-offs!)
-```
+....
 
-### 4. Emoji Icons (Quick Recognition)
+[[4-emoji-icons-quick-recognition]]
+=== 4. Emoji Icons (Quick Recognition)
 
-```
+....
 🔒 Closed/Secure
 🔓 Open/Exposed
 ⏱️  Ephemeral
@@ -497,11 +502,12 @@ Reliability:  ██████████░░░░  73/100
 ❌ Problem detected
 🎯 Attack surface
 🛡️  Protected
-```
+....
 
-### 5. "Before vs After" Preview
+[[5-before-vs-after-preview]]
+=== 5. "Before vs After" Preview
 
-```
+....
 Before Auto-Fix:
   Security: ███░░░░░░░░  45/100  ❌
 
@@ -514,24 +520,25 @@ After Auto-Fix:
   • Read-only filesystem enabled
 
   [Apply These Changes]
-```
+....
 
----
+'''''
 
-## Implementation Priority
+== Implementation Priority
 
-1. **Week 1**: Build attack surface analyzer with real-time scoring
-2. **Week 2**: Add simulation mode with packet animation
-3. **Week 3**: Create "spaceship customizer" config screen
-4. **Week 4**: User testing with container-hater (your son!)
+[arabic]
+. *Week 1*: Build attack surface analyzer with real-time scoring
+. *Week 2*: Add simulation mode with packet animation
+. *Week 3*: Create "spaceship customizer" config screen
+. *Week 4*: User testing with container-hater (your son!)
 
----
+'''''
 
-## Success Metrics
+== Success Metrics
 
 ✅ User sees security score update in real-time as they configure
-✅ User understands why something is dangerous (visual + plain English)
+✅ User understands why something is dangerous (visual {plus} plain English)
 ✅ User can fix issues without knowing what "iptables" or "USER directive" means
 ✅ Feels like playing a game, not configuring a server
 
-**Goal**: "Wow, this is actually fun!" 🎮
+*Goal*: "Wow, this is actually fun!" 🎮

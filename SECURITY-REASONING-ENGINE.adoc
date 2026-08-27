@@ -1,37 +1,42 @@
-<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-# Security Reasoning Engine: miniKanren vs SLM
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= Security Reasoning Engine: miniKanren vs SLM
 
-**Decision**: Use miniKanren for deterministic rule reasoning, NOT an SLM
+*Decision*: Use miniKanren for deterministic rule reasoning, NOT an SLM
 
----
+'''''
 
-## Why miniKanren > SLM for Security
+[[why-minikanren--slm-for-security]]
+== Why miniKanren ++>++ SLM for Security
 
-### The Problem with SLMs
+=== The Problem with SLMs
 
-| Issue | Impact | Example |
-|-------|--------|---------|
-| **Hallucination** | May invent CVEs that don't exist | "This has CVE-2024-99999" (fake!) |
-| **Standards drift** | May contradict OWASP/NIST | "Port 22 is fine" (NO IT'S NOT) |
-| **Non-deterministic** | Same input → different output | Unreliable for security decisions |
-| **Training lag** | Misses recent CVEs | Trained on old data, misses 0-days |
-| **No provenance** | Can't explain *why* | "Trust me, it's secure" (NOT ACCEPTABLE) |
+[cols=",,",options="header",]
+|===
+|Issue |Impact |Example
+|*Hallucination* |May invent CVEs that don't exist |"This has CVE-2024-99999" (fake!)
+|*Standards drift* |May contradict OWASP/NIST |"Port 22 is fine" (NO IT'S NOT)
+|*Non-deterministic* |Same input → different output |Unreliable for security decisions
+|*Training lag* |Misses recent CVEs |Trained on old data, misses 0-days
+|*No provenance* |Can't explain _why_ |"Trust me, it's secure" (NOT ACCEPTABLE)
+|===
 
-### Why miniKanren Wins
+=== Why miniKanren Wins
 
-| Feature | Benefit | Example |
-|---------|---------|---------|
-| **Deterministic** | Same input → same output, always | Reliable security decisions |
-| **Provable** | Can trace reasoning path | "Port 22 open BECAUSE OWASP rule #7" |
-| **Updateable** | Add new CVE rules immediately | Real-time threat intelligence |
-| **Composable** | Rules build on rules | Complex security policies |
-| **Transparent** | Shows *why* it flagged something | Audit trail for compliance |
+[cols=",,",options="header",]
+|===
+|Feature |Benefit |Example
+|*Deterministic* |Same input → same output, always |Reliable security decisions
+|*Provable* |Can trace reasoning path |"Port 22 open BECAUSE OWASP rule ++#++7"
+|*Updateable* |Add new CVE rules immediately |Real-time threat intelligence
+|*Composable* |Rules build on rules |Complex security policies
+|*Transparent* |Shows _why_ it flagged something |Audit trail for compliance
+|===
 
----
+'''''
 
-## Architecture: miniKanren Rule Engine
+== Architecture: miniKanren Rule Engine
 
-```
+....
 ┌────────────────────────────────────────────────────────────┐
 │ stapeln Security Reasoning Engine                          │
 ├────────────────────────────────────────────────────────────┤
@@ -50,24 +55,26 @@
 │  └──────────────────┘         └──────────────────┘        │
 │                                                             │
 └────────────────────────────────────────────────────────────┘
-```
+....
 
-### Data Flow
+=== Data Flow
 
-1. **User configures stack** in UI (affinescript)
-2. **Stack model sent** to reasoning engine (Scheme + miniKanren)
-3. **Rules applied** to find violations
-4. **Results returned** with provenance (why it's a problem)
-5. **UI shows issues** with fix suggestions
-6. **Rules updated** daily from CVE/OWASP feeds
+[arabic]
+. *User configures stack* in UI (affinescript)
+. *Stack model sent* to reasoning engine (Scheme {plus} miniKanren)
+. *Rules applied* to find violations
+. *Results returned* with provenance (why it's a problem)
+. *UI shows issues* with fix suggestions
+. *Rules updated* daily from CVE/OWASP feeds
 
----
+'''''
 
-## miniKanren Rule Examples
+== miniKanren Rule Examples
 
-### Rule 1: No SSH on Public Internet
+=== Rule 1: No SSH on Public Internet
 
-```scheme
+[source,scheme]
+----
 ;; security-rules/ssh-exposure.scm
 ;; SPDX-License-Identifier: CC-BY-SA-4.0
 
@@ -103,11 +110,12 @@
     (use-ephemeral-pinhole 22 300)  ; 5 minutes only
     (require-key-auth)
     (use-vpn-only)))
-```
+----
 
-### Rule 2: No Root Containers
+=== Rule 2: No Root Containers
 
-```scheme
+[source,scheme]
+----
 ;; security-rules/root-user.scm
 ;; SPDX-License-Identifier: CC-BY-SA-4.0
 
@@ -140,11 +148,12 @@
   '((add-user-directive "appuser")
     (set-uid-gid 1000 1000)
     (drop-capabilities "ALL")))
-```
+----
 
-### Rule 3: Unencrypted Traffic
+=== Rule 3: Unencrypted Traffic
 
-```scheme
+[source,scheme]
+----
 ;; security-rules/unencrypted-traffic.scm
 ;; SPDX-License-Identifier: CC-BY-SA-4.0
 
@@ -183,11 +192,12 @@
     (redirect-http-to-https)
     (close-port 80)
     (use-https-only)))
-```
+----
 
-### Rule 4: Missing Health Checks
+=== Rule 4: Missing Health Checks
 
-```scheme
+[source,scheme]
+----
 ;; security-rules/health-checks.scm
 ;; SPDX-License-Identifier: CC-BY-SA-4.0
 
@@ -221,13 +231,14 @@
     (set-interval 10)
     (set-timeout 5)
     (set-retries 3)))
-```
+----
 
----
+'''''
 
-## Knowledge Base Structure
+== Knowledge Base Structure
 
-```scheme
+[source,scheme]
+----
 ;; knowledge-base/security-kb.scm
 ;; SPDX-License-Identifier: CC-BY-SA-4.0
 
@@ -284,15 +295,16 @@
       (port 22 public)  ; VIOLATION!
       (port 8443 public)
       (health-check . (interval 10)))))
-```
+----
 
----
+'''''
 
-## Integration with CVE Feeds
+== Integration with CVE Feeds
 
-### Daily Rule Updates
+=== Daily Rule Updates
 
-```scheme
+[source,scheme]
+----
 ;; updater/cve-feed-sync.scm
 ;; SPDX-License-Identifier: CC-BY-SA-4.0
 
@@ -335,11 +347,12 @@
 
 ;; Run daily via cron
 ;; 0 2 * * * guile /path/to/cve-feed-sync.scm
-```
+----
 
-### OWASP Rule Sync
+=== OWASP Rule Sync
 
-```scheme
+[source,scheme]
+----
 ;; updater/owasp-sync.scm
 ;; SPDX-License-Identifier: CC-BY-SA-4.0
 
@@ -362,13 +375,14 @@
 
   ;; Generate rules for each category
   (for-each generate-owasp-rules owasp-2021))
-```
+----
 
----
+'''''
 
-## Query API (Elixir Backend)
+== Query API (Elixir Backend)
 
-```elixir
+[source,elixir]
+----
 # backend/lib/stapeln/security_reasoner.ex
 # SPDX-License-Identifier: CC-BY-SA-4.0
 
@@ -431,17 +445,18 @@ defmodule Stapeln.SecurityReasoner do
     # TODO: Implement S-expression parser
   end
 end
-```
+----
 
----
+'''''
 
-## User-Facing Output
+== User-Facing Output
 
-### In affinescript UI
+=== In affinescript UI
 
 When miniKanren finds violations, show them in the UI:
 
-```affinescript
+[source,affinescript]
+----
 // Example violation object
 type violation = {
   rule: string,              // "ssh-exposure"
@@ -459,13 +474,14 @@ type violation = {
 //  "OWASP A01:2021 rule violation",
 //  "CVE-2023-38408 affects this configuration",
 //  "Therefore: CRITICAL vulnerability"]
-```
+----
 
-### Transparency = Trust
+[[transparency--trust]]
+=== Transparency = Trust
 
-Users can click **[Why?]** to see the full reasoning chain:
+Users can click *++[++Why?++]++* to see the full reasoning chain:
 
-```
+....
 Why is this flagged?
 
 Reasoning chain:
@@ -488,33 +504,35 @@ Reasoning chain:
 
 Conclusion: CRITICAL severity
 Recommendation: Close port or use ephemeral pinhole only
-```
+....
 
----
+'''''
 
-## Comparison: miniKanren vs SLM
+== Comparison: miniKanren vs SLM
 
-| Aspect | miniKanren | SLM (e.g., Phi-3) |
-|--------|------------|-------------------|
-| **Correctness** | ✅ Guaranteed (logic) | ⚠️ Probabilistic |
-| **Explainability** | ✅ Full provenance | ❌ Black box |
-| **Updates** | ✅ Instant (add rule) | ❌ Requires retraining |
-| **Determinism** | ✅ Always same result | ❌ May vary |
-| **Speed** | ✅ Fast (milliseconds) | ⚠️ Slower (inference) |
-| **Memory** | ✅ Tiny (<10 MB) | ❌ Large (>1 GB) |
-| **Trustworthy** | ✅ Provable | ⚠️ "Trust me" |
-| **Compliance** | ✅ Audit trail | ❌ Hard to audit |
-| **Security risk** | ✅ No hallucination | ❌ May hallucinate CVEs |
+[cols=",,",options="header",]
+|===
+|Aspect |miniKanren |SLM (e.g., Phi-3)
+|*Correctness* |✅ Guaranteed (logic) |⚠️ Probabilistic
+|*Explainability* |✅ Full provenance |❌ Black box
+|*Updates* |✅ Instant (add rule) |❌ Requires retraining
+|*Determinism* |✅ Always same result |❌ May vary
+|*Speed* |✅ Fast (milliseconds) |⚠️ Slower (inference)
+|*Memory* |✅ Tiny (++<++10 MB) |❌ Large (++>++1 GB)
+|*Trustworthy* |✅ Provable |⚠️ "Trust me"
+|*Compliance* |✅ Audit trail |❌ Hard to audit
+|*Security risk* |✅ No hallucination |❌ May hallucinate CVEs
+|===
 
-**Winner**: miniKanren for security-critical decisions
+*Winner*: miniKanren for security-critical decisions
 
----
+'''''
 
-## Optional: LLM for Natural Language *After* miniKanren
+== Optional: LLM for Natural Language _After_ miniKanren
 
 Use case: Explain violations in friendlier language
 
-```
+....
 miniKanren output:
   (violation ssh-exposure nginx-1 critical
     "SSH on port 22 exposed to public internet allows brute-force attacks...")
@@ -530,65 +548,71 @@ User-friendly output:
 
   Fix: Close this port, or make it temporarily available only
   when you need it (ephemeral pinhole)."
-```
+....
 
-**Key**: LLM explains *after* miniKanren decides. Logic first, language second.
+*Key*: LLM explains _after_ miniKanren decides. Logic first, language second.
 
----
+'''''
 
-## Implementation Plan
+== Implementation Plan
 
-### Week 1: Core miniKanren Engine
-- [ ] Set up Guile Scheme + miniKanren
-- [ ] Define component model relations
-- [ ] Implement 5 basic rules (SSH, root, TLS, health checks, ports)
-- [ ] Test queries
+=== Week 1: Core miniKanren Engine
 
-### Week 2: CVE/OWASP Integration
-- [ ] CVE feed sync script
-- [ ] OWASP Top 10 rule generator
-- [ ] CIS Benchmark rules
-- [ ] Daily update cron job
+* [ ] Set up Guile Scheme {plus} miniKanren
+* [ ] Define component model relations
+* [ ] Implement 5 basic rules (SSH, root, TLS, health checks, ports)
+* [ ] Test queries
 
-### Week 3: Elixir Backend Integration
-- [ ] Scheme IPC from Elixir
-- [ ] S-expression parser
-- [ ] GraphQL API for violations
-- [ ] Provenance chain rendering
+=== Week 2: CVE/OWASP Integration
 
-### Week 4: affinescript UI
-- [ ] Display violations
-- [ ] Show provenance (click [Why?])
-- [ ] Auto-fix suggestions
-- [ ] Real-time analysis as user configures
+* [ ] CVE feed sync script
+* [ ] OWASP Top 10 rule generator
+* [ ] CIS Benchmark rules
+* [ ] Daily update cron job
 
----
+=== Week 3: Elixir Backend Integration
 
-## Conclusion
+* [ ] Scheme IPC from Elixir
+* [ ] S-expression parser
+* [ ] GraphQL API for violations
+* [ ] Provenance chain rendering
 
-**Use miniKanren, NOT an SLM**
+=== Week 4: affinescript UI
+
+* [ ] Display violations
+* [ ] Show provenance (click ++[++Why?++]++)
+* [ ] Auto-fix suggestions
+* [ ] Real-time analysis as user configures
+
+'''''
+
+== Conclusion
+
+*Use miniKanren, NOT an SLM*
 
 Reasons:
-1. **Deterministic** = Trustworthy for security
-2. **Provable** = Full audit trail for compliance
-3. **Updateable** = Add new CVEs immediately
-4. **Transparent** = Users understand *why*
-5. **Fast** = Milliseconds, not seconds
-6. **Small** = No GPU, no 1GB models
 
-**LLM role**: Optional, for natural language explanations *after* miniKanren decides
+[arabic]
+. *Deterministic* = Trustworthy for security
+. *Provable* = Full audit trail for compliance
+. *Updateable* = Add new CVEs immediately
+. *Transparent* = Users understand _why_
+. *Fast* = Milliseconds, not seconds
+. *Small* = No GPU, no 1GB models
 
-**Result**: stapeln becomes the *most trustworthy* container security tool because every decision is logically provable and traceable to OWASP/NIST/CVE sources.
+*LLM role*: Optional, for natural language explanations _after_ miniKanren decides
 
----
+*Result*: stapeln becomes the _most trustworthy_ container security tool because every decision is logically provable and traceable to OWASP/NIST/CVE sources.
 
-## References
+'''''
 
-- miniKanren: http://minikanren.org/
-- Guile Scheme: https://www.gnu.org/software/guile/
-- NIST NVD API: https://nvd.nist.gov/developers/vulnerabilities
-- OWASP Top 10: https://owasp.org/www-project-top-ten/
-- CIS Benchmarks: https://www.cisecurity.org/cis-benchmarks
+== References
 
-**Status**: Design specification
-**Next**: Implement miniKanren proof-of-concept with 5 rules
+* miniKanren: http://minikanren.org/
+* Guile Scheme: https://www.gnu.org/software/guile/
+* NIST NVD API: https://nvd.nist.gov/developers/vulnerabilities
+* OWASP Top 10: https://owasp.org/www-project-top-ten/
+* CIS Benchmarks: https://www.cisecurity.org/cis-benchmarks
+
+*Status*: Design specification
+*Next*: Implement miniKanren proof-of-concept with 5 rules

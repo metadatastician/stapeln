@@ -356,12 +356,12 @@ da15f44 feat: add Real Deployment Integration with Podman scripts
 
 ### Updated Files
 - ✅ `STATE.scm` - Updated component completion percentages
-- ✅ `ROADMAP.md` - Marked Week 1 and Week 3 as complete
+- ✅ `ROADMAP.adoc` - Marked Week 1 and Week 3 as complete
 - ✅ This session summary created
 
 ### Documentation Created
 - ✅ `tests/README.md` - Test suite documentation
-- ✅ `VERIFICATION-SPEC.md` - Idris2 formal verification specification
+- ✅ `VERIFICATION-SPEC.adoc` - Idris2 formal verification specification
 
 ---
 

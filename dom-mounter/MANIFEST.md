@@ -6,7 +6,7 @@ This file tracks the preserved DOM‑mounter materials and where the active code
 ## Preserved Documentation
 
 - `docs/ALL-PHASES-COMPLETE.md`
-- `docs/ABI-FFI-README.md`
+- `docs/ABI-FFI-README.adoc`
 - `docs/BENCHMARKS.md`
 - `docs/BUILD-SUMMARY.md`
 - `docs/COMPLETED-WORK.md`
@@ -21,8 +21,8 @@ This file tracks the preserved DOM‑mounter materials and where the active code
 - `docs/MIGRATION-GUIDE.md`
 - `docs/PHASE1-IMPLEMENTATION.md`
 - `docs/README.md`
-- `docs/PROVEN-LIBRARIES.md`
-- `docs/ROADMAP.md`
+- `docs/PROVEN-LIBRARIES.adoc`
+- `docs/ROADMAP.adoc`
 - `docs/STATE.scm`
 - `dom_mounter.d.ts`
 

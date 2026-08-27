@@ -1,19 +1,19 @@
-<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-# stapeln Architecture
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= stapeln Architecture
 
-## Overview
+== Overview
 
 stapeln is a visual drag-and-drop container stack designer built with:
 
-- **Frontend**: affinescript-TEA (The Elm Architecture) + Deno
-- **Backend**: Elixir (Phoenix) + Ephapax + Idris2 + Rust
-- **Communication**: REST API + WebSocket
+* *Frontend*: affinescript-TEA (The Elm Architecture) {plus} Deno
+* *Backend*: Elixir (Phoenix) {plus} Ephapax {plus} Idris2 {plus} Rust
+* *Communication*: REST API {plus} WebSocket
 
-## Frontend Architecture (affinescript-TEA)
+== Frontend Architecture (affinescript-TEA)
 
-### The Elm Architecture (TEA)
+=== The Elm Architecture (TEA)
 
-```
+....
 ┌─────────┐
 │  Model  │  Current application state
 └────┬────┘
@@ -32,11 +32,11 @@ stapeln is a visual drag-and-drop container stack designer built with:
 ┌─────────┐
 │ Update  │  Model → Msg → (Model, Cmd)
 └─────────┘
-```
+....
 
-### Component Structure
+=== Component Structure
 
-```
+....
 frontend/src/
 ├── Main.res           # Entry point, TEA initialization
 ├── Model.res          # State types (component, connection, dragState)
@@ -49,31 +49,36 @@ frontend/src/
 ├── Config.res         # Configuration panel
 ├── Export.res         # Export menu
 └── Router.res         # cadre-tea-router integration
-```
+....
 
-### Canvas Implementation
+=== Canvas Implementation
 
-**SVG-based canvas** for:
-- Infinite canvas (pan/zoom)
-- Crisp rendering at any zoom level
-- Easy connection line drawing (SVG paths)
-- CSS styling
+*SVG-based canvas* for:
 
-**Drag-and-Drop**:
-1. User clicks component in palette → `StartDragComponent`
-2. Mouse moves → `DragMove(position)`
-3. Mouse release → `DragEnd` → Add component at position
+* Infinite canvas (pan/zoom)
+* Crisp rendering at any zoom level
+* Easy connection line drawing (SVG paths)
+* CSS styling
 
-**Connection Lines**:
-- Click component → select (highlight)
-- Click another component → create connection
-- Connections drawn as SVG paths (bezier curves or orthogonal lines)
+*Drag-and-Drop*:
 
-## Backend Architecture (Elixir + Phoenix)
+[arabic]
+. User clicks component in palette → `StartDragComponent`
+. Mouse moves → `DragMove(position)`
+. Mouse release → `DragEnd` → Add component at position
 
-### Service Layers
+*Connection Lines*:
 
-```
+* Click component → select (highlight)
+* Click another component → create connection
+* Connections drawn as SVG paths (bezier curves or orthogonal lines)
+
+[[backend-architecture-elixir--phoenix]]
+== Backend Architecture (Elixir {plus} Phoenix)
+
+=== Service Layers
+
+....
 ┌──────────────────────────────────────────────┐
 │ Phoenix Web Layer (REST + WebSocket)         │
 │  - StackController (CRUD)                    │
@@ -95,12 +100,15 @@ frontend/src/
 │ Validator│  │ Prover   │  │ Codegen  │
 │ (Ephapax)│  │ (Idris2) │  │ (Rust)   │
 └──────────┘  └──────────┘  └──────────┘
-```
+....
 
-### Validation Service (Ephapax + Idris2)
+[[validation-service-ephapax--idris2]]
+=== Validation Service (Ephapax {plus} Idris2)
 
-**Ephapax (Linear Types)**:
-```elixir
+*Ephapax (Linear Types)*:
+
+[source,elixir]
+----
 defmodule Stackur.Validator.Ephapax do
   # Validate linear resource usage
   # - Each volume consumed exactly once
@@ -112,10 +120,12 @@ defmodule Stackur.Validator.Ephapax do
     # Returns: {:ok, proof} | {:error, violations}
   end
 end
-```
+----
 
-**Idris2 (Formal Proofs)**:
-```idris
+*Idris2 (Formal Proofs)*:
+
+[source,idris]
+----
 -- validation/src/Stack.idr
 
 data Stack = MkStack (List Component) (List Connection)
@@ -128,10 +138,12 @@ dependencyDAG : (s : Stack) -> Either DAGError (TopologicalOrder s)
 
 -- Proof: Port conflict detection
 noPortConflicts : (s : Stack) -> Dec (UniquePortBindings s)
-```
+----
 
-**Integration**:
-```elixir
+*Integration*:
+
+[source,elixir]
+----
 defmodule Stackur.Validator.Idris do
   # Calls compiled Idris2 executable via Port
   def prove_correctness(stack_json) do
@@ -139,17 +151,19 @@ defmodule Stackur.Validator.Idris do
       [:binary, :use_stdio, {:args, [stack_json]}])
   end
 end
-```
+----
 
-### Code Generation (Rust)
+=== Code Generation (Rust)
 
-**Why Rust for Codegen?**
-- Type-safe TOML generation
-- Fast compilation
-- Elixir NIF integration (Rustler)
-- Memory safety guarantees
+*Why Rust for Codegen?*
 
-```rust
+* Type-safe TOML generation
+* Fast compilation
+* Elixir NIF integration (Rustler)
+* Memory safety guarantees
+
+[source,rust]
+----
 // backend/native/stapeln_codegen/src/lib.rs
 use rustler::{Encoder, Env, Term};
 use toml::Value;
@@ -168,10 +182,12 @@ fn compose_toml_from_stack(stack: &Stack) -> Result<Value, String> {
     // Handle services, volumes, networks
     // Validate against verified-container-spec
 }
-```
+----
 
-**Elixir NIF wrapper**:
-```elixir
+*Elixir NIF wrapper*:
+
+[source,elixir]
+----
 defmodule Stackur.Codegen do
   use Rustler, otp_app: :stapeln, crate: "stapeln_codegen"
 
@@ -179,15 +195,16 @@ defmodule Stackur.Codegen do
   def generate_docker_compose(_stack_json), do: :erlang.nif_error(:nif_not_loaded)
   def generate_podman_compose(_stack_json), do: :erlang.nif_error(:nif_not_loaded)
 end
-```
+----
 
-### AffineScript Alternative (MVP)
+=== AffineScript Alternative (MVP)
 
-**Note**: AffineScript compiler may not be production-ready.
+*Note*: AffineScript compiler may not be production-ready.
 
-**MVP Alternative**: Use Rust's affine type system:
+*MVP Alternative*: Use Rust's affine type system:
 
-```rust
+[source,rust]
+----
 // Affine types: used at most once
 struct Volume(String);  // Can't be cloned
 
@@ -210,24 +227,25 @@ fn check_port_conflicts(services: &[Service]) -> Result<(), String> {
     }
     Ok(())
 }
-```
+----
 
-## API Design
+== API Design
 
-### REST Endpoints
+=== REST Endpoints
 
-```
+....
 POST   /api/stacks              Create stack
 GET    /api/stacks/:id          Get stack
 PUT    /api/stacks/:id          Update stack
 DELETE /api/stacks/:id          Delete stack
 POST   /api/stacks/:id/validate Validate stack
 POST   /api/stacks/:id/export   Export to compose file
-```
+....
 
-### WebSocket Channel
+=== WebSocket Channel
 
-```elixir
+[source,elixir]
+----
 defmodule StackurWeb.StackChannel do
   use Phoenix.Channel
 
@@ -253,13 +271,14 @@ defmodule StackurWeb.StackChannel do
     {:noreply, socket}
   end
 end
-```
+----
 
-## Data Flow
+== Data Flow
 
-### 1. User Adds Component
+[[1-user-adds-component]]
+=== 1. User Adds Component
 
-```
+....
 Frontend (affinescript)                Backend (Elixir)
      │                                   │
      │ Drag component to canvas          │
@@ -274,11 +293,12 @@ Frontend (affinescript)                Backend (Elixir)
      ←──────────────────────────────────┤
      │                                   │
      Update Model                        Broadcast to other clients
-```
+....
 
-### 2. User Validates Stack
+[[2-user-validates-stack]]
+=== 2. User Validates Stack
 
-```
+....
 Frontend                          Backend                   Validator
     │                                 │                          │
     │ Click "Validate"                │                          │
@@ -303,11 +323,12 @@ Frontend                          Backend                   Validator
     ←────────────────────────────────┤                          │
     │                                 │                          │
     Update Model with result          │                          │
-```
+....
 
-### 3. User Exports Stack
+[[3-user-exports-stack]]
+=== 3. User Exports Stack
 
-```
+....
 Frontend                Backend                Codegen (Rust)
     │                       │                        │
     │ Click "Export as      │                        │
@@ -327,42 +348,42 @@ Frontend                Backend                Codegen (Rust)
     │ ← File download       │                        │
     │  "stack.compose.toml" │                        │
     ←──────────────────────┤                        │
-```
+....
 
-## Performance Considerations
+== Performance Considerations
 
-### Frontend
+=== Frontend
 
-- **Virtual DOM**: affinescript compiles to efficient JS
-- **Debounced updates**: Drag events throttled to 60fps
-- **Canvas optimization**: Only redraw changed components
-- **WebSocket batching**: Group rapid updates
+* *Virtual DOM*: affinescript compiles to efficient JS
+* *Debounced updates*: Drag events throttled to 60fps
+* *Canvas optimization*: Only redraw changed components
+* *WebSocket batching*: Group rapid updates
 
-### Backend
+=== Backend
 
-- **Concurrent validation**: Elixir processes per stack
-- **Caching**: Validation results cached with TTL
-- **NIF for CPU-intensive**: Rust NIFs for codegen
-- **Streaming**: Large exports streamed via chunks
+* *Concurrent validation*: Elixir processes per stack
+* *Caching*: Validation results cached with TTL
+* *NIF for CPU-intensive*: Rust NIFs for codegen
+* *Streaming*: Large exports streamed via chunks
 
-## Security
+== Security
 
-### Frontend
+=== Frontend
 
-- **CSP headers**: Prevent XSS
-- **Input validation**: All user input sanitized
-- **CORS**: Restrict API access
+* *CSP headers*: Prevent XSS
+* *Input validation*: All user input sanitized
+* *CORS*: Restrict API access
 
-### Backend
+=== Backend
 
-- **Authentication**: JWT tokens
-- **Authorization**: Stack ownership validation
-- **Rate limiting**: Per-IP and per-user
-- **Sandboxing**: Idris2/Ephapax run in isolated processes
+* *Authentication*: JWT tokens
+* *Authorization*: Stack ownership validation
+* *Rate limiting*: Per-IP and per-user
+* *Sandboxing*: Idris2/Ephapax run in isolated processes
 
-## Deployment
+== Deployment
 
-```
+....
 ┌─────────────────┐
 │ Nginx (TLS)     │ Port 443
 └────────┬────────┘
@@ -379,22 +400,23 @@ Frontend                Backend                Codegen (Rust)
   ┌───▼──┐ ┌──▼──┐ ┌─▼────┐
   │Postgres│Idris2│Ephapax│
   └───────┘ └─────┘ └──────┘
-```
+....
 
-## Future Enhancements
+== Future Enhancements
 
-1. **Collaborative editing** - Multiple users editing same stack
-2. **Version control** - Git-like stack versioning
-3. **Templates** - Pre-built stack templates
-4. **AI suggestions** - ML-based component recommendations
-5. **Performance profiling** - Predict stack resource usage
-6. **Cost estimation** - Cloud deployment cost prediction
+[arabic]
+. *Collaborative editing* - Multiple users editing same stack
+. *Version control* - Git-like stack versioning
+. *Templates* - Pre-built stack templates
+. *AI suggestions* - ML-based component recommendations
+. *Performance profiling* - Predict stack resource usage
+. *Cost estimation* - Cloud deployment cost prediction
 
-## References
+== References
 
-- [The Elm Architecture](https://guide.elm-lang.org/architecture/)
-- [affinescript-TEA](https://github.com/affinescript-lang/affinescript-tea)
-- [Ephapax](https://github.com/hyperpolymath/ephapax)
-- [Idris2](https://idris2.readthedocs.io/)
-- [Phoenix Channels](https://hexdocs.pm/phoenix/channels.html)
-- [Rustler](https://github.com/rusterlium/rustler)
+* https://guide.elm-lang.org/architecture/[The Elm Architecture]
+* https://github.com/affinescript-lang/affinescript-tea[affinescript-TEA]
+* https://github.com/hyperpolymath/ephapax[Ephapax]
+* https://idris2.readthedocs.io/[Idris2]
+* https://hexdocs.pm/phoenix/channels.html[Phoenix Channels]
+* https://github.com/rusterlium/rustler[Rustler]

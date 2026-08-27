@@ -60,7 +60,7 @@ Tasks:
 - Add accessibility verification checklist run (keyboard + screen reader smoke test).
 
 Definition of done:
-- `ROADMAP.md` Week 2/4 items can be marked complete where implemented.
+- `ROADMAP.adoc` Week 2/4 items can be marked complete where implemented.
 - Attack surface panel has real data path (from validation payload, not constants).
 - Accessibility smoke test report committed in `docs/`.
 
@@ -92,7 +92,7 @@ Duration: Immediate
 
 Tasks:
 - Keep `STATUS.adoc` as source-of-truth and update date/status regularly.
-- Mark `ROADMAP.adoc` as alias/deprecated pointer to `ROADMAP.md`.
+- Mark `ROADMAP.adoc` as alias/deprecated pointer to `ROADMAP.adoc`.
 - Remove legacy naming confusion (`stackur`) from active planning docs.
 - Ensure all "complete" claims map to implemented code paths.
 

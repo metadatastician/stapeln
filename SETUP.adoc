@@ -1,23 +1,30 @@
-<!-- SPDX-License-Identifier: CC-BY-SA-4.0 -->
-# stapeln Setup Guide
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= stapeln Setup Guide
 
-## Installation (No npm/Node.js!)
+[[installation-no-npmnodejs]]
+== Installation (No npm/Node.js!)
 
-stapeln follows hyperpolymath language policy: **Deno only, no npm/Node.js**.
+stapeln follows hyperpolymath language policy: *Deno only, no npm/Node.js*.
 
-### Prerequisites
+=== Prerequisites
 
-1. **Deno 2.0+**
-```bash
+[arabic]
+. *Deno 2.0{plus}*
+
+[source,bash]
+----
 # Install Deno (if not already installed)
 curl -fsSL https://deno.land/install.sh | sh
 
 # Add to PATH (add to ~/.bashrc)
 export PATH="$HOME/.deno/bin:$PATH"
-```
+----
 
-2. **affinescript Compiler via Deno**
-```bash
+[arabic, start=2]
+. *affinescript Compiler via Deno*
+
+[source,bash]
+----
 # Install affinescript using Deno's npm compatibility
 deno install --allow-read --allow-write --allow-env --allow-run \
   -n affinescript \
@@ -25,32 +32,43 @@ deno install --allow-read --allow-write --allow-env --allow-run \
 
 # Verify installation
 affinescript -version
-```
+----
 
-3. **Elixir + Phoenix (for backend)**
-```bash
+[arabic, start=3]
+. *Elixir {plus} Phoenix (for backend)*
+
+[source,bash]
+----
 # Fedora
 sudo dnf install elixir
 
 # Install Phoenix
 mix archive.install hex phx_new
-```
+----
 
-4. **Idris2 (for formal proofs)**
-```bash
+[arabic, start=4]
+. *Idris2 (for formal proofs)*
+
+[source,bash]
+----
 # Fedora
 sudo dnf install idris2
-```
+----
 
-5. **Rust (for codegen NIFs)**
-```bash
+[arabic, start=5]
+. *Rust (for codegen NIFs)*
+
+[source,bash]
+----
 # Already installed on your system
 rustc --version
-```
+----
 
-## Frontend Setup (affinescript + Deno)
+[[frontend-setup-affinescript--deno]]
+== Frontend Setup (affinescript {plus} Deno)
 
-```bash
+[source,bash]
+----
 cd ~/Documents/hyperpolymath-repos/stapeln/frontend
 
 # Compile affinescript to JavaScript
@@ -61,31 +79,35 @@ deno task dev
 
 # Open browser
 xdg-open http://localhost:8000
-```
+----
 
-### Development Workflow
+=== Development Workflow
 
-```bash
+[source,bash]
+----
 # Watch mode (recompile on save)
 affinescript build -w &
 
 # In another terminal, run dev server
 deno task dev
-```
+----
 
-### Deno Permissions
+=== Deno Permissions
 
 stapeln requires these Deno permissions:
-- `--allow-read` - Read frontend files
-- `--allow-write` - Write compiled output
-- `--allow-net` - HTTP server
-- `--allow-env` - Environment variables
+
+* `--allow-read` - Read frontend files
+* `--allow-write` - Write compiled output
+* `--allow-net` - HTTP server
+* `--allow-env` - Environment variables
 
 These are declared in `deno.json` tasks.
 
-## Backend Setup (Elixir + Phoenix)
+[[backend-setup-elixir--phoenix]]
+== Backend Setup (Elixir {plus} Phoenix)
 
-```bash
+[source,bash]
+----
 cd ~/Documents/hyperpolymath-repos/stapeln/backend
 
 # Create Phoenix project (if not exists)
@@ -104,11 +126,12 @@ mix ecto.migrate
 mix phx.server
 
 # API available at http://localhost:4010
-```
+----
 
-## Validation Engine (Idris2)
+== Validation Engine (Idris2)
 
-```bash
+[source,bash]
+----
 cd ~/Documents/hyperpolymath-repos/stapeln/validation
 
 # Compile Idris2 proofs
@@ -116,11 +139,12 @@ idris2 --build validation.ipkg
 
 # Run tests
 idris2 --repl src/Proofs.idr
-```
+----
 
-## Tauri Desktop App (Future)
+== Tauri Desktop App (Future)
 
-```bash
+[source,bash]
+----
 # Install Tauri CLI
 cargo install tauri-cli
 
@@ -129,39 +153,46 @@ cargo tauri dev
 
 # Production build
 cargo tauri build
-```
+----
 
-## Troubleshooting
+== Troubleshooting
 
-### "affinescript: command not found"
+=== "affinescript: command not found"
 
 The Deno install didn't add to PATH. Add to `~/.bashrc`:
-```bash
-export PATH="$HOME/.deno/bin:$PATH"
-```
 
-### "Cannot find module 'npm:@affinescript/core'"
+[source,bash]
+----
+export PATH="$HOME/.deno/bin:$PATH"
+----
+
+=== "Cannot find module 'npm:@affinescript/core'"
 
 Deno's npm compatibility needs the import map. Check `frontend/import_map.json`:
-```json
+
+[source,json]
+----
 {
   "imports": {
     "@affinescript/core": "https://esm.sh/@affinescript/core@1.0.0"
   }
 }
-```
+----
 
-### affinescript compilation errors
+=== affinescript compilation errors
 
 Check `frontend/affinescript.json` for correct configuration:
-- `"module": "es6"`
-- `"suffix": ".res.js"`
-- `"in-source": true`
 
-## Environment Variables
+* `"module": "es6"`
+* `"suffix": ".res.js"`
+* `"in-source": true`
+
+== Environment Variables
 
 Create `frontend/.env`:
-```bash
+
+[source,bash]
+----
 # Backend API
 STAPELN_API_URL=http://localhost:4010
 
@@ -170,59 +201,73 @@ STAPELN_GRAPHQL_URL=http://localhost:4010/graphql
 
 # WebSocket
 STAPELN_WS_URL=ws://localhost:4010/socket
-```
+----
 
-## Editor Setup
+== Editor Setup
 
-### VSCode
-```bash
+=== VSCode
+
+[source,bash]
+----
 # Install affinescript VSCode extension
 code --install-extension chenglou92.affinescript-vscode
-```
+----
 
-### Vim/Neovim
-```vim
+=== Vim/Neovim
+
+[source,vim]
+----
 " Install affinescript-vim plugin
 Plug 'affinescript-lang/vim-affinescript'
-```
+----
 
-## Testing
+== Testing
 
-### Frontend Tests
-```bash
+=== Frontend Tests
+
+[source,bash]
+----
 cd frontend
 deno test --allow-read --allow-env
-```
+----
 
-### Backend Tests
-```bash
+=== Backend Tests
+
+[source,bash]
+----
 cd backend
 mix test
-```
+----
 
-## Production Build
+== Production Build
 
-### Frontend
-```bash
+=== Frontend
+
+[source,bash]
+----
 cd frontend
 affinescript build
 deno bundle src/Main.res.js dist/bundle.js
-```
+----
 
-### Backend
-```bash
+=== Backend
+
+[source,bash]
+----
 cd backend
 MIX_ENV=prod mix release
-```
+----
 
-## No npm/Node.js Required! ✅
+[[no-npmnodejs-required-white_check_mark]]
+== No npm/Node.js Required! ✅
 
 stapeln is 100% Deno-based for JavaScript runtime. We use:
-- ✅ Deno for runtime
-- ✅ Deno's npm: specifier for affinescript compiler
-- ✅ Deno's import maps for dependencies
-- ❌ No package.json
-- ❌ No node_modules/
-- ❌ No npm install
+
+* ✅ Deno for runtime
+* ✅ Deno's npm: specifier for affinescript compiler
+* ✅ Deno's import maps for dependencies
+* ❌ No package.json
+* ❌ No node_modules/
+* ❌ No npm install
 
 This follows hyperpolymath standards and ensures security-first execution.

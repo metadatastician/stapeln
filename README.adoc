@@ -458,7 +458,7 @@ stapeln is **WCAG 2.3 AAA compliant**:
 
 == Roadmap
 
-See link:ROADMAP.md[ROADMAP.md] for detailed timeline.
+See link:ROADMAP.adoc[ROADMAP.adoc] for detailed timeline.
 
 === Phase 1: Design (Complete) ✅
 
@@ -507,14 +507,14 @@ See link:ROADMAP.md[ROADMAP.md] for detailed timeline.
 
 == Documentation
 
-* link:UX-MANIFESTO.md[UX Manifesto] - Design philosophy
-* link:CONTAINER-HATER-TEST.md[Container-Hater Test] - Ultimate UX challenge
-* link:SECURITY-STACK-AUDIT.md[Security Audit] - Current compliance (47% → 100%)
-* link:FIREWALL-CONFIG.md[Firewall Config] - OWASP ModSecurity + ephemeral pinholes
-* link:SECURITY-REASONING-ENGINE.md[Security Engine] - miniKanren vs SLM comparison
-* link:DATABASE-AND-DOCS-INTEGRATION.md[Database Integration] - VeriSimDB + A2ML + K9-SVC
-* link:UI-MOCKUPS.md[UI Mockups] - Game-like interface designs
-* link:SETUP.md[Setup Guide] - Deno-only installation
+* link:UX-MANIFESTO.adoc[UX Manifesto] - Design philosophy
+* link:CONTAINER-HATER-TEST.adoc[Container-Hater Test] - Ultimate UX challenge
+* link:SECURITY-STACK-AUDIT.adoc[Security Audit] - Current compliance (47% → 100%)
+* link:FIREWALL-CONFIG.adoc[Firewall Config] - OWASP ModSecurity + ephemeral pinholes
+* link:SECURITY-REASONING-ENGINE.adoc[Security Engine] - miniKanren vs SLM comparison
+* link:DATABASE-AND-DOCS-INTEGRATION.adoc[Database Integration] - VeriSimDB + A2ML + K9-SVC
+* link:UI-MOCKUPS.adoc[UI Mockups] - Game-like interface designs
+* link:SETUP.adoc[Setup Guide] - Deno-only installation
 * link:.machine_readable/6a2/STATE.a2ml[.machine_readable/6a2/STATE.a2ml] - Current project state
 * link:.machine_readable/6a2/ECOSYSTEM.a2ml[.machine_readable/6a2/ECOSYSTEM.a2ml] - Ecosystem position
 * link:.machine_readable/6a2/META.a2ml[.machine_readable/6a2/META.a2ml] - Architecture decisions (14 ADRs)
@@ -564,4 +564,4 @@ _Built with ❤️  and formal verification_
 
 == Architecture
 
-See link:TOPOLOGY.md[TOPOLOGY.md] for a visual architecture map and completion dashboard.
+See link:TOPOLOGY.adoc[TOPOLOGY.adoc] for a visual architecture map and completion dashboard.

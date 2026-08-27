@@ -24,8 +24,8 @@ documentation is `.adoc`.
 ____
 This is the single index of known debt. It supersedes nothing — the detailed registers it
 points at remain the source of truth for their domains:
-link:PROOF-NEEDS.md[`PROOF-NEEDS.md`] · link:PROOF-BACKLOG.md[`PROOF-BACKLOG.md`] ·
-link:TEST-NEEDS.md[`TEST-NEEDS.md`] · link:docs/proof-debt.md[`docs/proof-debt.md`] ·
+link:PROOF-NEEDS.adoc[`PROOF-NEEDS.adoc`] · link:PROOF-BACKLOG.adoc[`PROOF-BACKLOG.adoc`] ·
+link:TEST-NEEDS.adoc[`TEST-NEEDS.adoc`] · link:docs/proof-debt.md[`docs/proof-debt.md`] ·
 link:docs/tech-debt-2026-05-26.md[`docs/tech-debt-2026-05-26.md`] ·
 link:.machine_readable/agent_instructions/debt.a2ml[`.machine_readable/agent_instructions/debt.a2ml`].
 ____
@@ -184,14 +184,14 @@ link-rewrite pass, which deserves its own reviewable change.
 [[d-4--duplicate-roadmap--low]]
 === D-4 · Duplicate ROADMAP — LOW
 
-`ROADMAP.md` (208 lines, substantive) and `ROADMAP.adoc` (12 lines) coexist. The `.adoc` is
+`ROADMAP.adoc` (208 lines, substantive) and `ROADMAP.adoc` (12 lines) coexist. The `.adoc` is
 self-declared `= stapeln Roadmap Alias (Deprecated)`, so this is documented, not silent —
 but it still means two files answer to one name.
 
 Checked in this changeset: `docs/READINESS.adoc:156` and `:172` both link to `ROADMAP.adoc`,
 so it is *not* yet safe to delete.
 
-*Next move:* repoint `docs/READINESS.adoc` at `ROADMAP.md`, then delete the alias.
+*Next move:* repoint `docs/READINESS.adoc` at `ROADMAP.adoc`, then delete the alias.
 
 [[d-5--the-wiki-is-empty--medium]]
 === D-5 · The wiki is empty — MEDIUM
@@ -204,7 +204,7 @@ wiki is a dead end for anyone who clicks it.
 (Populated in this changeset.)
 
 [[d-6--abi-ffi-readmemd-documents-functions-that-do-not-exist--medium]]
-=== D-6 · `ABI-FFI-README.md` documents functions that do not exist — MEDIUM
+=== D-6 · `ABI-FFI-README.adoc` documents functions that do not exist — MEDIUM
 
 Seven `stapeln++_*_++json` functions are documented with no implementation anywhere in the tree.
 Carried from the 2026-07-28 audit; re-confirm before acting.
@@ -290,8 +290,8 @@ this needs an explicit ruling rather than a blind `git rm`.
 `believe_me` / `postulate` / `assert_total` / holes — genuinely honest proofs, unusual in
 this estate. The debt is scope, not integrity: they cover the ABI layer only.
 
-Detail lives in link:PROOF-NEEDS.md[`PROOF-NEEDS.md`] (324 lines) and
-link:PROOF-BACKLOG.md[`PROOF-BACKLOG.md`] (148 lines).
+Detail lives in link:PROOF-NEEDS.adoc[`PROOF-NEEDS.adoc`] (324 lines) and
+link:PROOF-BACKLOG.adoc[`PROOF-BACKLOG.adoc`] (148 lines).
 
 *Next move:* none urgent. Keep the honesty property under gate (see T-2).
 
@@ -593,5 +593,5 @@ where advisory-not-gating is the ruling rather than an oversight.
 
 * link:STATUS.adoc[`STATUS.adoc`] — measured state, same commit
 * link:.machine_readable/6a2/STATE.a2ml[`.machine_readable/6a2/STATE.a2ml`] — machine mirror
-* link:ROADMAP.md[`ROADMAP.md`] — intended direction
+* link:ROADMAP.adoc[`ROADMAP.adoc`] — intended direction
 * link:SECURITY.md[`SECURITY.md`] — disclosure policy

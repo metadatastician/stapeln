@@ -46,7 +46,7 @@ this project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0
 - docs: add implementation-subtree READMEs and READINESS file (CRG D→C)
 - docs(stapeln): add Haiku/Sonnet/Opus session briefs for todo execution
 - docs(cerro-torre): record chainCommutative regression + 2026-04-19 proof-build-restored pass
-- docs: update TEST-NEEDS.md with session 9 test additions
+- docs: update TEST-NEEDS.adoc with session 9 test additions
 - docs: add M2 estate audit report (2026-04-04)
 - docs: substantive CRG C annotation (EXPLAINME.adoc)
 - docs: update STATE with 2026-04-03 session work
