@@ -288,7 +288,11 @@ defmodule Stapeln.Codegen do
   # Service field extractors (handles both atom and string keys)
   # ---------------------------------------------------------------------------
 
-  defp normalise_services(stack) do
+  # Public so Stapeln.BundleCodegen can source its tokens from the same place
+  # these emitters do, rather than growing a second, drifting copy of the
+  # stack-shape knowledge. Not part of the documented API.
+  @doc false
+  def normalise_services(stack) do
     services =
       Map.get(stack, :services, Map.get(stack, "services", []))
 
@@ -298,7 +302,8 @@ defmodule Stapeln.Codegen do
     end
   end
 
-  defp service_name(svc) do
+  @doc false
+  def service_name(svc) do
     Map.get(svc, :name, Map.get(svc, "name", "service"))
   end
 
@@ -320,7 +325,8 @@ defmodule Stapeln.Codegen do
     Map.get(svc, :image, Map.get(svc, "image", default))
   end
 
-  defp service_port(svc) do
+  @doc false
+  def service_port(svc) do
     case Map.get(svc, :port, Map.get(svc, "port", nil)) do
       p when is_integer(p) and p > 0 -> p
       p when is_binary(p) ->
