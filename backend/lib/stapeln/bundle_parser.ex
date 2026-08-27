@@ -56,11 +56,7 @@ defmodule Stapeln.BundleParser do
   """
   @spec raise_design(BundleCodegen.bundle()) :: {:ok, map() | nil} | {:error, String.t()}
   def raise_design(bundle) when is_map(bundle) do
-    with :ok <- assert_complete(bundle),
-         {:ok, doc} <- decode_design_file(bundle),
-         :ok <- assert_schema(doc),
-         :ok <- assert_services_match_components(doc),
-         :ok <- assert_compose_anchors_primary(doc, bundle) do
+    with {:ok, doc} <- validate(bundle) do
       {:ok, doc["design"]}
     end
   end
@@ -73,9 +69,23 @@ defmodule Stapeln.BundleParser do
   """
   @spec raise_document(BundleCodegen.bundle()) :: {:ok, map()} | {:error, String.t()}
   def raise_document(bundle) when is_map(bundle) do
+    with {:ok, doc} <- validate(bundle) do
+      {:ok, doc}
+    end
+  end
+
+  # Both entry points run the SAME checks. They previously did not:
+  # raise_document/1 stopped after the schema check, so a bundle whose services
+  # contradicted its design was rejected by raise_design/1 and ACCEPTED by
+  # raise_document/1 -- verified against a tampered bundle. Two validators that
+  # disagree mean the guarantee depends on which function the caller happened to
+  # pick, which is not a guarantee.
+  defp validate(bundle) do
     with :ok <- assert_complete(bundle),
          {:ok, doc} <- decode_design_file(bundle),
-         :ok <- assert_schema(doc) do
+         :ok <- assert_schema(doc),
+         :ok <- assert_services_match_components(doc),
+         :ok <- assert_compose_anchors_primary(doc, bundle) do
       {:ok, doc}
     end
   end
@@ -115,7 +125,7 @@ defmodule Stapeln.BundleParser do
   # self-contradictory even though every individual file looked fine.
   defp assert_services_match_components(doc) do
     ids = component_ids(doc)
-    names = doc |> Map.get("services", []) |> Enum.map(&Map.get(&1, "name"))
+    names = doc |> services() |> Enum.map(&Map.get(&1, "name"))
 
     cond do
       # A design with no canvas (or a stack built from a plain services list)
@@ -137,7 +147,14 @@ defmodule Stapeln.BundleParser do
       [primary | _] ->
         compose = Map.fetch!(bundle, @compose_file)
 
-        if String.contains?(compose, "[services.#{primary}]") do
+        # Line-anchored, not String.contains?/2. The closing "]" already makes
+        # prefix collision impossible -- contains?("[services.web-1]",
+        # "[services.web]") is false, measured -- so the reviewer's stated
+        # concern does not apply. The real weakness is different: a plain
+        # substring search matches the table header wherever it appears,
+        # INCLUDING inside a comment. Requiring it to be a line of its own means
+        # only an actual TOML table header satisfies the check.
+        if declares_table?(compose, primary) do
           :ok
         else
           {:error,
@@ -146,10 +163,34 @@ defmodule Stapeln.BundleParser do
     end
   end
 
+  defp declares_table?(compose, name) do
+    header = "[services.#{name}]"
+
+    compose
+    |> String.split("\n")
+    |> Enum.any?(&(String.trim(&1) == header))
+  end
+
   defp component_ids(doc) do
     case get_in(doc, ["design", "canvas", "components"]) do
       components when is_list(components) -> Enum.map(components, &Map.get(&1, "id"))
       _ -> :no_canvas
+    end
+  end
+
+  # NOT `Map.get(doc, "services", [])`. The third argument is returned only when
+  # the key is ABSENT; a key present with a JSON null yields nil, and
+  # Enum.map(nil, ...) raises Protocol.UndefinedError. A bundle carrying
+  # "services": null therefore CRASHED the parser instead of being rejected --
+  # confirmed by tampering with a real bundle, not by reading the code.
+  #
+  # This is the same trap that produced the Map.get-default defect in
+  # build_simulator.ex. In a parser whose whole job is to reject malformed
+  # input, crashing on malformed input is the one thing it must not do.
+  defp services(doc) do
+    case Map.get(doc, "services") do
+      list when is_list(list) -> list
+      _ -> []
     end
   end
 end

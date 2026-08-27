@@ -218,6 +218,55 @@ defmodule Stapeln.BundleRoundtripTest do
     end
   end
 
+  describe "scanner findings from the #41 review — regression guards" do
+    # Four of the five reviewer claims reproduced against real bundles; the
+    # fifth did not. Each fix gets a test that fails without it.
+
+    test "CONFIRMED: a JSON null services key is rejected, not a crash" do
+      # Map.get(doc, "services", []) returns the DEFAULT only when the key is
+      # absent. Present-with-null yields nil, and Enum.map(nil, _) raised
+      # Protocol.UndefinedError. A parser whose job is rejecting malformed input
+      # must not crash on malformed input.
+      doc = design_doc([component("web-1", "Podman")])
+      {:ok, bundle} = BundleCodegen.generate(stack_from(doc), @meta)
+      tampered = swap_design(bundle, &Map.put(&1, "services", nil))
+
+      assert {:error, reason} = BundleParser.raise_design(tampered)
+      assert reason =~ "do not match services"
+    end
+
+    test "CONFIRMED: raise_document/1 enforces the same checks as raise_design/1" do
+      # raise_document/1 used to stop after the schema check, so this same
+      # bundle was rejected by one entry point and accepted by the other.
+      doc = design_doc([component("web-1", "Podman")])
+      {:ok, bundle} = BundleCodegen.generate(stack_from(doc), @meta)
+      tampered = swap_design(bundle, &Map.put(&1, "services", [%{"name" => "WRONG"}]))
+
+      assert {:error, _} = BundleParser.raise_design(tampered)
+      assert {:error, _} = BundleParser.raise_document(tampered)
+    end
+
+    test "REFUTED as stated, hardened anyway: the anchor is a table header, not a substring" do
+      doc = design_doc([component("web", "Podman")])
+      {:ok, bundle} = BundleCodegen.generate(stack_from(doc), @meta)
+
+      # The reviewer's claim was prefix collision. It does not hold -- the
+      # closing bracket already prevents it:
+      refute String.contains?("[services.web-1]", "[services.web]")
+      assert {:error, _} =
+               BundleParser.raise_design(Map.put(bundle, "compose.toml", "[services.web-1]\n"))
+
+      # The REAL weakness was different: a bare substring search matched the
+      # header inside a comment. Now it must be a line of its own.
+      commented = "# see [services.web] below\n[services.other]\n"
+      assert {:error, _} = BundleParser.raise_design(Map.put(bundle, "compose.toml", commented))
+
+      # ...and a genuine header still passes, indented or not.
+      assert {:ok, _} =
+               BundleParser.raise_design(Map.put(bundle, "compose.toml", "  [services.web]\n"))
+    end
+  end
+
   defp swap_design(bundle, fun) do
     updated =
       bundle
