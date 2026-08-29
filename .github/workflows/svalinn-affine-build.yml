@@ -53,7 +53,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends m4
 
       - name: Set up OCaml 5.1
-        uses: ocaml/setup-ocaml@v3.7.1
+        uses: ocaml/setup-ocaml@v3.7.2
         with:
           ocaml-compiler: "5.1"
 
