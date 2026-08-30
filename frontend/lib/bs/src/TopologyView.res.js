@@ -23,16 +23,21 @@ let initialCanvasState = {
 function toCiscoComponent(comp) {
   let match = comp.componentType;
   let shape;
-  switch (match) {
-    case "CerroTorre" :
-    case "Svalinn" :
-      shape = "Gateway";
-      break;
-    case "Volume" :
-      shape = "Oval";
-      break;
-    default:
-      shape = "Box";
+  if (typeof match !== "object") {
+    switch (match) {
+      case "CerroTorre" :
+      case "Svalinn" :
+      case "Rokur" :
+        shape = "Gateway";
+        break;
+      case "Volume" :
+        shape = "Oval";
+        break;
+      default:
+        shape = "Box";
+    }
+  } else {
+    shape = "Box";
   }
   return {
     id: comp.id,

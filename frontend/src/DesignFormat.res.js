@@ -92,6 +92,9 @@ function componentFromJson(json) {
       case "Podman" :
         componentType = "Podman";
         break;
+      case "Rokur" :
+        componentType = "Rokur";
+        break;
       case "Svalinn" :
         componentType = "Svalinn";
         break;
@@ -108,7 +111,11 @@ function componentFromJson(json) {
         componentType = "Selur";
         break;
       default:
-        componentType = undefined;
+        console.error("stapeln: unrecognised component type \"" + typeStr + "\" — kept as UnknownType so the component is not lost. This usually means the design was saved by a newer build.");
+        componentType = {
+          TAG: "UnknownType",
+          _0: typeStr
+        };
     }
   } else {
     componentType = undefined;

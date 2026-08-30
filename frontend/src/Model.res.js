@@ -130,6 +130,9 @@ function canRedo(model) {
 }
 
 function componentTypeToString(ct) {
+  if (typeof ct === "object") {
+    return ct._0;
+  }
   switch (ct) {
     case "CerroTorre" :
       return "Cerro Torre";
@@ -141,6 +144,8 @@ function componentTypeToString(ct) {
       return "selur";
     case "Vordr" :
       return "Vörðr";
+    case "Rokur" :
+      return "Rokur";
     case "Podman" :
       return "Podman";
     case "Docker" :
