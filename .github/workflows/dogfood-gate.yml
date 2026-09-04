@@ -154,8 +154,48 @@ jobs:
           # Inline invisible character detection (from empty-linter's core patterns).
           # Checks for: zero-width spaces, zero-width joiners, BOM, soft hyphens,
           # non-breaking spaces, null bytes, and other invisible Unicode in source files.
+          #
+          # Pattern form matters, and this is the bug being fixed. In a UTF-8 locale
+          # `grep -P` reads \xc2 as CODEPOINT U+00C2, not as a byte, so the byte-sequence
+          # form '\xc2\xa0' never matches a real NBSP (U+00A0) and the scan reports a
+          # clean tree no matter what is in it. Measured on GNU grep 3.11 and ugrep
+          # 7.8.4: byte form 0 matches, codepoint form '\x{a0}' 1 match. Use \x{...}.
+          #
+          # The BOM pass below is a SECOND, byte-level instrument because grep
+          # implementations disagree about a BOM at byte 0: GNU grep 3.11 matches
+          # \x{feff} there, ugrep 7.8.4 strips the BOM first and cannot. Runners ship
+          # GNU grep today, so this pass is currently redundant -- it is here so the
+          # gate stays correct if that ever changes, and so the annotation names the
+          # actual defect instead of "some invisible character".
           set +e
-          PATTERNS='\xc2\xa0|\xe2\x80\x8b|\xe2\x80\x8c|\xe2\x80\x8d|\xef\xbb\xbf|\xc2\xad|\xe2\x80\x8e|\xe2\x80\x8f|\xe2\x80\xaa|\xe2\x80\xab|\xe2\x80\xac|\xe2\x80\xad|\xe2\x80\xae|\x00'
+          PATTERNS='\x00|[\x01-\x08\x0B\x0C\x0E-\x1F]|\x{a0}|\x{ad}|\x{200b}|\x{200c}|\x{200d}|\x{200e}|\x{200f}|\x{202a}|\x{202b}|\x{202c}|\x{202d}|\x{202e}|\x{2060}|\x{feff}'
+
+          # POSITIVE CONTROL. A clean tree and a broken scanner emit identical output,
+          # so a bare zero is not evidence -- that is exactly how the previous pattern
+          # went unnoticed. Plant fixtures outside the workspace and prove each
+          # instrument moves before trusting anything below. Deliberately does NOT
+          # assert that the pattern pass catches a leading BOM, since that is the one
+          # behaviour grep implementations differ on.
+          CTL="$RUNNER_TEMP/empty-lint-control"
+          rm -rf "$CTL" && mkdir -p "$CTL"
+          printf 'a\xe2\x80\x8bb\n' > "$CTL/zwsp.txt"
+          printf '\xef\xbb\xbf{}\n' > "$CTL/bom.txt"
+          printf 'plain\n'          > "$CTL/clean.txt"
+          CTL_FAIL=0
+          grep -aPq "$PATTERNS" "$CTL/zwsp.txt" \
+            || { echo "::error::self-test: pattern pass MISSED a planted zero-width space"; CTL_FAIL=1; }
+          grep -aPq "$PATTERNS" "$CTL/clean.txt" \
+            && { echo "::error::self-test: pattern pass matched a CLEAN file"; CTL_FAIL=1; }
+          [ "$(head -c3 "$CTL/bom.txt" | od -An -tx1 | tr -d ' \n')" = "efbbbf" ] \
+            || { echo "::error::self-test: BOM pass MISSED a planted leading BOM"; CTL_FAIL=1; }
+          [ "$(head -c3 "$CTL/clean.txt" | od -An -tx1 | tr -d ' \n')" = "efbbbf" ] \
+            && { echo "::error::self-test: BOM pass matched a CLEAN file"; CTL_FAIL=1; }
+          if [ "$CTL_FAIL" -ne 0 ]; then
+            echo "::error::Empty-linter self-test failed -- the scan below cannot be trusted."
+            exit 1
+          fi
+          echo "Self-test passed: both instruments fire on planted fixtures and stay quiet on a clean one."
+
           find "$GITHUB_WORKSPACE" \
             -not -path '*/.git/*' -not -path '*/node_modules/*' \
             -not -path '*/.deno/*' -not -path '*/target/*' \
@@ -166,40 +206,88 @@ jobs:
               -o -name '*.yml' -o -name '*.yaml' -o -name '*.md' -o -name '*.adoc' \
               -o -name '*.idr' -o -name '*.zig' -o -name '*.v' -o -name '*.jl' \
               -o -name '*.gleam' -o -name '*.hs' -o -name '*.ml' -o -name '*.sh' \) \
-            -exec grep -Prl "$PATTERNS" {} \; > /tmp/empty-lint-results.txt 2>/dev/null
-          EL_EXIT=$?
+            -print0 > "$RUNNER_TEMP/empty-lint-candidates.zero" 2>/dev/null
+
+          : > "$RUNNER_TEMP/empty-lint-pattern.txt"
+          : > "$RUNNER_TEMP/empty-lint-bom.txt"
+
+          # Pass 1 -- invisible codepoints anywhere in the file.
+          xargs -0 -r grep -aPl "$PATTERNS" < "$RUNNER_TEMP/empty-lint-candidates.zero" \
+            > "$RUNNER_TEMP/empty-lint-pattern.txt" 2>/dev/null
+
+          # Pass 2 -- BOM at byte 0, read as bytes.
+          while IFS= read -r -d '' f; do
+            [ -z "$f" ] && continue
+            if [ "$(head -c3 "$f" | od -An -tx1 | tr -d ' \n')" = "efbbbf" ]; then
+              printf '%s\n' "$f" >> "$RUNNER_TEMP/empty-lint-bom.txt"
+            fi
+          done < "$RUNNER_TEMP/empty-lint-candidates.zero"
           set -e
 
-          FINDINGS=$(wc -l < /tmp/empty-lint-results.txt 2>/dev/null || echo 0)
-          echo "findings=$FINDINGS" >> "$GITHUB_OUTPUT"
-          echo "exit_code=$EL_EXIT" >> "$GITHUB_OUTPUT"
-          echo "ready=true" >> "$GITHUB_OUTPUT"
+          # The two passes OVERLAP -- under GNU grep a BOM'd file appears in both --
+          # so the finding count is the union, not the sum. LC_ALL=C on every sort and
+          # comm so both sides use the same collation.
+          LC_ALL=C sort -u "$RUNNER_TEMP/empty-lint-pattern.txt" > "$RUNNER_TEMP/p.sorted"
+          LC_ALL=C sort -u "$RUNNER_TEMP/empty-lint-bom.txt"     > "$RUNNER_TEMP/b.sorted"
+          LC_ALL=C comm -23 "$RUNNER_TEMP/p.sorted" "$RUNNER_TEMP/b.sorted" > "$RUNNER_TEMP/p.only"
+          LC_ALL=C sort -u "$RUNNER_TEMP/p.sorted" "$RUNNER_TEMP/b.sorted"  > "$RUNNER_TEMP/all.sorted"
 
-          # Emit annotations for each file with invisible chars
+          CANDIDATES=$(tr -cd '\0' < "$RUNNER_TEMP/empty-lint-candidates.zero" | wc -c | tr -d ' ')
+          PATTERN_HITS=$(wc -l < "$RUNNER_TEMP/p.sorted" | tr -d ' ')
+          BOM_HITS=$(wc -l < "$RUNNER_TEMP/b.sorted" | tr -d ' ')
+          FINDINGS=$(wc -l < "$RUNNER_TEMP/all.sorted" | tr -d ' ')
+
+          {
+            echo "findings=$FINDINGS"
+            echo "pattern_hits=$PATTERN_HITS"
+            echo "bom_hits=$BOM_HITS"
+            echo "candidates=$CANDIDATES"
+            echo "ready=true"
+          } >> "$GITHUB_OUTPUT"
+          echo "Scanned $CANDIDATES in-scope file(s): $FINDINGS affected ($PATTERN_HITS by codepoint scan, $BOM_HITS by BOM check; a BOM'd file can appear in both)."
+
           while IFS= read -r filepath; do
             [ -z "$filepath" ] && continue
-            REL_PATH="${filepath#$GITHUB_WORKSPACE/}"
-            echo "::warning file=${REL_PATH}::Invisible Unicode characters detected (zero-width space, BOM, NBSP, etc.)"
-          done < /tmp/empty-lint-results.txt
+            REL_PATH="${filepath#"$GITHUB_WORKSPACE"/}"
+            echo "::error file=${REL_PATH}::Invisible Unicode character (zero-width space/joiner, NBSP, soft hyphen, control char, or mid-file BOM)"
+          done < "$RUNNER_TEMP/p.only"
+
+          while IFS= read -r filepath; do
+            [ -z "$filepath" ] && continue
+            REL_PATH="${filepath#"$GITHUB_WORKSPACE"/}"
+            echo "::error file=${REL_PATH}::UTF-8 BOM at byte 0 -- strip it"
+          done < "$RUNNER_TEMP/b.sorted"
+
+          # The gate must be able to fail. stapeln's tree is clean at this commit
+          # (plant-verified 0 -> 1 -> 0 across 614 in-scope files), so this is
+          # satisfiable today rather than aspirational.
+          if [ "$FINDINGS" -gt 0 ]; then
+            echo "::error::Empty-linter: $FINDINGS file(s) contain invisible characters."
+            exit 1
+          fi
 
       - name: Write summary
+        if: always()
         run: |
-          if [ "${{ steps.lint.outputs.ready }}" = "true" ]; then
-            FINDINGS="${{ steps.lint.outputs.findings }}"
-            if [ "$FINDINGS" -gt 0 ] 2>/dev/null; then
-              echo "## Empty-Linter Results" >> "$GITHUB_STEP_SUMMARY"
-              echo "" >> "$GITHUB_STEP_SUMMARY"
-              echo "Found **${FINDINGS}** invisible character issue(s). See annotations above." >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## Empty-Linter Results"
+            echo ""
+            if [ "${{ steps.lint.outputs.ready }}" = "true" ]; then
+              CANDIDATES="${{ steps.lint.outputs.candidates }}"
+              FINDINGS="${{ steps.lint.outputs.findings }}"
+              PATTERN_HITS="${{ steps.lint.outputs.pattern_hits }}"
+              BOM_HITS="${{ steps.lint.outputs.bom_hits }}"
+              echo "Scanned **${CANDIDATES}** in-scope file(s) with two instruments, both self-tested against planted fixtures on this run."
+              echo ""
+              if [ "$FINDINGS" -gt 0 ] 2>/dev/null; then
+                echo ":x: **${FINDINGS}** file(s) contain invisible characters -- ${PATTERN_HITS} flagged by the codepoint scan, ${BOM_HITS} by the BOM check. See annotations above."
+              else
+                echo ":white_check_mark: No invisible character issues found."
+              fi
             else
-              echo "## Empty-Linter Results" >> "$GITHUB_STEP_SUMMARY"
-              echo "" >> "$GITHUB_STEP_SUMMARY"
-              echo ":white_check_mark: No invisible character issues found." >> "$GITHUB_STEP_SUMMARY"
+              echo ":x: The scan did not complete -- see the failed step above. This is **not** a clean result."
             fi
-          else
-            echo "## Empty-Linter" >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "Skipped: empty-linter not available." >> "$GITHUB_STEP_SUMMARY"
-          fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
   # ---------------------------------------------------------------------------
   # Job 4: Groove manifest check (for repos that should expose services)
