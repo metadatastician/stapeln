@@ -30,12 +30,26 @@ path = ".gitleaks-estate.toml"
 description = "metadatastician/stapeln: locally justified exemptions, extending the estate baseline"
 
 
-paths = [
-  # Published conformance vectors and worked examples for the container
-  # trust-store spec. Valid/invalid trust stores necessarily carry
-  # key-shaped material; that is what conformance tests assert on.
-  '''(^|/)verified-container-spec/(vectors|examples)/''',
+# VALUE regexes — preferred over `paths`, which blinds an ENTIRE FILE.
+#
+# The estate baseline once warned that anchored value regexes are INERT for
+# `generic-api-key`. That warning is FALSE and was corrected in
+# hyperpolymath/standards#737: an anchored `regexes` entry suppresses exactly
+# the listed value and nothing else. Entries added here on the old advice used
+# `paths`, which meant a REAL credential committed beside the placeholder would
+# never be reported.
+#
+# The single entry below is one 60-character placeholder repeated across ten
+# findings in five container-trust-store conformance vectors. Anchored `^...$`,
+# so it suppresses that exact string only. Verified 2026-09-04 with gitleaks
+# 8.18.4: clean tree 0 findings; a `ghp_` token planted in
+# verified-container-spec/vectors/ is CAUGHT as `github-pat` (under the previous
+# `paths` entry the same planted token was MISSED).
+regexes = [
+  '''^MCowBQYDK2VwAyEAGb9F2CMCwMPPBmrZJJNtFe0BzLXmVr3QBT7Q4joZt0Y=$''',
+]
 
+paths = [
   # Documents whose stated purpose is to contain deliberately planted
   # insecure examples for a red-team exercise.
   #
