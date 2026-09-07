@@ -13,10 +13,6 @@ on:
   push:
     branches: [main, master]
 
-permissions:
-  actions: read
-  contents: read
-
 jobs:
   # ---------------------------------------------------------------------------
   # Job 1: A2ML manifest validation
@@ -25,6 +21,9 @@ jobs:
     name: Validate A2ML manifests
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -46,7 +45,7 @@ jobs:
       # and the same paths-ignore carve-out keeps stapeln green. Resolves #44.
       - name: Validate A2ML manifests
         if: steps.detect.outputs.count > 0
-        uses: hyperpolymath/a2ml-ecosystem/validate-action@main
+        uses: hyperpolymath/a2ml-ecosystem/validate-action@main  # NOSONAR — pin authority is .github/workflows/actions.lock (sha1-aa4b836bd969df2bc58128cb8e3d20bbc88d5e79)
         with:
           path: '.'
           strict: 'false'
@@ -93,6 +92,9 @@ jobs:
     name: Validate K9 contracts
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -113,7 +115,7 @@ jobs:
 
       - name: Validate K9 contracts
         if: steps.detect.outputs.k9_count > 0
-        uses: hyperpolymath/k9-ecosystem/validate-action@main
+        uses: hyperpolymath/k9-ecosystem/validate-action@main  # NOSONAR — pin authority is .github/workflows/actions.lock (sha1-89f3c2702f4f650a92aa7411502f38da06abd562)
         with:
           path: '.'
           strict: 'false'
@@ -143,6 +145,9 @@ jobs:
     name: Empty-linter (invisible characters)
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -296,6 +301,9 @@ jobs:
     name: Groove manifest check
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -355,6 +363,9 @@ jobs:
     name: Dogfooding compliance summary
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
     needs: [a2ml-validate, k9-validate, empty-lint, groove-check]
     if: always()
 
