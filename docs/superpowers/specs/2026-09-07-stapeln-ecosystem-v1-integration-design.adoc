@@ -7,13 +7,15 @@
 :sectnums:
 :sectnumlevels: 2
 
-*Status:* SPEC for owner review. The 2026-09-07 draft was approved as the spec base on
-2026-09-08 (ruling D4) with rulings D1, D2 and D3 applied below. Nothing from <<parts>> to <<errors>> is implemented until the owner approves this document; the Lane A items in <<cures>> were ruled separately and are landing on their own.
+*Status:* SPEC. The 2026-09-07 draft was approved as the spec base on 2026-09-08 (ruling
+D4) with rulings D1, D2 and D3 applied below, and merged as stapeln#61 the same day. Amended
+2026-09-08 after the grammar session answered G1–G6: <<stack-declaration>> now describes a
+stapeln-owned `stack.lock`, not an A2ML Record Dialect document. Nothing from <<parts>> to <<errors>> is implemented until the owner approves this document; the Lane A items in <<cures>> were ruled separately and are landing on their own.
 
 *Inputs:* owner rulings 1–12 of 2026-09-07 and Round A rulings D1–D4 of 2026-09-08; the
 owner vision (parts assembly over OCI); the measured seams of 2026-09-07; the sitrep
-`dev-notes/stapeln-sitrep-2026-09-07-big-picture.md`; the A2ML Record Dialect
-specification (`a2ml/RECORD-DIALECT-SPEC.adoc` v1.0.0, Draft) and the estate deed handover
+`dev-notes/stapeln-sitrep-2026-09-07-big-picture.md`; the grammar session's measured
+answers G1–G6 of 2026-09-08 (<<decisions>>) and the estate deed handover
 (`dev-notes/status-reports/HANDOVER-estate-deed-2026-09-03.md`).
 
 *Path after approval:* one gstack `plan-eng-review` on this document, then the
@@ -63,8 +65,9 @@ the contract level.
   `:podman_compose` codegen emits only design services, never satellites.
 * The estate declarative format: `.a2ml` is being renamed to `.deed` (owner, final,
   2026-09-03). That rename is at the planning stage; no repo file has been renamed
-  (handover section 10, "prepare but land nothing"). Today the extension is `.a2ml`; the
-  A2ML Record Dialect (<<stack-declaration>>) is the surface this design targets.
+  (handover section 10, "prepare but land nothing"). Today the extension is `.a2ml`; no
+  `.deed` grammar has landed (grammar session, 2026-09-08), so the stack declaration is a
+  stapeln-owned file until one does (<<stack-declaration>>).
 
 [[north-star]]
 == North star
@@ -160,11 +163,11 @@ all six repos.
 | manifest URLs recorded
 | groove green; cleave feasible; spline seed
 
-| A2ML Record Dialect
-| the estate's TOML-shaped declarative surface (`.a2ml`, becoming `.deed`); Idris2 typed core; profiles; R0/R1/R2 conformance
-| TOML (eight normative divergences, the dialect spec's section 12); something stapeln defines
-| the stack declaration's format (<<stack-declaration>>)
-| spec v1.0.0 Draft; seven profiles shipped; reference validator not yet wired (its Appendix D)
+| estate deed (`.a2ml`, becoming `.deed`)
+| the estate's system-of-systems declarative document; Idris2 typed core; s-expression head forms owned by the grammar session
+| anything stapeln defines, emits or validates; `stack.lock`
+| the form the stack declaration migrates to (<<stack-declaration>>)
+| no `.deed` grammar landed; the only runnable validator knows four identity shapes, none s-expression, and warns rather than fails by default; the Record Dialect spec is under an open withdrawal ruling
 |===
 
 [[slots]]
@@ -202,14 +205,13 @@ descriptors live in stapeln's catalogue, one file per known part at
 and stapeln's copy becomes a cache refreshed by PR. The compiler never touches the network;
 SHAs are pinned in the descriptor.
 
-Descriptors are written in the *intersection* of TOML and the A2ML Record Dialect (quoted
-strings only, decimal numbers only, dates as RFC 3339 strings, no literal strings, no
-`[section]` re-opening), so that today's Elixir TOML decoder reads them and the same bytes
-remain valid record-dialect documents when the estate reader lands. Whether v1 descriptors
-carry the `.a2ml` extension and a `@profile(id=stapeln/part)` preamble from day one is
-open question Q1 in <<decisions>>; this specification is written for the `.toml` form and
-the change to the other form is confined to the file extension, the preamble line and
-the reader's preamble handling.
+Descriptors are plain TOML data files (quoted strings only, decimal numbers only, dates as
+RFC 3339 strings, no literal strings, no `[section]` re-opening: a plain data tree that a
+later emitter can serialise into another form unchanged), read by today's Elixir TOML
+decoder. They are stapeln's own files, not A2ML or `.deed` documents. The grammar session
+confirmed on 2026-09-08 that no routed multi-surface form exists for them to target, so
+open question Q1 in <<decisions>> reduces to the syntax choice A6 that also covers
+`stack.lock` (<<stack-declaration>>).
 
 [source,toml]
 ----
@@ -273,12 +275,12 @@ name. Unknown keys raise (the same allowlist discipline as rokur's loader).
 | 8 | `vordr.toml` | TOML | none (no `watch`) | none
 | 9 | `stapeln.design.json` | JSON | stapeln (round trip) | none
 | 10 | `compose.yaml` | compose v3.8 | `podman compose` (the smoke) | NEW
-| 11 | `stack.a2ml` (`stack.deed` once the rename lands) | A2ML Record Dialect | designer, smoke, humans; R1 validator when wired | NEW — the stack declaration (<<stack-declaration>>)
+| 11 | `stack.lock` | TOML data, stapeln-owned (not A2ML, not `.deed`) | designer, smoke, humans; consumers in v1.1; the deed validator once the grammar lands | NEW — the stack declaration (<<stack-declaration>>)
 |===
 
 The compiler is two-stage so that the stack declaration is the single source of truth by
 construction: *lower* (`stapeln.design.json` + the descriptor catalogue → the stack record
-tree), then *emit* (the record tree → `stack.a2ml`, `compose.yaml`, the `compose.toml`
+tree), then *emit* (the record tree → `stack.lock`, `compose.yaml`, the `compose.toml`
 substitutions and the per-part config files). No emitter reads a descriptor directly; if a
 value is not in the declaration, it is not in the bundle.
 
@@ -293,51 +295,65 @@ runner's env), `healthcheck` from `health`. The bundle carries no `./parts/<name
 materialising them (clone at the declared SHA) is the runner's job (<<smoke>>).
 
 [[stack-declaration]]
-=== The stack declaration (ruling D3): an A2ML Record Dialect document
+=== The stack declaration (ruling D3, applied through the grammar answer): `stack.lock`, stapeln-owned
 
 *Ruling D3 (owner, 2026-09-08):* the stack declaration is not TOML, JSON or a file outside
-the bundle. It is expressed in the estate's system-of-systems declarative document — the
-`.a2ml` document now migrating to `.deed`, Idris2-based, the type-safe single source of
-truth — and its grammar belongs to the session formalising the grammar and dialects.
-stapeln invents no grammar. The draft's TOML sketch survives only as the *field inventory*
-the declaration must carry.
+the bundle chosen by stapeln. It is expressed in the estate's system-of-systems
+declarative document — the `.a2ml` document now migrating to `.deed`, Idris2-based, the
+type-safe single source of truth — and its grammar belongs to the session formalising the
+grammar and dialects. stapeln invents no grammar. The draft's TOML sketch survives only as
+the *field inventory* the declaration must carry.
 
-*What the estate already provides (measured 2026-09-08 in `hyper-repos/a2ml`):* the A2ML
-Record Dialect v1.0.0 (`RECORD-DIALECT-SPEC.adoc`, 821 lines, Status Draft) is a
-TOML-shaped surface — `[section]` headers, `[[array-of-tables]]`, `key = value`, arrays,
-inline tables, dotted key-paths to depth four — that parses to the same typed Idris2 core
-`Doc` as the markup dialect. A document declares a profile with `@profile(id=ns/name)` in
-its preamble; a profile definition (`profiles/<ns>-<name>/PROFILE.a2ml`, hash-pinned in
-`profiles/REGISTRY.a2ml`) constrains required sections, allowed and required directives,
-reference classes and minimum attestation. Conformance classes: R0 reader (parse; profile
-inert), R1 checked (rejects duplicates, enforces the profile's required sections), R2
-attested (invariants as proof obligations; canonical `sha256:` hash over the JCS form of
-the record tree). Seven profiles ship (`a2ml/state` and six siblings); no stack profile
-exists. The reference validator is not yet wired (spec Appendix D, step 1); a normative
-vector suite exists at `tests/record-dialect/` with the intended CLI contract `a2ml validate
---dialect record --class R1 <file>`.
+*Measured answer from that session (2026-09-08, G1–G6, recorded in <<decisions>>):* the
+declaration cannot be a `.deed` today and must not pretend to be one. No `.deed` grammar
+has landed. The only runnable gate, `a2ml/actions/validate/validate-a2ml.sh`, recognises
+four identity shapes and no s-expression form, and reports identity and version as
+warnings (exit 0) unless run with `INPUT_STRICT=true`. There is no declaration site for
+slot or assembly vocabulary; it belongs in the estate deed (`estate_chora.deed`), never in
+stapeln. The A2ML Record Dialect specification is under an open owner ruling to withdraw,
+supersede or scope it, and is not to be cited as cover for a `key = value` surface. The
+"three-tier routed TOML → JSON → scm" form the owner recalled does not exist: the three
+are a record-dialect specification, an unstable ReScript-prototype JSON dump and an
+inbound importer of legacy `.scm` files, and `@profile` is inert under base conformance
+(discrimination, not routing). The instruction to stapeln: keep the declaration as an
+explicit dependency, own the interim file, emit neither `.deed` nor `.a2ml`, never write
+TOML records and call them A2ML, and migrate when the grammar lands.
 
 *Decided here (stapeln's side of the seam):*
 
-* File 11 is `stack.a2ml`, a Record Dialect document; the extension follows the estate
-  rename at implementation time (`.deed` once the rename lands). The name `stack.lock` is
-  retired; the lock role (pinned SHAs and digests) is carried by the declaration. Fixtures
-  carrying the `.a2ml` extension inside stapeln are genuine A2ML documents and are
-  correctly in the rename's scope; they need no exemption.
-* The surface stapeln emits stays inside the dialect's divergences from TOML (the dialect spec's section 12): every string quoted (D-2, D-5), decimal integers only (D-3), the generation
-  timestamp as an RFC 3339 *string* (D-1), no entries before the first section header (the preamble admits only comments, blank lines and `@profile`, its section 5.1),
-  no directive other than `@profile` (D-4), no re-opened section (D-7). Sub-tables under an
-  array-of-tables element are avoided: nested data on a `[[part]]` uses inline tables.
-* Required sections stapeln needs the profile to name: `stack`, `slots`, and the
-  array-of-tables `part`. Every slot key is present in `[slots]` even when empty (the missing-part signal is structural, not inferred); slot ids are legal bare keys because the dialect's `key-char` admits `-`. `verified = false` is present on every
-  part in v1 so the designer can say "unverified" honestly rather than omit the fact.
+* File 11 is `stack.lock`: the generated, pinned, stapeln-owned lock file named by
+  ruling 2, in the role `Cargo.lock` plays for a crate (a TOML lock file nobody mistakes
+  for a manifest). It is *not* an A2ML document and *not* a `.deed`, and its header says
+  so. It carries no `@profile` line, claims no conformance class and is checked by no
+  `a2ml validate` step. The `stapeln/stack` profile proposal of the first version of this
+  section is withdrawn; nothing under `a2ml/` is touched.
+* Syntax: plain TOML data (assumption A6, Q1 option a in <<decisions>>; the owner may
+  choose otherwise), read by the Elixir TOML decoder stapeln already depends on. Only
+  quoted strings, decimal integers, RFC 3339 timestamps as strings, arrays, inline tables
+  and the `[[part]]` array-of-tables, so the record tree is a plain data tree a later
+  emitter can serialise into the deed form unchanged. Sub-tables under an array-of-tables
+  element are avoided: nested data on a `[[part]]` uses inline tables.
+* Migration: when the `.deed` grammar lands, `mix stapeln.bundle` emits the same record
+  tree in the head form that grammar defines (the owner's three are `(estate-deed`,
+  `(repo-deed` and `(estate-atlas-deed`; which one, if any, fits a per-stack declaration
+  is that grammar's call, not stapeln's) and the deed validator becomes the gate.
+  `stack.lock` stays the pin record for as long as a consumer reads it. The change is
+  confined to one emitter and the fixtures.
+* Vocabulary: the slot ids and part fields below are stapeln's field inventory, not an
+  estate declaration. If the estate deed later declares slot or assembly vocabulary,
+  stapeln's inventory is reconciled to it, not the other way round.
+* Required tables: `stack`, `slots`, and the array-of-tables `part`. Every slot key is
+  present in `[slots]` even when empty (the missing-part signal is structural, not
+  inferred). `verified = false` is present on every part in v1 so the designer can say
+  "unverified" honestly rather than omit the fact.
 * Field inventory (the record tree):
 
 [source,toml]
 ----
 # SPDX-License-Identifier: MPL-2.0
-# stack.a2ml: generated by stapeln; do not edit. A2ML Record Dialect document.
-@profile(id=stapeln/stack)
+# stack.lock: generated by stapeln; do not edit.
+# Not an A2ML or .deed document: stapeln's own lock file. The stack declaration
+# migrates to the estate .deed form when that grammar lands.
 
 [stack]
 schema = 1
@@ -381,26 +397,26 @@ manifest_url = ""
 verified = false            # always false in v1: nothing verifies parts until vordr or cerro-torre consume (v1.1+)
 ----
 
-*Reading it in v1, honestly labelled:* stapeln's own contract test reads the file with
-`Stapeln.Record.read!/1`: strip the `@profile` preamble line, decode with the Elixir TOML
-decoder, then reject what a stock TOML decoder would accept and the dialect forbids
-(native date values, non-decimal number forms, single-quoted literal strings). That is an R0-class reader with the R1 *syntax* restrictions and no profile resolution. The dialect spec's section 12 describes exactly this starting point (a TOML lexer plus rejection of D-1, D-3 and D-5) and lists what a conforming reader must add beyond it (profile handling and the section 9 invariants); stapeln's reader stops at the starting point, is not a conforming R1 validator, and the tests say so. The moment
-the a2ml reference validator lands, the smoke runs `a2ml validate --dialect record --class
-R1 out/bundle/stack.a2ml` as a real gate; that line is written into the workflow behind a
-named condition (validator binary present) rather than a silent skip.
+*Reading it in v1, honestly labelled:* stapeln's own contract test
+(`stack_declaration_test.exs`) decodes `stack.lock` with the Elixir TOML decoder and
+checks structure: the three tables present, all twelve slot keys present, every part's
+slot in the slot table, every sha 40 hex, `design_sha256` equal to the hash of the
+emitted design, and a header that names the file as stapeln's own and not A2ML or deed.
+The same assertions run in the smoke as `mix stapeln.bundle --check out/bundle/stack.lock`
+(<<smoke>>). That test is the only thing carrying slot completeness in v1, and it stays
+when the deed grammar lands. No estate validator gate is claimed: `validate-a2ml.sh`
+without `INPUT_STRICT=true` is a formality, and this file is not its input.
 
-*Owned by the grammar session, not by stapeln (the explicit dependency):* the profile
-`stapeln/stack` (its id, its definition, its registry entry and hash); whether a per-stack declaration is a document of an existing family (and which) or a new family; the estate rename timing; the reference
-validator. Five questions were sent on 2026-09-08 to the session formalising the grammar
-(<<decisions>>, G1–G5). Until they are answered the stapeln-side decisions above stand, the
-profile id `stapeln/stack` is a proposal, and nothing under `a2ml/` is edited by this
-work. If the answer moves the required-section names or the profile id, the change is
-confined to the preamble line, the three section names and the fixture.
+*Owned by the grammar session, not by stapeln (the explicit dependency):* the `.deed`
+grammar and its head forms; the estate rename timing; the deed validator; any estate
+declaration of slot or assembly vocabulary. Six questions were sent on 2026-09-08 and
+answered the same day (<<decisions>>, G1–G6); the answers are applied above. The one item
+still open on stapeln's side is A6, the syntax of its own files until the migration.
 
-*v1.1:* consumers validate the declaration themselves through the a2ml bindings that
-already exist for their runtimes (`bindings/deno` for rokur and svalinn, `bindings/rust`
-for selur and vordr); cerro-torre's `manifest.toml` pins the declaration's R2 canonical
-`doc_hash`; `stack.kube.yaml` is emitted from the same record tree.
+*v1.1:* consumers read `stack.lock` through the TOML readers their runtimes already have
+(rokur reads TOML today); cerro-torre's `manifest.toml` pins the sha256 of the emitted
+`stack.lock` bytes; `stack.kube.yaml` is emitted from the same record tree. Validation
+through estate bindings arrives with the deed form, not before.
 
 Rules: a design with two parts in a max-1 slot still emits (v1 has no engine) but the
 designer's existing `validation_engine` port-conflict rule refuses `compose.yaml` when two
@@ -430,8 +446,8 @@ parts publish the same host port.
 * stapeln `bundle_codegen_test.exs`: emitted `rokur.toml` tables and keys are a subset of
   rokur's allowlist (copied as a test constant with the rokur SHA it was read from);
   emitted `.gatekeeper.yaml` top-level keys are a subset of `{version, auth, rate_limits}`
-  and `auth.public` is a list of strings; 11 files; zero `{{`; `stack.a2ml` reads through
-  `Stapeln.Record.read!/1` and lists 12 slot keys.
+  and `auth.public` is a list of strings; 11 files; zero `{{`; `stack.lock` decodes as
+  TOML and lists 12 slot keys.
 * rokur `test/bundle_contract_test.js`: `loadConfig({configPath:
   "test/fixtures/stapeln-bundle/rokur.toml"})` succeeds (fixture header names the stapeln
   template SHA it was emitted from).
@@ -450,8 +466,8 @@ that drifts from the template shows up there first.
 == Rules vocabulary (ruling 6: v1 = vocabulary only)
 
 `backend/priv/rules/v1.toml`, parsed by a test and enforced by nothing until v1.1. It is
-written in the same TOML ∩ Record Dialect intersection as the descriptors (<<parts>>) so
-the same Q1 answer covers it.
+written as the same plain TOML data as the descriptors (<<parts>>), so the same syntax
+choice (A6 in <<decisions>>) covers it.
 
 [source,toml]
 ----
@@ -520,9 +536,10 @@ on paths `backend/priv/bundle_templates/**`, `backend/priv/parts/**`,
   docker-compose plugin, both present on the host; ubuntu-latest has podman).
 . Probe with backoff up to 60 s: `GET http://127.0.0.1:<rokur port>/health` and
   `GET http://127.0.0.1:<svalinn port>/health`; any non-2xx or timeout fails the job.
-. When the a2ml reference validator is available on the runner: `a2ml validate --dialect
-  record --class R1 out/bundle/stack.a2ml`; its absence is printed as a named condition in
-  the job summary, never a silent skip.
+. `mix stapeln.bundle --check out/bundle/stack.lock`: the structural assertions of
+  <<stack-declaration>> against the emitted file. No estate validator step is claimed
+  until the `.deed` grammar lands; when it does, its step is added as a named gate, never
+  a silent skip.
 . Always: `podman compose logs` to the job summary, then `podman compose down -v`.
 
 No `continue-on-error`. The job is named `Smoke: bundle → rokur + svalinn → probe` and
@@ -546,8 +563,8 @@ v1.1: `stack.kube.yaml` as a twelfth file + `podman kube play`, landing with the
 | rokur start | unknown key, `backend`, missing token or required secret | throws or exits, as today
 | svalinn start | unknown top-level key, non-string path | exits 1, as today
 | smoke | clone, build, up, probe | job fails, logs in summary
-| stack declaration | any slot key absent, a value outside the dialect's forms, a bad sha | the stapeln test fails (structure, not inference); `Stapeln.Record.read!/1` raises
-| stack declaration | profile cannot be resolved (R1, once the validator exists) | validator exits non-zero; the smoke fails
+| stack declaration | any slot key absent, a part in an unknown slot, a bad sha, `design_sha256` mismatch | the stapeln test and `mix stapeln.bundle --check` fail (structure, not inference)
+| stack declaration | file does not decode as TOML | the decoder raises; the emit fails before the bundle is written
 |===
 
 [[cures]]
@@ -599,11 +616,10 @@ Lane B — spec-gated (this design): <<seam>> templates + contract tests (stapel
 
 * stapeln: `bundle_codegen_test.exs` grows as in <<seam>>; `parts_test.exs` (every
   descriptor parses, sha is 40 hex, slot in the table, names unique);
-  `stack_declaration_test.exs` (reads through `Stapeln.Record.read!/1`; 12 slot keys;
-  parts are a subset of placed components; `design_sha256` matches the emitted design;
-  every value is within the dialect's six forms; the preamble is exactly one `@profile`
-  line); `record_test.exs` (the reader rejects a native date, a hex integer and a
-  single-quoted string, each as a fixture); `rules_test.exs` (fixture parses; every rule
+  `stack_declaration_test.exs` (decodes `stack.lock` as TOML; three tables; 12 slot keys;
+  parts are a subset of placed components; every part's slot is in the slot table;
+  `design_sha256` matches the emitted design; the header names the file as stapeln's own
+  and not A2ML or deed); `rules_test.exs` (fixture parses; every rule
   has a kind in the four, severity in `{error, warn}`, non-empty hint); `mix
   stapeln.bundle` exercised by the smoke.
 * rokur / svalinn: golden-fixture contract tests (<<seam>>), run by their existing CI
@@ -614,13 +630,14 @@ Lane B — spec-gated (this design): <<seam>> templates + contract tests (stapel
 == Tiers (rulings 6, 7, 11)
 
 * v1: this document. CI green-or-named-red ×6; no live fail-open gate; honest docs; smoke
-  emits → rokur + svalinn consume → probe; the stack declaration emitted as a Record
-  Dialect document and read at R0 with the R1 syntax restrictions.
+  emits → rokur + svalinn consume → probe; the stack declaration emitted as the
+  stapeln-owned `stack.lock` with its structural test.
 * v1.1: `slot` on the model; data-driven rules through `validation_engine` /
   `gap_analyzer`; groove manifests for rokur + svalinn and compatibility = structural fit;
   descriptors for selur, vordr, cerro-torre with their consumption; part-owned descriptors
-  ingested (D1); `stack.kube.yaml` + `podman kube play`; consumers validate the
-  declaration through the a2ml bindings; R2 `doc_hash` pinned in cerro-torre's manifest;
+  ingested (D1); `stack.kube.yaml` + `podman kube play`; consumers read the
+  declaration; cerro-torre's manifest pins its sha256; the `.deed` form and its validator
+  when the grammar lands;
   `verified-container-spec` minted as a repo; images published for rokur.
 * v1.2: coverage lattice + reachability; cleave takes the selur seam once demonstrated.
 * v2: parts registry; advisor mode (authority-watch + boj cartridges, opt-in);
@@ -648,7 +665,7 @@ Lane B — spec-gated (this design): <<seam>> templates + contract tests (stapel
 | W10 | vordr residue (#53) | vordr, svalinn | ruled | M
 | W15 | spec + plan-eng-review (#64) | stapeln | this approval | M
 | W5 | templates + contract tests | stapeln, rokur, svalinn | spec | M
-| W6 | descriptors + stack declaration + reader + compose.yaml + mix task | stapeln | spec; G1–G5 for the profile | M
+| W6 | descriptors + stack declaration + compose.yaml + mix task | stapeln | spec; A6 | M
 | W7 | rules fixture + slot table doc | stapeln | spec | S
 | W8 | smoke workflow, first green run, then required | stapeln | W5 + W6 | M
 |===
@@ -666,31 +683,47 @@ Rulings applied in this document (owner, 2026-09-08):
   ingested in v1.1, the stapeln copy becoming a cache.
 * D2 template canonical home: stapeln `backend/priv/bundle_templates/`;
   rsr-template-repo's copy becomes a pointer.
-* D3 stack declaration: the `.a2ml`→`.deed` system-of-systems document (A2ML Record
-  Dialect), not TOML; grammar owned elsewhere; stapeln invents none.
+* D3 stack declaration: the `.a2ml`→`.deed` system-of-systems document, not a format of
+  stapeln's choosing; grammar owned elsewhere; stapeln invents none. Applied through the
+  grammar session's answers below: a stapeln-owned interim file until the `.deed` grammar
+  lands.
 * D4 the 2026-09-07 draft is the spec base.
 
-Questions sent to the grammar-formalisation session on 2026-09-08 (answers slot into <<stack-declaration>> without changing anything else):
+Questions sent to the grammar-formalisation session on 2026-09-08, with its measured
+answers of the same day (applied in <<stack-declaration>>):
 
-* G1 Can a configuration of the <<stack-declaration>> shape be written as a Record Dialect document
-  today, and which file is the authoritative grammar for it?
-* G2 If not yet, which interim is acceptable: a skeleton the validator dual-accepts,
-  nothing lock-shaped until the dialect exists, or something else?
-* G3 Is a per-stack declaration one document per built stack, or derived from a repo-level
-  document, and which of the estate/repo chora split does it belong to?
-* G4 What must stapeln not do: extensions, validators, manifests, naming, and the
-  prepare-but-land-nothing rename constraints this spec must respect?
-* G5 Is there a validator or parser stapeln's contract test can point at today?
+* G1 Can a configuration of the <<stack-declaration>> shape be written as an estate
+  document today, and which file is its authoritative grammar? *No.* No `.deed` grammar has
+  landed; the declaration stays an explicit dependency on that session's work.
+* G2 Which interim is acceptable? *A stapeln-owned file.* Emit neither `.deed` nor
+  `.a2ml`; never write TOML records and call them A2ML (the Record Dialect is an open owner
+  ruling and is not to be built on or cited).
+* G3 Where does a per-stack declaration belong in the estate/repo split? *Undeclared.*
+  There is no declaration site for slot or assembly vocabulary; it belongs in
+  `estate_chora.deed` when that exists, never in stapeln.
+* G4 What must stapeln not do? Touch the `.a2ml`/`.deed` grammar, manifests, validators or
+  profiles; land any part of the rename (prepare but land nothing); overwrite either of the
+  two canonical stapeln trees (merge, never overwrite).
+* G5 Is there a validator today? *Only `validate-a2ml.sh`:* four identity shapes, no
+  s-expression form, identity and version reported as warnings (exit 0) unless
+  `INPUT_STRICT=true`; two gaps (identity, `:schema-version`) to be patched together when
+  the grammar lands. stapeln's contract test is the only thing carrying slot completeness.
+* G6 Does the "three-tier routed TOML → JSON → scm dialect with header directions" the
+  owner recalled exist? *No.* The three are separate: the record-dialect specification, an
+  unstable ReScript-prototype JSON dump (`docs/AST-JSON.adoc`) and `scm2a2ml`, an inbound
+  importer of legacy `.scm` files; `@profile` is inert under base conformance, so nothing
+  routes on a header. Keep the explicit-dependency form and cite nothing.
 
 Open question for the owner (recommendation first):
 
-* Q1 Descriptor and rules files in v1: written in the TOML ∩ Record Dialect intersection
-  with the `.toml` extension, read by the Elixir TOML decoder, migrating to `.a2ml`/`.deed`
-  with a `@profile(id=stapeln/part)` preamble when descriptors become part-owned in v1.1
-  (recommended: no second dependency on the grammar session in v1); or Record Dialect
-  from day one with the preamble and the <<stack-declaration>> reader (one format for the whole
-  chain, but the `stapeln/part` profile joins the v1 dependency); or plain TOML with no
-  intersection constraint (not recommended: the migration then costs a rewrite).
+* Q1 (re-framed after G6: the routed form it assumed does not exist) The syntax of
+  stapeln's own data files (`stack.lock`, the descriptors, the rules fixture) until the
+  `.deed` grammar lands: (a) plain TOML data (recommended: the decoders exist in stapeln
+  and rokur, the files are lock-shaped, and the migration is one emitter over the same
+  record tree); (b) an s-expression shape anticipating the deed form (not recommended: it
+  guesses at an unlanded grammar and needs a reader in every consumer); (c) block v1 on
+  the grammar (not recommended: v1 stalls on another session's work). This document is
+  written for (a) as assumption A6.
 
 Assumptions the owner may override:
 
@@ -703,5 +736,5 @@ Assumptions the owner may override:
   stapeln docs page, not an emitted file.
 * A5 the smoke exercises rokur's real token + required-secret path with per-run random
   values, not the `ROKUR_ALLOW_*` escape hatches.
-* A6 the profile id for the stack declaration is `stapeln/stack` and its definition lives
-  in the a2ml profile registry; both are proposals pending G1–G5.
+* A6 `stack.lock`, the descriptors and the rules fixture are plain TOML data files owned
+  by stapeln (Q1 option a); the `stapeln/stack` profile proposal is withdrawn.
