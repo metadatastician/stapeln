@@ -1,0 +1,707 @@
+// SPDX-License-Identifier: CC-BY-SA-4.0
+= stapeln ecosystem: v1 integration design
+:toc: left
+:toclevels: 3
+:icons: font
+:xrefstyle: short
+:sectnums:
+:sectnumlevels: 2
+
+*Status:* SPEC for owner review. The 2026-09-07 draft was approved as the spec base on
+2026-09-08 (ruling D4) with rulings D1, D2 and D3 applied below. Nothing from <<parts>> to <<errors>> is implemented until the owner approves this document; the Lane A items in <<cures>> were ruled separately and are landing on their own.
+
+*Inputs:* owner rulings 1–12 of 2026-09-07 and Round A rulings D1–D4 of 2026-09-08; the
+owner vision (parts assembly over OCI); the measured seams of 2026-09-07; the sitrep
+`dev-notes/stapeln-sitrep-2026-09-07-big-picture.md`; the A2ML Record Dialect
+specification (`a2ml/RECORD-DIALECT-SPEC.adoc` v1.0.0, Draft) and the estate deed handover
+(`dev-notes/status-reports/HANDOVER-estate-deed-2026-09-03.md`).
+
+*Path after approval:* one gstack `plan-eng-review` on this document, then the
+writing-plans skill produces the implementation plan. Lane B work (<<work>>) starts only after that plan exists.
+
+[[state]]
+== State at spec time (2026-09-08 07:00Z, measured)
+
+* Landed and verified on main: vordr #29 (e64848d); stapeln #59 (1e30c70) and #60
+  (c34db2a, SonarCloud main gate OK on all five conditions); svalinn #49/#50/#51
+  (e28ccb2, b7ba323, 7d90d90); rokur #17 (main Sonar OK).
+* Boards: vordr all green. selur and cerro-torre green, cerro-torre's SPARK proof red is
+  masked by `continue-on-error` (#57). rokur green but no workflow runs its tests (#67).
+  svalinn green except Instant Sync (missing repo secret `FARM_DISPATCH_TOKEN`, owner
+  action) and #52 (Sonar cured; blocked by the required CodeQL check on 17 pre-existing
+  `actions/unpinned-tag` alerts whose 18 dismissal requests await owner approval).
+  stapeln main: every remaining red is named — Governance (anti-pattern policy CI-0 and
+  Validate Hypatia Baseline, cured on the standards side by standards#747), and the three
+  dead-submodule workflows (`publish-image.yml` Build selur / Build vordr,
+  `svalinn-affine-build.yml`) that <<cures>> removes (#63).
+* Images: `ghcr.io/metadatastician/svalinn:latest` exists (sha256:7f28b132…, Publish
+  Image at e28ccb2). rokur has no image.
+* The two seam findings that shape this design:
++
+--
+. The bundle's `rokur.toml` template cannot be loaded by rokur. rokur's loader is an
+  allowlist that throws on unknown tables or keys and rejects `[server] backend` ("rokur
+  is a secrets gate, not a proxy"). The template uses `server.listen`, `server.backend`,
+  `rate_limit.enabled/requests_per_second/burst`, `policy.engine`,
+  `audit.log/format/hash_values`; rokur's schema is `server.host/port/health_path/ready_path`,
+  `secrets.required/sources`, `rate_limit.window_ms/max/auth_fail_max`,
+  `policy.backend/command/command_args/timeout_ms`, `audit.enabled/path/request_log`. It
+  also listens on `[::]:8081`, an estate-banned port class.
+. The bundle's `.gatekeeper.yaml` template cannot be loaded by svalinn. svalinn's parser
+  rejects any top-level key outside `version`, `auth`, `rate_limits` and exits 1; the
+  template adds `trust`, `validation`, `cors`, `logging`; its `auth.public` entries are
+  objects where svalinn requires plain path strings; its rate limits use
+  `requests_per_second/burst` where svalinn reads `window_ms/max`.
+--
++
+Both consumers are correctly fail-closed; the templates are the defect. The v1 smoke cannot pass until <<seam>> lands. This is the guard-asks-a-different-question defect class at
+the contract level.
+* `compose.toml` (selur-compose format; its header says it is not parseable by `podman
+  compose`) pins `ghcr.io/hyperpolymath/rokur:latest.ctp` and
+  `ghcr.io/hyperpolymath/svalinn:latest.ctp` (dead namespace, no such images), rokur on
+  8081, svalinn on 443/80; stapeln's bundle test asserts the dead namespace. The existing
+  `:podman_compose` codegen emits only design services, never satellites.
+* The estate declarative format: `.a2ml` is being renamed to `.deed` (owner, final,
+  2026-09-03). That rename is at the planning stage; no repo file has been renamed
+  (handover section 10, "prepare but land nothing"). Today the extension is `.a2ml`; the
+  A2ML Record Dialect (<<stack-declaration>>) is the surface this design targets.
+
+[[north-star]]
+== North star
+
+stapeln is a parts-assembly interface over OCI (the Kerbal / shape-sorter picture): a part
+fills a slot; a stack is complete when every required slot is filled with compatible parts;
+the designer is default-complete, default-safe, override-explicit (every override recorded
+with a reason). Three personas must all succeed: the three-year-old who builds a working
+stack from the palette; the web designer who sees their idea made visible; the head of ESA
+who takes cerro-torre plus ATS2 extreme protection. Parts interoperate when they match OCI
+or the joinery (groove from v1.1). The owner's satellites are only the first parts.
+
+v1 is not the product. v1 is the first honest proof of the pivot "stapeln compiles →
+bundle → parts consume", measured by a probe, on a CI board that is green or named-red in
+all six repos.
+
+[[distinctions]]
+== Distinctions
+
+[cols="1,2,2,1,2",options="header"]
+|===
+| Thing | Is | Is not | v1 role | Measured state
+
+| stapeln
+| designer + compiler; emits the bundle
+| a runtime, an orchestrator, "Podman-only"
+| emits 11 files
+| bundle = 9 files today: 8 verbatim templates + design.json
+
+| rokur
+| secrets gate (Deno; fail-closed TOML config; `/health` and `/metrics` open)
+| a reverse proxy (its loader rejects `backend`)
+| consumer #1
+| green; no image; `--config` landed; tests not run in CI (#67)
+
+| svalinn (repo)
+| edge gateway (Deno MVP `tools/mvp/svalinn_gateway.ts`; default-deny path policy)
+| a container runtime; cerro-torre's Phoenix app
+| consumer #2
+| green except Instant Sync; image published
+
+| selur / selur-compose
+| Ephapax-linear WASM sealant; zero-copy IPC bridge svalinn↔vordr; compose crate parses `compose.toml`
+| an orchestrator
+| recorded, not run
+| green; parses, starts nothing
+
+| vordr
+| formally verified orchestration + verification engine; native `.ctp` runtime; Rust CLI + Ada gatekeeper
+| consumed in v1 (no `watch`; Ada does not build, E0015)
+| recorded, not run
+| green; stub fail-closed; docs corrected (#29)
+
+| cerro-torre
+| SPARK/Ada packer + signer (`ct pack`)
+| a runtime (`--runtime=svalinn` is wrong, ruling 1)
+| recorded, not run
+| green with the SPARK proof masked (#57)
+
+| ATS2 shadow
+| advisory validator over canonical manifest bytes (normative policy)
+| part of the TCB; a runtime gate
+| advisory slot
+| fold seeds `true` (#41, drift check)
+
+| cerro-torre `apps/svalinn`
+| a Phoenix vordr-adapter API
+| svalinn
+| renamed to `ct_verify_api` (ruling 1)
+| untouched since June
+
+| LagoGrey
+| base-image designer inside stapeln
+| a repo
+| base-image slot
+| `LagoGreyImageDesigner.res`
+
+| k9
+| deploy target (`hyperpolymath/k9-ecosystem`)
+| consumed in v1
+| `deploy.k9.ncl` emitted only
+| exists
+
+| verified-container-spec
+| the vendored copy in stapeln
+| a repo (404 under both owners)
+| recorded (assumption A1)
+| only copy
+
+| groove / spline / cleave
+| joinery: part interface / seed / seam
+| v1 connectors (ruling 7)
+| manifest URLs recorded
+| groove green; cleave feasible; spline seed
+
+| A2ML Record Dialect
+| the estate's TOML-shaped declarative surface (`.a2ml`, becoming `.deed`); Idris2 typed core; profiles; R0/R1/R2 conformance
+| TOML (eight normative divergences, the dialect spec's section 12); something stapeln defines
+| the stack declaration's format (<<stack-declaration>>)
+| spec v1.0.0 Draft; seven profiles shipped; reference validator not yet wired (its Appendix D)
+|===
+
+[[slots]]
+== Slot table (ruling 5) and the designer mapping
+
+[cols="2,2,2,2",options="header"]
+|===
+| Slot id | v1 parts | later parts | `Model.res` componentType today
+
+| `runtime` | podman | nerdctl, docker | Podman, Docker, Nerdctl
+| `base-image` | LagoGrey, chainguard, alpine | — | LagoGrey
+| `secrets-gate` | rokur | — | Rokur
+| `edge-gateway` | svalinn | — | Svalinn
+| `seam-sealant` | selur, selur-compose | — | Selur
+| `orchestration-verification` | vordr | — | Vordr
+| `packer-signer` | cerro-torre | — | CerroTorre
+| `advisory-validator` | ATS2 shadow, per-section scans | — | none (v1.1 `slot` field)
+| `firewall` | EMPTY in v1, shown as a missing part | vordr, stapeln pinholes, other | none (v1.1)
+| `deploy-target` | k9, kubernetes | — | none (v1.1)
+| `storage` | Volume | — | Volume
+| `network` | Network | — | Network
+| `custom` | any OCI image the user drags in | — | UnknownType(string)
+|===
+
+v1 does not change `Model.res`. The slot of a placed component is derived by a fixed
+mapping in the compiler (`Stapeln.Slots.of_component/1`); `UnknownType` maps to `custom`,
+unverified until assigned. The `slot` field on the model itself is v1.1 (ruling 6).
+
+[[parts]]
+== Parts and parts descriptors (rulings 12 and D1)
+
+A part without a groove manifest joins through a descriptor. *Ruling D1:* in v1 the
+descriptors live in stapeln's catalogue, one file per known part at
+`backend/priv/parts/<name>.toml`; from v1.1 each part owns its descriptor in its own repo
+and stapeln's copy becomes a cache refreshed by PR. The compiler never touches the network;
+SHAs are pinned in the descriptor.
+
+Descriptors are written in the *intersection* of TOML and the A2ML Record Dialect (quoted
+strings only, decimal numbers only, dates as RFC 3339 strings, no literal strings, no
+`[section]` re-opening), so that today's Elixir TOML decoder reads them and the same bytes
+remain valid record-dialect documents when the estate reader lands. Whether v1 descriptors
+carry the `.a2ml` extension and a `@profile(id=stapeln/part)` preamble from day one is
+open question Q1 in <<decisions>>; this specification is written for the `.toml` form and
+the change to the other form is confined to the file extension, the preamble line and
+the reader's preamble handling.
+
+[source,toml]
+----
+# backend/priv/parts/rokur.toml
+[part]
+name = "rokur"
+slot = "secrets-gate"
+interface = "oci"                 # "oci" or "groove"
+model_component = "Rokur"         # Model.res tag; "" when the palette cannot place it yet
+repo = "https://github.com/metadatastician/rokur"
+sha = "0000000000000000000000000000000000000000"   # 40 hex, pinned, refreshed by PR
+image = ""                        # digest-pinned OCI ref when one is published
+
+[part.build]
+containerfile = "Containerfile"
+context = "."
+
+[part.runtime]
+ports = [{ port = 9090, protocol = "tcp", transaction = "secrets-gate API + /health" }]
+mounts = ["./rokur.toml:/app/rokur.toml:ro,Z"]
+command = ["--config", "/app/rokur.toml"]           # appended to the image ENTRYPOINT
+env = ["ROKUR_API_TOKEN", "ROKUR_REQUIRED_SECRETS"]  # names only; values never in a descriptor
+health = { path = "/health", port = 9090 }
+
+[part.contract]
+consumes = ["rokur.toml"]
+manifest_url = ""                 # groove manifest, when the part publishes one (v1.1)
+----
+
+svalinn's descriptor differs in: `slot = "edge-gateway"`, `model_component = "Svalinn"`,
+`image = "ghcr.io/metadatastician/svalinn@sha256:7f28b132…"` (exists), port 8000 today,
+`env = ["SVALINN_GATEKEEPER_CONFIG"]` set to `/app/.gatekeeper.yaml`, mount
+`./.gatekeeper.yaml:/app/.gatekeeper.yaml:ro,Z`, `consumes = [".gatekeeper.yaml"]`.
+
+v1 ships exactly two descriptors (rokur, svalinn: the two consumers). selur, vordr and
+cerro-torre get descriptors in v1.1 with their consumption; until then a placed Vordr,
+Selur or CerroTorre component is recorded in the stack declaration with
+`source = "design-only"` and is not run by the smoke. Every port carries the protocol and
+the transaction it serves (network doctrine of 2026-09-02); rokur's 9090 (Prometheus's
+default) and svalinn's 8000 (a banned class) are re-assigned by the doctrine's procedure in
+one PR per repo (<<cures>>, W13), and the descriptor is the single place the number lives.
+
+Loader: `Stapeln.Parts.load!/0` reads every file in `priv/parts`, raises on a missing
+required field, a `sha` that is not 40 hex, a `slot` outside the table, or a duplicate
+name. Unknown keys raise (the same allowlist discipline as rokur's loader).
+
+[[bundle]]
+== Bundle contract — eleven files
+
+[cols="1,3,2,3,3",options="header"]
+|===
+| # | File | Format | Consumer in v1 | Change in v1
+
+| 1 | `.gatekeeper.yaml` | YAML | svalinn `loadGateConfig()` | re-wired to svalinn's schema (<<seam>>)
+| 2 | `compose.example.toml` | TOML | none (example) | none
+| 3 | `compose.toml` | selur-compose TOML | selur-compose parses only | image refs and ports from the stack declaration
+| 4 | `ct-build.sh` | shell | none | none
+| 5 | `deploy.k9.ncl` | Nickel | none | none
+| 6 | `manifest.toml` | TOML | none (cerro-torre v1.1) | none
+| 7 | `rokur.toml` | TOML | rokur `--config` | re-wired to rokur's schema (<<seam>>)
+| 8 | `vordr.toml` | TOML | none (no `watch`) | none
+| 9 | `stapeln.design.json` | JSON | stapeln (round trip) | none
+| 10 | `compose.yaml` | compose v3.8 | `podman compose` (the smoke) | NEW
+| 11 | `stack.a2ml` (`stack.deed` once the rename lands) | A2ML Record Dialect | designer, smoke, humans; R1 validator when wired | NEW — the stack declaration (<<stack-declaration>>)
+|===
+
+The compiler is two-stage so that the stack declaration is the single source of truth by
+construction: *lower* (`stapeln.design.json` + the descriptor catalogue → the stack record
+tree), then *emit* (the record tree → `stack.a2ml`, `compose.yaml`, the `compose.toml`
+substitutions and the per-part config files). No emitter reads a descriptor directly; if a
+value is not in the declaration, it is not in the bundle.
+
+[[compose-yaml]]
+=== `compose.yaml`
+
+The existing `:podman_compose` output for design services plus one service stanza per
+descriptor-backed part placed in the design: `build: {context: ./parts/<name>, dockerfile:
+<containerfile>}` when `image` is empty, else `image:` with the digest; `ports`, `volumes`
+(the consumed file, read-only), `command`, `environment` (names only, values from the
+runner's env), `healthcheck` from `health`. The bundle carries no `./parts/<name>` sources;
+materialising them (clone at the declared SHA) is the runner's job (<<smoke>>).
+
+[[stack-declaration]]
+=== The stack declaration (ruling D3): an A2ML Record Dialect document
+
+*Ruling D3 (owner, 2026-09-08):* the stack declaration is not TOML, JSON or a file outside
+the bundle. It is expressed in the estate's system-of-systems declarative document — the
+`.a2ml` document now migrating to `.deed`, Idris2-based, the type-safe single source of
+truth — and its grammar belongs to the session formalising the grammar and dialects.
+stapeln invents no grammar. The draft's TOML sketch survives only as the *field inventory*
+the declaration must carry.
+
+*What the estate already provides (measured 2026-09-08 in `hyper-repos/a2ml`):* the A2ML
+Record Dialect v1.0.0 (`RECORD-DIALECT-SPEC.adoc`, 821 lines, Status Draft) is a
+TOML-shaped surface — `[section]` headers, `[[array-of-tables]]`, `key = value`, arrays,
+inline tables, dotted key-paths to depth four — that parses to the same typed Idris2 core
+`Doc` as the markup dialect. A document declares a profile with `@profile(id=ns/name)` in
+its preamble; a profile definition (`profiles/<ns>-<name>/PROFILE.a2ml`, hash-pinned in
+`profiles/REGISTRY.a2ml`) constrains required sections, allowed and required directives,
+reference classes and minimum attestation. Conformance classes: R0 reader (parse; profile
+inert), R1 checked (rejects duplicates, enforces the profile's required sections), R2
+attested (invariants as proof obligations; canonical `sha256:` hash over the JCS form of
+the record tree). Seven profiles ship (`a2ml/state` and six siblings); no stack profile
+exists. The reference validator is not yet wired (spec Appendix D, step 1); a normative
+vector suite exists at `tests/record-dialect/` with the intended CLI contract `a2ml validate
+--dialect record --class R1 <file>`.
+
+*Decided here (stapeln's side of the seam):*
+
+* File 11 is `stack.a2ml`, a Record Dialect document; the extension follows the estate
+  rename at implementation time (`.deed` once the rename lands). The name `stack.lock` is
+  retired; the lock role (pinned SHAs and digests) is carried by the declaration. Fixtures
+  carrying the `.a2ml` extension inside stapeln are genuine A2ML documents and are
+  correctly in the rename's scope; they need no exemption.
+* The surface stapeln emits stays inside the dialect's divergences from TOML (the dialect spec's section 12): every string quoted (D-2, D-5), decimal integers only (D-3), the generation
+  timestamp as an RFC 3339 *string* (D-1), no entries before the first section header (the preamble admits only comments, blank lines and `@profile`, its section 5.1),
+  no directive other than `@profile` (D-4), no re-opened section (D-7). Sub-tables under an
+  array-of-tables element are avoided: nested data on a `[[part]]` uses inline tables.
+* Required sections stapeln needs the profile to name: `stack`, `slots`, and the
+  array-of-tables `part`. Every slot key is present in `[slots]` even when empty (the missing-part signal is structural, not inferred); slot ids are legal bare keys because the dialect's `key-char` admits `-`. `verified = false` is present on every
+  part in v1 so the designer can say "unverified" honestly rather than omit the fact.
+* Field inventory (the record tree):
+
+[source,toml]
+----
+# SPDX-License-Identifier: MPL-2.0
+# stack.a2ml: generated by stapeln; do not edit. A2ML Record Dialect document.
+@profile(id=stapeln/stack)
+
+[stack]
+schema = 1
+name = "demo"
+generator = "stapeln 0.3.0"
+generated = "2026-09-08T07:00:00Z"
+design_sha256 = "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+compose_format = "compose-v3.8"
+
+# every slot, always; "" = empty
+[slots]
+runtime = "podman"
+base-image = ""
+secrets-gate = "rokur"
+edge-gateway = "svalinn"
+seam-sealant = ""
+orchestration-verification = ""
+packer-signer = ""
+advisory-validator = ""
+firewall = ""               # missing part; the designer shows it as missing
+deploy-target = ""
+storage = ""
+network = ""
+
+[[part]]
+slot = "secrets-gate"
+name = "rokur"
+source = "descriptor"       # "descriptor" or "design-only"
+interface = "oci"
+repo = "https://github.com/metadatastician/rokur"
+sha = "0000000000000000000000000000000000000000"
+image = ""
+build = { containerfile = "Containerfile", context = "." }
+ports = [{ port = 9090, protocol = "tcp", transaction = "secrets-gate API + /health" }]
+mounts = ["./rokur.toml:/app/rokur.toml:ro,Z"]
+command = ["--config", "/app/rokur.toml"]
+env = ["ROKUR_API_TOKEN", "ROKUR_REQUIRED_SECRETS"]
+consumes = ["rokur.toml"]
+health = "http://rokur:9090/health"
+manifest_url = ""
+verified = false            # always false in v1: nothing verifies parts until vordr or cerro-torre consume (v1.1+)
+----
+
+*Reading it in v1, honestly labelled:* stapeln's own contract test reads the file with
+`Stapeln.Record.read!/1`: strip the `@profile` preamble line, decode with the Elixir TOML
+decoder, then reject what a stock TOML decoder would accept and the dialect forbids
+(native date values, non-decimal number forms, single-quoted literal strings). That is an R0-class reader with the R1 *syntax* restrictions and no profile resolution. The dialect spec's section 12 describes exactly this starting point (a TOML lexer plus rejection of D-1, D-3 and D-5) and lists what a conforming reader must add beyond it (profile handling and the section 9 invariants); stapeln's reader stops at the starting point, is not a conforming R1 validator, and the tests say so. The moment
+the a2ml reference validator lands, the smoke runs `a2ml validate --dialect record --class
+R1 out/bundle/stack.a2ml` as a real gate; that line is written into the workflow behind a
+named condition (validator binary present) rather than a silent skip.
+
+*Owned by the grammar session, not by stapeln (the explicit dependency):* the profile
+`stapeln/stack` (its id, its definition, its registry entry and hash); whether a per-stack declaration is a document of an existing family (and which) or a new family; the estate rename timing; the reference
+validator. Five questions were sent on 2026-09-08 to the session formalising the grammar
+(<<decisions>>, G1–G5). Until they are answered the stapeln-side decisions above stand, the
+profile id `stapeln/stack` is a proposal, and nothing under `a2ml/` is edited by this
+work. If the answer moves the required-section names or the profile id, the change is
+confined to the preamble line, the three section names and the fixture.
+
+*v1.1:* consumers validate the declaration themselves through the a2ml bindings that
+already exist for their runtimes (`bindings/deno` for rokur and svalinn, `bindings/rust`
+for selur and vordr); cerro-torre's `manifest.toml` pins the declaration's R2 canonical
+`doc_hash`; `stack.kube.yaml` is emitted from the same record tree.
+
+Rules: a design with two parts in a max-1 slot still emits (v1 has no engine) but the
+designer's existing `validation_engine` port-conflict rule refuses `compose.yaml` when two
+parts publish the same host port.
+
+[[seam]]
+== The template seam: make the emitted files loadable, and prove it on both sides
+
+. `rokur.toml` template → exactly rokur's allowlist: `[metadata] name, version`;
+  `[server] host = "0.0.0.0", port = <declared port>, health_path, ready_path`;
+  `[secrets] required = [], sources = ["env"]`; `[rate_limit] window_ms, max,
+  auth_fail_max`; `[policy] backend = "builtin", timeout_ms`; `[audit] enabled, path,
+  request_log`. No `backend` key, no `listen`.
+. `.gatekeeper.yaml` template → exactly svalinn's schema: `version: "1.0"`;
+  `auth.public: ["/healthz", "/health"]`; `auth.authenticated: ["/v1/*", "/verify",
+  "/run"]`; `auth.token_env: SVALINN_API_TOKEN`; `rate_limits: {window_ms, max}`. The
+  dropped `trust / validation / cors / logging` content describes features the MVP gateway
+  does not implement (trusted signers, attestations); it moves to stapeln docs as
+  "gateway policy roadmap" (assumption A4), never into an emitted file.
+. `compose.toml` template: image refs and ports come from the stack declaration via new
+  substitution tokens (`{{ROKUR_IMAGE}}`, `{{ROKUR_PORT}}`, `{{SVALINN_IMAGE}}`,
+  `{{SVALINN_PORT}}`); the bundle test's dead-namespace assertion is replaced by "no
+  `ghcr.io/hyperpolymath` anywhere in the bundle".
+. Two-sided contract tests, both golden-fixture:
++
+--
+* stapeln `bundle_codegen_test.exs`: emitted `rokur.toml` tables and keys are a subset of
+  rokur's allowlist (copied as a test constant with the rokur SHA it was read from);
+  emitted `.gatekeeper.yaml` top-level keys are a subset of `{version, auth, rate_limits}`
+  and `auth.public` is a list of strings; 11 files; zero `{{`; `stack.a2ml` reads through
+  `Stapeln.Record.read!/1` and lists 12 slot keys.
+* rokur `test/bundle_contract_test.js`: `loadConfig({configPath:
+  "test/fixtures/stapeln-bundle/rokur.toml"})` succeeds (fixture header names the stapeln
+  template SHA it was emitted from).
+* svalinn `tests/mvp/bundle_contract_test.ts`: `loadGateConfig()` with
+  `SVALINN_GATEKEEPER_CONFIG=tests/fixtures/stapeln-bundle/.gatekeeper.yaml` returns a
+  config, not exit 1.
+--
++
+The two sides are not live-linked; the smoke (<<smoke>>) is the live link, and a fixture
+that drifts from the template shows up there first.
+. *Ruling D2:* stapeln's `backend/priv/bundle_templates/` is the canonical home of the
+  templates; `rsr-template-repo:build/container/stapeln/` becomes a pointer to it. Only
+  stapeln can test its templates against the loaders.
+
+[[rules]]
+== Rules vocabulary (ruling 6: v1 = vocabulary only)
+
+`backend/priv/rules/v1.toml`, parsed by a test and enforced by nothing until v1.1. It is
+written in the same TOML ∩ Record Dialect intersection as the descriptors (<<parts>>) so
+the same Q1 answer covers it.
+
+[source,toml]
+----
+[rules]
+schema = 1
+
+# kind = cardinality | exclusion | compatibility | topology
+[[rule]]
+kind = "cardinality"
+slot = "runtime"
+min = 1
+max = 1
+severity = "error"
+hint = "A stack runs on exactly one runtime; drag podman, nerdctl or docker into the runtime slot."
+
+[[rule]]
+kind = "cardinality"
+slot = "firewall"
+min = 0
+max = 1
+severity = "warn"
+hint = "No firewall part is placed; the stack is shown as missing one (v1 ships none)."
+
+[[rule]]
+kind = "compatibility"
+part = "selur-compose"
+requires = ["selur"]
+severity = "error"
+hint = "selur-compose is selur's compose crate; it needs selur in the seam-sealant slot."
+
+[[rule]]
+kind = "topology"
+from = "world"
+to = "edge-gateway"
+via = ""
+forbidden = ["world -> service"]
+severity = "warn"
+hint = "Default-safe shape: the world reaches services only through the edge gateway; override with a reason."
+----
+
+The v1 fixture holds one cardinality rule per slot (runtime 1..1; secrets-gate,
+edge-gateway, seam-sealant, orchestration-verification, packer-signer, deploy-target 0..1;
+base-image 0..1; advisory-validator, firewall, storage, network, custom 0..n), an EMPTY
+exclusion set (none is known in v1; the kind is defined so the designer's vocabulary is
+complete), the one compatibility rule above, and the one topology rule above. Coverage
+lattice and reachability are v1.2; registry, advisor mode (authority-watch + boj
+cartridges, opt-in), feedback-o-tron routing, natural-language entry and terraform are v2.
+
+[[smoke]]
+== Smoke (ruling 11: compose first, then kube)
+
+stapeln `.github/workflows/smoke-bundle.yml`, nightly + `workflow_dispatch` + pull_request
+on paths `backend/priv/bundle_templates/**`, `backend/priv/parts/**`,
+`backend/lib/stapeln/bundle_codegen.ex`, `backend/lib/stapeln/parts.ex` (assumption A2):
+
+. `mix stapeln.bundle --design backend/priv/smoke/design.json --out out/bundle` (new mix
+  task; the smoke design places one design service, rokur and svalinn).
+. For each `[[part]]` with `source = "descriptor"`: `git clone --depth 1` the repo, then
+  `git fetch origin <sha> && git checkout <sha>` into `out/bundle/parts/<name>` (a depth-1
+  clone of a SHA is the shallow-clone trap; fetch the SHA explicitly).
+. Runner env for rokur's real fail-closed path: `ROKUR_API_TOKEN=$(openssl rand -hex 32)`
+  per run, `ROKUR_REQUIRED_SECRETS=STAPELN_SMOKE_SECRET`, `STAPELN_SMOKE_SECRET=$(openssl
+  rand -hex 16)` — no `ROKUR_ALLOW_*` escape hatches (assumption A5); `SVALINN_API_TOKEN`
+  likewise. Values are per-run random, never repository secrets, never printed.
+. `podman compose -f out/bundle/compose.yaml up -d --build` (podman 5.4.2 + the
+  docker-compose plugin, both present on the host; ubuntu-latest has podman).
+. Probe with backoff up to 60 s: `GET http://127.0.0.1:<rokur port>/health` and
+  `GET http://127.0.0.1:<svalinn port>/health`; any non-2xx or timeout fails the job.
+. When the a2ml reference validator is available on the runner: `a2ml validate --dialect
+  record --class R1 out/bundle/stack.a2ml`; its absence is printed as a named condition in
+  the job summary, never a silent skip.
+. Always: `podman compose logs` to the job summary, then `podman compose down -v`.
+
+No `continue-on-error`. The job is named `Smoke: bundle → rokur + svalinn → probe` and
+becomes a required check on stapeln once it has one green run (a gate must be able to fail;
+it must also have passed once before it gates).
+
+v1.1: `stack.kube.yaml` as a twelfth file + `podman kube play`, landing with the
+`deploy-target` slot when both consumers publish images.
+
+[[errors]]
+== Error handling — fail closed at every seam
+
+[cols="1,2,3",options="header"]
+|===
+| Seam | Failure | Behaviour
+
+| descriptor load | missing field, bad sha, unknown slot or key, duplicate | `Stapeln.Parts.load!` raises; nothing emits
+| bundle emit | residual `{{` | existing `assert_no_placeholders!/2` raises
+| bundle emit | placed part without descriptor | recorded `source = "design-only"`, omitted from compose, listed in the emit warning
+| compose emit | two parts on one host port | refused via `validation_engine` port rule
+| rokur start | unknown key, `backend`, missing token or required secret | throws or exits, as today
+| svalinn start | unknown top-level key, non-string path | exits 1, as today
+| smoke | clone, build, up, probe | job fails, logs in summary
+| stack declaration | any slot key absent, a value outside the dialect's forms, a bad sha | the stapeln test fails (structure, not inference); `Stapeln.Record.read!/1` raises
+| stack declaration | profile cannot be resolved (R1, once the validator exists) | validator exits non-zero; the smoke fails
+|===
+
+[[cures]]
+== CI / governance cures and docs honesty (v1 finish line A + F)
+
+Lane A — ruled already, no spec needed, each a bounded PR with set-difference evidence:
+
+* #65 Sonar ×3: rokur landed, stapeln landed (main gate OK), svalinn #52 blocked on the
+  owner approving 18 CodeQL dismissal requests (then re-request the check-run, merge).
+* Owner: copy `FARM_DISPATCH_TOKEN` from stapeln to svalinn (repo secret; one minute).
+* #66 re-pin selur / vordr / rokur / cerro-torre to standards main HEAD — awaiting approval.
+* #67 rokur `ci.yml` (deno check + lint + test as a gate) — awaiting approval.
+* #68 svalinn advanced CodeQL with a config-file query filter (stapeln's `codeql.yml` is the
+  working template) — awaiting approval.
+* #63 drop the submodule seam: remove `.gitmodules`, `container-stack/`, the selur/vordr
+  matrix in `publish-image.yml` (stapeln publishes only its own image),
+  `container-stack-smoke.yml`; disable `svalinn-affine-build.yml` with a pointer to #33.
+* #53 vordr residue → one vordr PR (release workflow, surface-contract doc, SPEC_VERSION,
+  six schemas); svalinn release repointed to `svalinn-gate`; surface lint rewritten with a
+  hard fail.
+* #57 cerro-torre SPARK proof: remove the `continue-on-error` mask so the red is named
+  (honest red beats fake green); the fix itself stays parked with #39.
+* #41 ATS shadow `signature_linear.dats:84` fold seed `true` → seed `false` for an empty
+  chain, with the policy doc cited (advisory tool; drift check, not TCB).
+* #47 svalinn send-mail Dependabot re-drift: durable fix.
+* W13 port doctrine: rokur and svalinn each choose an IANA-unassigned port in 1024–49151
+  (checked against the IANA CSV and `/etc/services`, keypad-memorable like berrywiki's
+  23779), recorded with protocol + transaction; one PR each; descriptors follow.
+* Docs honesty, per repo:
+** stapeln: description "Podman-only" → runtime is a slot, v1 ships podman; README bundle
+   section = 11 files + who consumes what; STATUS.md / STATE.a2ml consumed-by table;
+   remove submodule docs; `verified-container-spec/README` states it is the only copy (A1).
+** svalinn: `stapeln.toml` (stale layer-build descriptor: `ghcr.io/hyperpolymath`,
+   nonexistent `src/main.ts`, ML-DSA-87 claim) → delete, superseded by the stapeln
+   descriptor (D1); `ecosystem.yaml` (vordr :8080, `hyperpolymath/` repos, nonexistent
+   verified-container-spec + poly-container-mcp repos) → correct or delete; `TEST-NEEDS.md`
+   dead `tests/e2e` + `tests/property` paths; README says which entrypoint runs (MVP
+   gateway) and that `src/*.affine` is parked (#33).
+** cerro-torre: README + CLI drop `--runtime=svalinn`; `apps/svalinn` → `ct_verify_api`;
+   IMPLEMENTATION-STATUS.md PASSING/100 % claims re-measured before edit.
+** rokur: README names the bundle fixture and the contract test.
+** selur: README's vordr default port note follows W13.
+** vordr: nothing further (STATUS/STATE corrected by #29).
+
+Lane B — spec-gated (this design): <<seam>> templates + contract tests (stapeln, rokur, svalinn: 3 PRs); <<parts>> descriptors + <<stack-declaration>> stack declaration + `compose.yaml` + `mix stapeln.bundle` (stapeln: 1 PR); <<rules>> rules fixture + slot table doc (stapeln: 1 PR); <<smoke>> smoke workflow (stapeln: 1 PR).
+
+[[testing]]
+== Testing
+
+* stapeln: `bundle_codegen_test.exs` grows as in <<seam>>; `parts_test.exs` (every
+  descriptor parses, sha is 40 hex, slot in the table, names unique);
+  `stack_declaration_test.exs` (reads through `Stapeln.Record.read!/1`; 12 slot keys;
+  parts are a subset of placed components; `design_sha256` matches the emitted design;
+  every value is within the dialect's six forms; the preamble is exactly one `@profile`
+  line); `record_test.exs` (the reader rejects a native date, a hex integer and a
+  single-quoted string, each as a fixture); `rules_test.exs` (fixture parses; every rule
+  has a kind in the four, severity in `{error, warn}`, non-empty hint); `mix
+  stapeln.bundle` exercised by the smoke.
+* rokur / svalinn: golden-fixture contract tests (<<seam>>), run by their existing CI
+  jobs (rokur's requires #67 to exist as a gate).
+* Live: the smoke. Nothing else claims the chain works.
+
+[[tiers]]
+== Tiers (rulings 6, 7, 11)
+
+* v1: this document. CI green-or-named-red ×6; no live fail-open gate; honest docs; smoke
+  emits → rokur + svalinn consume → probe; the stack declaration emitted as a Record
+  Dialect document and read at R0 with the R1 syntax restrictions.
+* v1.1: `slot` on the model; data-driven rules through `validation_engine` /
+  `gap_analyzer`; groove manifests for rokur + svalinn and compatibility = structural fit;
+  descriptors for selur, vordr, cerro-torre with their consumption; part-owned descriptors
+  ingested (D1); `stack.kube.yaml` + `podman kube play`; consumers validate the
+  declaration through the a2ml bindings; R2 `doc_hash` pinned in cerro-torre's manifest;
+  `verified-container-spec` minted as a repo; images published for rokur.
+* v1.2: coverage lattice + reachability; cleave takes the selur seam once demonstrated.
+* v2: parts registry; advisor mode (authority-watch + boj cartridges, opt-in);
+  feedback-o-tron routing; natural-language entry; terraform output; spline when it
+  leaves seed phase.
+
+[[work]]
+== Work breakdown, ordered by likelihood of completing (Lane A first)
+
+[cols="1,4,3,2,1",options="header"]
+|===
+| # | Item | Repo(s) | Gate | Size
+
+| W2 | copy `FARM_DISPATCH_TOKEN` to svalinn | svalinn | owner | 1 min
+| W1 | Sonar cures ×3 (#65) | rokur ✓, stapeln ✓, svalinn | owner approves 18 dismissals | S
+| W3 | re-pin four satellites (#66) | selur, vordr, rokur, cerro-torre | needs approval | S
+| W16 | rokur test gate (#67) | rokur | needs approval | S
+| W17 | svalinn advanced CodeQL (#68) | svalinn | needs approval | S
+| W4 | drop submodules (#63) | stapeln | ruled | S
+| W9 | docs honesty | stapeln, svalinn, cerro-torre, rokur, selur | ruled | S ×5
+| W12 | ATS fold seed (#41) | cerro-torre | ruled | S
+| W14 | send-mail re-drift (#47) | svalinn | ruled | S
+| W11 | unmask SPARK proof (#57) | cerro-torre | doctrine | S
+| W13 | port doctrine | rokur, svalinn | doctrine | S ×2
+| W10 | vordr residue (#53) | vordr, svalinn | ruled | M
+| W15 | spec + plan-eng-review (#64) | stapeln | this approval | M
+| W5 | templates + contract tests | stapeln, rokur, svalinn | spec | M
+| W6 | descriptors + stack declaration + reader + compose.yaml + mix task | stapeln | spec; G1–G5 for the profile | M
+| W7 | rules fixture + slot table doc | stapeln | spec | S
+| W8 | smoke workflow, first green run, then required | stapeln | W5 + W6 | M
+|===
+
+Lane A is roughly twenty small PRs across six repos; Lane B is six PRs across three repos. Execution: Opus 5 agents in
+throwaway clones, one PR each, set-difference evidence in the body; Fable reviews diffs and
+merges under the standing `--admin` grant; nothing merges on an agent's say-so.
+
+[[decisions]]
+== Decisions taken, questions open, assumptions stated
+
+Rulings applied in this document (owner, 2026-09-08):
+
+* D1 descriptor home: stapeln catalogue `backend/priv/parts/` in v1; part-owned file
+  ingested in v1.1, the stapeln copy becoming a cache.
+* D2 template canonical home: stapeln `backend/priv/bundle_templates/`;
+  rsr-template-repo's copy becomes a pointer.
+* D3 stack declaration: the `.a2ml`→`.deed` system-of-systems document (A2ML Record
+  Dialect), not TOML; grammar owned elsewhere; stapeln invents none.
+* D4 the 2026-09-07 draft is the spec base.
+
+Questions sent to the grammar-formalisation session on 2026-09-08 (answers slot into <<stack-declaration>> without changing anything else):
+
+* G1 Can a configuration of the <<stack-declaration>> shape be written as a Record Dialect document
+  today, and which file is the authoritative grammar for it?
+* G2 If not yet, which interim is acceptable: a skeleton the validator dual-accepts,
+  nothing lock-shaped until the dialect exists, or something else?
+* G3 Is a per-stack declaration one document per built stack, or derived from a repo-level
+  document, and which of the estate/repo chora split does it belong to?
+* G4 What must stapeln not do: extensions, validators, manifests, naming, and the
+  prepare-but-land-nothing rename constraints this spec must respect?
+* G5 Is there a validator or parser stapeln's contract test can point at today?
+
+Open question for the owner (recommendation first):
+
+* Q1 Descriptor and rules files in v1: written in the TOML ∩ Record Dialect intersection
+  with the `.toml` extension, read by the Elixir TOML decoder, migrating to `.a2ml`/`.deed`
+  with a `@profile(id=stapeln/part)` preamble when descriptors become part-owned in v1.1
+  (recommended: no second dependency on the grammar session in v1); or Record Dialect
+  from day one with the preamble and the <<stack-declaration>> reader (one format for the whole
+  chain, but the `stapeln/part` profile joins the v1 dependency); or plain TOML with no
+  intersection constraint (not recommended: the migration then costs a rewrite).
+
+Assumptions the owner may override:
+
+* A1 `verified-container-spec` stays the vendored copy in v1, recorded as the only copy;
+  minted as `metadatastician/verified-container-spec` in v1.1.
+* A2 smoke triggers: nightly + dispatch (ruled) + pull_request on the bundle paths (added).
+* A3 port doctrine applies to rokur and svalinn in v1 as separate PRs; numbers chosen by
+  the doctrine's procedure inside each PR.
+* A4 the gatekeeper template's trust / validation / cors / logging content becomes a
+  stapeln docs page, not an emitted file.
+* A5 the smoke exercises rokur's real token + required-secret path with per-run random
+  values, not the `ROKUR_ALLOW_*` escape hatches.
+* A6 the profile id for the stack declaration is `stapeln/stack` and its definition lives
+  in the a2ml profile registry; both are proposals pending G1–G5.
