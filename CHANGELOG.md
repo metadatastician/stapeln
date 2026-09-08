@@ -28,6 +28,15 @@ this project aims to follow [Semantic Versioning](https://semver.org/spec/v2.0.0
 - feat: JWT refresh tokens — access/refresh pair, refresh endpoint
 - feat: migrate cerro-torre MVP tools from Python to Julia
 
+### Removed
+
+- ci(stapeln): drop the dead submodule seam — remove `.gitmodules`, the five
+  `container-stack/` gitlinks and the three workflows that depended on them
+  (`publish-image.yml`, `container-stack-smoke.yml`, `svalinn-affine-build.yml`), per owner
+  ruling 2 of 2026-09-07. The emitted bundle plus the generated stack declaration is the
+  contract; each component builds and publishes from its own repository. The svalinn
+  `.affine` policy-engine port is parked post-v1 as MIGRATE-3 (see `DEBT.adoc` CI-7).
+
 ### Fixed
 
 - fix(licence): clear scaffold-placeholder leak (Tranche 3) (#55)

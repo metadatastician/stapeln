@@ -45,8 +45,8 @@ real cost, no immediate blast radius. `LOW` = tidiness.
 |link:#3-code-debt[Code] |5 |MEDIUM
 |link:#4-proof-debt[Proof] |2 |MEDIUM
 |link:#5-test-debt[Test] |4 |HIGH
-|link:#6-cicd-debt[CI/CD] |7 |HIGH
-|link:++#7-supply-chain--security-debt++[Supply chain / security] |2 |MEDIUM
+|link:#6-cicd-debt[CI/CD] |8 (1 RESOLVED, 1 PARKED) |HIGH
+|link:++#7-supply-chain--security-debt++[Supply chain / security] |2 (1 RESOLVED) |MEDIUM
 |link:++#8-found-2026-08-27-shipping-the-bundle-compiler++[Found 2026-08-27] |6 (2 RESOLVED) |HIGH
 |===
 
@@ -424,8 +424,31 @@ As of the 2026-08-04 push: `Secret Scanner` *failure*, `Governance` *failure*,
 Both build steps carry `continue-on-error: true` (`:53`, `:59`), over five uninitialised
 submodules. A gate that cannot fail is not a gate.
 
-*Next move:* initialise the submodules and remove `continue-on-error`, or delete the
-workflow and stop advertising a check that checks nothing.
+*RESOLVED 2026-09-08* on branch `ci/drop-submodule-seam`, under owner ruling 2 of
+2026-09-07: "DROP submodules; the emitted bundle {plus} generated stack declaration is the
+contract". `container-stack-smoke.yml` is deleted together with the seam it claimed to check,
+so the repository no longer advertises a check that cannot fail. Note for the record that its
+last run on `main` (33037460362, head `8a7feec`, 2026-08-27) reported *success* over five
+empty directories — that green was an artefact of `continue-on-error`, not evidence.
+Each component now builds and publishes from its own repository under `metadatastician/`.
+
+[[ci-7--svalinn-affine-buildyml-deleted-affine-port-parked-as-migrate-3--parked]]
+=== CI-7 · `svalinn-affine-build.yml` deleted; the `.affine` port is parked as MIGRATE-3 — PARKED
+
+The workflow compiled `container-stack/svalinn/src/++**++/++*++.affine` to WebAssembly. Its
+subject never existed in this repository: `container-stack/svalinn` was an uninitialised
+gitlink. Its last run on `main` (34196692261, head `c34db2a2`, 2026-09-08T06:53:31Z) failed
+at *Build the affinescript compiler* with `error: can't open patch
+'.../container-stack/svalinn/patches/affinescript-wasm-ctor-link.patch': No such file or
+directory` and exit code 128. Under owner ruling 2 of 2026-09-07 the submodule seam is
+dropped, so that path can never resolve here again.
+
+The file is deleted rather than commented out or left in place: a workflow that cannot run is
+not a gate, and deletion with a pointer is the honest form of "disable".
+
+*Parked as:* **MIGRATE-3 · svalinn `.affine` policy-engine port**, post-v1. The work belongs to
+`metadatastician/svalinn`, which owns the `.affine` sources; when it resumes, the build gate is
+written there, against files that exist.
 
 [[ci-4--boj-buildyml-step-is-continue-on-error--low]]
 === CI-4 · `boj-build.yml` step is `continue-on-error` — LOW
@@ -481,8 +504,13 @@ fake one. Note the estate rule: gitleaks' allowlist pattern `(doc++|++docx)$` su
 `container-stack/++{++cerro-torre,rokur,selur,svalinn,vordr}` are submodule stubs. The smoke
 workflow "checking" them cannot fail (CI-3). Consumers cannot build the container path.
 
-*Next move:* initialise, or vendor the interfaces, or remove and depend on the published
-artefacts.
+*RESOLVED 2026-09-08* on branch `ci/drop-submodule-seam`, under owner ruling 2 of
+2026-09-07, by the third option: the five gitlinks, `.gitmodules` and `container-stack/` are
+removed, and stapeln depends on the published artefacts. The five component repositories are
+`metadatastician/++{++cerro-torre,rokur,selur,svalinn,vordr++}++` — note that every URL in the
+deleted `.gitmodules` pointed at `github.com/hyperpolymath/…`, an owner that does not host
+them, so the seam had never been fetchable. The contract is now the emitted bundle plus the
+generated stack declaration.
 
 '''''
 
