@@ -22,7 +22,7 @@ disposal to separate Claude sessions (GitHub issues).
 |cerro-torre `cerro-torre.ipkg` (7 mods) |`idris2 --build` green; CI green
 |vordr `vordr.ipkg` (6 mods) |repaired this session → green
 |`stapeln-tests.ipkg` (8 mods) |green
-|`container-stack/selur/idris/++{++Proofs,Theorems}.idr` |`--check` clean
+|selur `idris/++{++Proofs,Theorems}.idr` (was `container-stack/selur/…`) |`--check` clean
 |`dom-mounter/++{++src/abi/DomMounter,docs/DomMounterSecurity,docs/DomMounterEnhanced}.idr` |clean
 |`frontend/src/abi/FileIO.idr` |clean
 |SPARK `gnatprove -P cerro_torre.gpr --level=2` |exits 0 (CI green)
@@ -83,7 +83,7 @@ Candidate follow-up. `src/abi/abi.ipkg` is NOT yet wired into a CI gate (the
 layer is regression-protected.
 
 [[2-container-stackvordrsrcabi--white_check_mark-done-orphan-repaired-builds]]
-=== 2. `container-stack/vordr/src/abi/` — ✅ DONE (orphan repaired, builds)
+=== 2. vordr `src/abi/` — ✅ DONE (orphan repaired, builds)
 
 Reality differed from the earlier note: only `Foreign.idr` existed (module
 `Vordr.ABI.Foreign`), importing non-existent `Vordr.ABI.Types`/`Vordr.ABI.Layout`,
@@ -116,7 +116,8 @@ Refl/assert_total. `cerro-torre.ipkg` builds 7/7 green. (PR ++#++94.)
 
 `medium`/`low` (loop invariants, range checks). gnatprove exits 0 today (non-fatal),
 but "discharge everything" ⇒ add loop invariants to clear them. Iterate locally:
-`cd container-stack/cerro-torre && alr -n build ++||++ true && alr -n exec -- gnatprove -P cerro_torre.gpr --level=2 --report=fail --output-msg-only`.
+`alr -n build ++||++ true && alr -n exec -- gnatprove -P cerro_torre.gpr --level=2 --report=fail --output-msg-only`,
+run inside a clone of `metadatastician/cerro-torre`.
 
 [[5-ats-dats-6-files--never-verified-no-ats2-toolchain]]
 === 5. ATS `.dats` (6 files) — never verified (no ATS2 toolchain)
