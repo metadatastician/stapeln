@@ -50,8 +50,7 @@ that disagree, this one is gone. Highlights only:
   https://github.com/metadatastician/stapeln/pull/17[#17]); 8 honest Idris2 ABI proofs; real
   Ed25519/SHA-256 in Zig; six code-generation emitters
 * **Missing:** no `mix test` gate on GitHub; `scripts/readiness-check.sh` invoked by nothing;
-  no persistent database (in-memory GenServer only); five uninitialised `container-stack/`
-  submodules
+  no persistent database (in-memory GenServer only)
 * **Tests:** 245 executable cases (122 ExUnit · 107 Deno · 16 Zig) + 8 Idris2 proof modules
 
 This repo focuses on the stapeln app UI.
