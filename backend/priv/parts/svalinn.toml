@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: MPL-2.0
+# stapeln parts descriptor. Not an A2ML or .deed document: stapeln's own data file.
+# v1 keeps the catalogue here (ruling D1); from v1.1 svalinn owns this file and this
+# copy becomes a cache refreshed by PR. The compiler never touches the network.
+
+[part]
+name = "svalinn"
+slot = "edge-gateway"
+interface = "oci"
+model_component = "Svalinn"
+repo = "https://github.com/metadatastician/svalinn"
+sha = "0000000000000000000000000000000000000000"
+# svalinn publishes an image, but its digest cannot be resolved offline and the
+# compiler never touches the network. Empty means "build from context" until a
+# human pins the published digest by PR, exactly as `sha` is pinned by PR.
+image = ""
+
+[part.build]
+containerfile = "Containerfile"
+context = "."
+
+[part.runtime]
+ports = [{ port = 8000, protocol = "tcp", transaction = "edge-gateway HTTP + /healthz" }]
+mounts = ["./.gatekeeper.yaml:/app/.gatekeeper.yaml:ro,Z"]
+command = []
+env = ["SVALINN_GATEKEEPER_CONFIG", "SVALINN_API_TOKEN"]
+health = { path = "/healthz", port = 8000 }
+
+[part.contract]
+consumes = [".gatekeeper.yaml"]
+manifest_url = ""

@@ -49,6 +49,10 @@ defmodule Stapeln.MixProject do
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 1.0"},
       {:jason, "~> 1.2"},
+      # W6: stack.lock and the parts descriptors are TOML. The contract test decodes
+      # the emitted stack.lock with a real decoder so the gate is not stapeln checking
+      # its own emitter with its own parser.
+      {:toml, "~> 0.7"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
       {:req, "~> 0.5"}

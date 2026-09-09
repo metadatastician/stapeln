@@ -23,11 +23,11 @@ defmodule Stapeln.BundleCodegenTest do
   @required [author: "A. Author", email: "a@example.org", license: "MPL-2.0", owner: "acme"]
 
   describe "generate/2" do
-    test "emits exactly the nine bundle files" do
+    test "emits exactly the eleven bundle files" do
       {:ok, bundle} = BundleCodegen.generate(@sample_stack, @required)
 
       assert Enum.sort(Map.keys(bundle)) == BundleCodegen.bundle_files()
-      assert map_size(bundle) == 9
+      assert map_size(bundle) == 11
     end
 
     test "no file contains a residual {{TOKEN}}" do
@@ -221,7 +221,7 @@ defmodule Stapeln.BundleCodegenTest do
     end
 
     test "every template the module claims to render actually exists" do
-      for name <- BundleCodegen.bundle_files(), name != "stapeln.design.json" do
+      for name <- BundleCodegen.bundle_files() -- BundleCodegen.generated_files() do
         path = Path.join(BundleCodegen.template_dir(), name)
         assert File.exists?(path), "missing template: #{path}"
       end
