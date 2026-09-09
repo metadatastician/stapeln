@@ -11,6 +11,8 @@ defmodule Stapeln.StackDeclarationTest do
 
   use ExUnit.Case, async: true
 
+  import ExUnit.CaptureIO
+
   alias Stapeln.{BundleCodegen, ComposeYaml, Parts, Slots, StackDeclaration, StackLockCheck}
 
   @required [author: "A. Author", email: "a@example.org", license: "MPL-2.0", owner: "acme"]
@@ -206,6 +208,25 @@ defmodule Stapeln.StackDeclarationTest do
   end
 
   describe "compose.yaml" do
+    # Every other assertion in this block is a substring match, which is the same
+    # circular gate `stack.lock` avoids by decoding with a real TOML decoder --
+    # a substring cannot see indentation drift, a duplicate key, or a value YAML
+    # reads as a bool. There is no YAML decoder in this app's deps and adding one
+    # to pin a single test is not worth the supply-chain surface, so the emitted
+    # file was parsed once out-of-band with a real reader (`ruby -ryaml`) and this
+    # test pins the SET of service keys that reader saw.
+    #
+    # The set is also the durable regression test for the atom-vs-string services
+    # key bug: `refute compose =~ "  gate-1:"` only catches the double emission
+    # while that component happens to be called `gate-1`, whereas the set is
+    # wrong for any name.
+    test "the service key set is exactly the kept design services plus the parts" do
+      # gate-1 and edge-1 lower to descriptor-backed parts and must NOT also
+      # appear under their design names; rt-1 and mystery-1 have no descriptor
+      # and stay as design services.
+      assert compose_service_keys() == ["mystery-1", "rokur", "rt-1", "svalinn"]
+    end
+
     test "a part with no image is built from ./parts/<name>" do
       compose = bundle()["compose.yaml"]
 
@@ -366,6 +387,93 @@ defmodule Stapeln.StackDeclarationTest do
         assert_raise ArgumentError, ~r/is not in the slot table/, fn -> Parts.load!(dir) end
       end)
     end
+  end
+
+  # ---------------------------------------------------------------------------
+  # The mix task. The spec names `mix stapeln.bundle --check` as the gate the
+  # v1 smoke runs against a bundle it did not generate in the same process, so
+  # the task has to be EXERCISED, not merely present. Everything above calls the
+  # modules directly and would pass unchanged against a task that cannot run at
+  # all -- a path-join slip or an OptionParser mismatch would ship a gate that
+  # silently no-ops.
+  # ---------------------------------------------------------------------------
+
+  describe "mix stapeln.bundle" do
+    @design %{
+      "version" => "1",
+      "metadata" => %{"name" => "demo"},
+      "canvas" => %{
+        "components" => [
+          %{"id" => "gate-1", "type" => "Rokur"},
+          %{"id" => "edge-1", "type" => "Svalinn"},
+          %{"id" => "rt-1", "type" => "Podman"},
+          %{"id" => "mystery-1", "type" => "SomethingElse"}
+        ],
+        "connections" => []
+      }
+    }
+
+    test "emits the eleven files, then --check passes, then --check can fail" do
+      in_tmp(fn dir ->
+        design = Path.join(dir, "d.json")
+        out = Path.join(dir, "bundle")
+        File.write!(design, Jason.encode!(@design))
+
+        emit = fn ->
+          Mix.Task.rerun("stapeln.bundle", [
+            "--design",
+            design,
+            "--out",
+            out,
+            "--author",
+            "A. Author",
+            "--email",
+            "a@example.org",
+            "--license",
+            "MPL-2.0",
+            "--owner",
+            "acme"
+          ])
+        end
+
+        assert capture_io(emit) =~ "wrote 11 files"
+        assert length(File.ls!(out)) == 11
+
+        lock = Path.join(out, "stack.lock")
+        check = fn -> Mix.Task.rerun("stapeln.bundle", ["--check", lock]) end
+
+        assert capture_io(check) =~ "ok (12 slot keys"
+
+        # The half that matters. Emit-then-check-passes proves nothing on its own,
+        # because a --check that returns :ok unconditionally would also pass it.
+        File.write!(lock, String.replace(File.read!(lock), ~s(firewall = ""\n), ""))
+
+        assert_raise Mix.Error, ~r/missing 1 key\(s\): firewall/, fn ->
+          capture_io(check)
+        end
+      end)
+    end
+
+    test "an unrecognised option is refused rather than silently ignored" do
+      assert_raise Mix.Error, ~r/unrecognised option/, fn ->
+        Mix.Task.rerun("stapeln.bundle", ["--design", "x.json", "--surprise", "1"])
+      end
+    end
+  end
+
+  # The top-level keys under `services:`. They are the only two-space-indented
+  # bare keys the emitter produces; anything nested sits at four or more. If that
+  # ever stops being true this fails loudly, which is the right outcome.
+  defp compose_service_keys do
+    bundle()["compose.yaml"]
+    |> String.split("\n")
+    |> Enum.flat_map(fn line ->
+      case Regex.run(~r/^  ([A-Za-z0-9][A-Za-z0-9_.-]*):$/, line) do
+        [_, key] -> [key]
+        nil -> []
+      end
+    end)
+    |> Enum.sort()
   end
 
   defp in_tmp(fun) do
