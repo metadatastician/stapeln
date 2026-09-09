@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: MPL-2.0
+# stapeln parts descriptor. Not an A2ML or .deed document: stapeln's own data file.
+# v1 keeps the catalogue here (ruling D1); from v1.1 rokur owns this file and this
+# copy becomes a cache refreshed by PR. The compiler never touches the network.
+
+[part]
+name = "rokur"
+slot = "secrets-gate"
+interface = "oci"
+model_component = "Rokur"
+repo = "https://github.com/metadatastician/rokur"
+sha = "0000000000000000000000000000000000000000"
+image = ""
+
+[part.build]
+containerfile = "Containerfile"
+context = "."
+
+[part.runtime]
+ports = [{ port = 9090, protocol = "tcp", transaction = "secrets-gate API + /health" }]
+mounts = ["./rokur.toml:/app/rokur.toml:ro,Z"]
+command = ["--config", "/app/rokur.toml"]
+env = ["ROKUR_API_TOKEN", "ROKUR_REQUIRED_SECRETS"]
+health = { path = "/health", port = 9090 }
+
+[part.contract]
+consumes = ["rokur.toml"]
+manifest_url = ""

@@ -59,7 +59,7 @@ defmodule Stapeln.BundleCodegen do
   plausible wrong value is not.
   """
 
-  alias Stapeln.Codegen
+  alias Stapeln.{Codegen, ComposeYaml, StackDeclaration}
 
   @typedoc "Bundle file name => file content."
   @type bundle :: %{String.t() => String.t()}
@@ -78,6 +78,12 @@ defmodule Stapeln.BundleCodegen do
   )
 
   @design_file "stapeln.design.json"
+
+  # Files 10 and 11, generated rather than copied (W6). compose.yaml is what a
+  # runner runs; stack.lock is the pin record. Both are lowered from the same
+  # record tree, so neither reads a descriptor.
+  @compose_file "compose.yaml"
+  @stack_lock_file "stack.lock"
 
   @required_opts [:author, :email, :license, :owner]
 
@@ -102,8 +108,15 @@ defmodule Stapeln.BundleCodegen do
   @spec generate(map(), keyword()) :: {:ok, bundle()} | {:error, String.t()}
   def generate(stack, opts \\ []) when is_map(stack) and is_list(opts) do
     with {:ok, tokens} <- build_tokens(stack, opts),
-         {:ok, files} <- render_all(tokens) do
-      {:ok, Map.put(files, @design_file, design_json(stack))}
+         {:ok, files} <- render_all(tokens),
+         design <- design_json(stack),
+         declaration <- StackDeclaration.lower(stack, design, opts),
+         {:ok, compose} <- ComposeYaml.render(stack, declaration) do
+      {:ok,
+       files
+       |> Map.put(@design_file, design)
+       |> Map.put(@compose_file, compose)
+       |> Map.put(@stack_lock_file, StackDeclaration.encode(declaration))}
     end
   end
 
@@ -132,7 +145,18 @@ defmodule Stapeln.BundleCodegen do
 
   @doc "The nine file names this module emits, sorted."
   @spec bundle_files() :: [String.t()]
-  def bundle_files, do: Enum.sort([@design_file | @bundle_templates])
+  def bundle_files,
+    do: Enum.sort([@design_file, @compose_file, @stack_lock_file | @bundle_templates])
+
+
+@doc """
+The bundle files that are generated rather than copied from a template.
+
+Kept here rather than as name literals in the tests, so adding a generated
+file cannot leave a test asserting that it must exist as a template.
+"""
+@spec generated_files() :: [String.t()]
+def generated_files, do: Enum.sort([@design_file, @compose_file, @stack_lock_file])
 
   @doc "Directory holding the verbatim template copies."
   @spec template_dir() :: String.t()

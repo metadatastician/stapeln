@@ -145,7 +145,7 @@ defmodule StapelnWeb.StackControllerTest do
       "owner" => "acme"
     }
 
-    test "returns all nine bundle files, none containing a placeholder", %{conn: conn, id: id} do
+    test "returns all eleven bundle files, none containing a placeholder", %{conn: conn, id: id} do
       conn =
         post(conn, ~p"/api/stacks/#{id}/generate", Map.put(@bundle_meta, "format", "stapeln_bundle"))
 
@@ -153,7 +153,7 @@ defmodule StapelnWeb.StackControllerTest do
                json_response(conn, 200)
 
       assert Enum.sort(Map.keys(files)) == Stapeln.BundleCodegen.bundle_files()
-      assert map_size(files) == 9
+      assert map_size(files) == 11
 
       for {name, content} <- files do
         refute content =~ ~r/\{\{[A-Z_]+\}\}/, "#{name} shipped with a placeholder"
