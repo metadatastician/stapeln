@@ -47,6 +47,62 @@ description = "metadatastician/stapeln: locally justified exemptions, extending 
 # `paths` entry the same planted token was MISSED).
 regexes = [
   '''^MCowBQYDK2VwAyEAGb9F2CMCwMPPBmrZJJNtFe0BzLXmVr3QBT7Q4joZt0Y=$''',
+
+  # ---------------------------------------------------------------------------
+  # container-stack/cerro-torre — 19 HISTORY findings, triaged 2026-09-14.
+  #
+  # `container-stack/` DOES NOT EXIST at HEAD: it was removed by b7a18bd
+  # (PR #62, 2026-09-08, "drop the dead submodule seam"). At HEAD,
+  # `git ls-tree -r --name-only HEAD | grep -c '^container-stack/'` = 0. So no
+  # working-tree edit can clear these. They are reachable only by the
+  # full-history pass added in hyperpolymath/standards#756, and an allowlist is
+  # the only instrument that can clear them.
+  #
+  # They live in exactly two commits: 819c14a4 carries 18, c7c11234 carries 1.
+  # `commits = [...]` was REJECTED as the cure: 819c14a4 changed 1016 files, of
+  # which 606 are OUTSIDE container-stack/, so commit-scoping would blind a
+  # WIDER area than `paths` — the very thing this file warns against above.
+  # Anchored VALUE regexes suppress these exact strings and nothing else.
+  #
+  # Each capture below was confirmed WITHOUT ever running gitleaks unredacted:
+  # Shannon entropy (base-2, per-character) was recomputed over candidate
+  # strings and matched against the published `Entropy` field to 7 decimal
+  # places. Adjacent characters shift entropy by ~0.09, so each match is unique.
+
+  # SHAPE A — 12 findings, all Ada TYPE NAMES, with no value on the line.
+  # `generic-api-key` matched `<Name> : <Type_Name>;` and captured the TYPE.
+  # e.g. src/core/ct_pqcrypto.ads:129 reads `Secret_Key : ML_DSA_87_Secret_Key;`
+  # — a parameter declaration. There is no secret anywhere on these lines.
+  '''^Ed25519_Private_Key$''',   # 8 findings, entropy 3.9321380
+  '''^ML_DSA_87_Secret_Key$''',  # 3 findings, entropy 3.5841837
+  '''^Ed25519_Secret_Key$''',    # 1 finding,  entropy 3.6835423
+
+  # SHAPE B — 7 findings, public or visibly synthetic identifiers.
+
+  # A PUBLIC Ed25519 key, printed under the literal label "Public key:" at
+  # KEYGEN-PROGRESS-2026-02-05.md:25. Public keys are meant to be published.
+  '''^1ccd4c2152fda74f4c243712dc59a89de0b114a6979fc48c8e4006856b5cbfb8$''',
+
+  # Four conformance fixtures in examples/policies/trust-store-2026.a2ml
+  # (lines 22, 35, 49, 79). Each is a literal ascending hex walk —
+  # 1a2b3c4d5e6f7a8b…, 2b3c4d5e…, 3c4d5e6f…, 5e6f7a8b… — i.e. visibly
+  # hand-written test vectors, not key material. The `.a2ml` file itself is
+  # owned by the grammar/manifest work and is NOT edited here; the exemption
+  # lives in this file instead.
+  '''^1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b$''',
+  '''^2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c$''',
+  '''^3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d$''',
+  '''^5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f$''',
+
+  # A GNU keyring GPG KEY ID at manifests/hello.ctp.example:22
+  # (`upstream_keyring = "gnu-keyring:0x7F2D434B9741E8AC"`). A key ID is the
+  # public fingerprint tail used to FETCH a public key — not a credential.
+  '''^0x7F2D434B9741E8AC$''',
+
+  # A descriptive policy-fixture label at examples/policy-enterprise.json:26
+  # (`"key_id": "compromised-key-2024"`). An English phrase naming the scenario
+  # the fixture exercises, not an identifier of anything real.
+  '''^compromised-key-2024$''',
 ]
 
 paths = [
