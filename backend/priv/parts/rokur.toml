@@ -21,7 +21,7 @@ ports = [{ port = 7658, protocol = "tcp", transaction = "secrets-gate API + /hea
 mounts = ["./rokur.toml:/app/rokur.toml:ro,Z"]
 command = ["--config", "/app/rokur.toml"]
 env = ["ROKUR_API_TOKEN", "ROKUR_REQUIRED_SECRETS"]
-health = { path = "/health", port = 7658, probe = ["CMD", "bun", "-e", "try{await fetch('http://127.0.0.1:7658/health')}catch{process.exit(1)}"] }
+health = { path = "/health", port = 7658, probe = ["CMD", "bun", "-e", "try{process.exit((await(fetch('http://127.0.0.1:7658/health'))).ok?0:1)}catch{process.exit(1)}"] }
 
 [part.contract]
 consumes = ["rokur.toml"]
