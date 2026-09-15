@@ -145,6 +145,7 @@ defmodule Stapeln.StackDeclaration do
       env: [],
       consumes: [],
       health: "",
+      probe: [],
       manifest_url: "",
       verified: false
     }
@@ -169,6 +170,7 @@ defmodule Stapeln.StackDeclaration do
       env: descriptor.env,
       consumes: descriptor.consumes,
       health: health_url(descriptor),
+      probe: health_probe(descriptor),
       manifest_url: descriptor.manifest_url,
       # Always false in v1: nothing verifies parts until vordr or cerro-torre
       # consume the declaration (v1.1+). A gate that cannot fail is not a gate,
@@ -185,6 +187,13 @@ defmodule Stapeln.StackDeclaration do
   defp health_url(%{health: %{path: path, port: port}, name: name}) do
     "http://#{name}:#{port}#{path}"
   end
+
+  # The probe is NOT lowered -- it travels verbatim from descriptor to emitter.
+  # `health` is a location the declaration can compose into a URL; a probe is an
+  # argv the part alone can author (R-31), so composing it would be guessing.
+  defp health_probe(%{health: nil}), do: []
+  defp health_probe(%{health: %{probe: probe}}), do: probe
+  defp health_probe(_), do: []
 
   defp dedupe_design_only(parts) do
     {kept, _seen} =
@@ -233,6 +242,7 @@ defmodule Stapeln.StackDeclaration do
       :env,
       :consumes,
       :health,
+      :probe,
       :manifest_url,
       :verified
     ]

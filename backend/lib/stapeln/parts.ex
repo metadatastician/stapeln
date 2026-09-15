@@ -29,7 +29,7 @@ defmodule Stapeln.Parts do
   @runtime_keys ~w(ports mounts command env health)
   @contract_keys ~w(consumes manifest_url)
   @port_keys ~w(port protocol transaction)
-  @health_keys ~w(path port)
+  @health_keys ~w(path port probe)
   @interfaces ~w(oci groove)
 
   @sha_re ~r/\A[0-9a-f]{40}\z/
@@ -47,7 +47,7 @@ defmodule Stapeln.Parts do
           mounts: [String.t()],
           command: [String.t()],
           env: [String.t()],
-          health: %{path: String.t(), port: pos_integer()} | nil,
+          health: %{path: String.t(), port: pos_integer(), probe: [String.t()]} | nil,
           consumes: [String.t()],
           manifest_url: String.t()
         }
@@ -236,10 +236,38 @@ defmodule Stapeln.Parts do
       raise ArgumentError, "#{path}: runtime.health port must be 1..65535, got #{inspect(port)}"
     end
 
-    %{path: string_field(health, "path", "/health"), port: port}
+    %{
+      path: string_field(health, "path", "/health"),
+      port: port,
+      probe: probe!(path, Map.get(health, "probe"))
+    }
   end
 
   defp health!(path, other) do
     raise ArgumentError, "#{path}: runtime.health must be an inline table, got #{inspect(other)}"
+  end
+
+  # RULED R-31: the PART declares its own probe, because only the part knows
+  # which tools its image contains. An emitter that guesses picks a tool (`curl`
+  # is absent from both satellite images) and a success predicate (`-f` fails an
+  # honest 503 from a readiness endpoint, which is not a liveness failure).
+  #
+  # Absent is a legitimate answer and means "emit no healthcheck": honest
+  # silence beats a guess, and one compiler serves Ada, Rust and bun parts.
+  defp probe!(_path, nil), do: []
+  defp probe!(_path, []), do: []
+
+  defp probe!(path, probe) when is_list(probe) do
+    unless Enum.all?(probe, &is_binary/1) do
+      raise ArgumentError,
+            "#{path}: runtime.health probe must be a list of strings, got #{inspect(probe)}"
+    end
+
+    probe
+  end
+
+  defp probe!(path, other) do
+    raise ArgumentError,
+          "#{path}: runtime.health probe must be a list of strings, got #{inspect(other)}"
   end
 end

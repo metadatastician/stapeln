@@ -145,18 +145,34 @@ defmodule Stapeln.ComposeYaml do
     ["    environment:"] ++ Enum.map(part.env, &"      - #{&1}")
   end
 
-  defp healthcheck_lines(%{health: ""}), do: []
-
+  # RULED R-31. This emitted `curl -fsS #{part.health} || exit 1` until
+  # 2026-09-15, which was wrong twice over in one line: `curl` is absent from
+  # both satellite runtime images (measured), and `-f` turns an honest 503 from
+  # a readiness endpoint into a liveness failure. Neither the tool nor the
+  # success predicate was ever declared by the part, and neither was asked of it.
+  #
+  # The part now declares its own `probe` argv and the emitter emits exactly
+  # that, or NOTHING when nothing is declared. Honest silence beats a guess:
+  # one emitter serves Ada (vordr), Rust (svalinn-gate) and bun parts, so any
+  # emitter-side default is a wrong answer for most of the estate.
+  #
+  # `Map.get/3` rather than a pattern match on `:probe`, because a part map
+  # assembled by an older declaration has no such key and must degrade to
+  # "no healthcheck", not to a FunctionClauseError.
   defp healthcheck_lines(part) do
-    [
-      "    healthcheck:",
-      # The probe needs curl in the image; a part whose image has no curl must
-      # override this in its own descriptor once v1.1 moves descriptors there.
-      ~s(      test: ["CMD-SHELL", "curl -fsS #{part.health} || exit 1"]),
-      "      interval: 10s",
-      "      timeout: 3s",
-      "      retries: 3"
-    ]
+    case Map.get(part, :probe) || [] do
+      [] ->
+        []
+
+      probe ->
+        [
+          "    healthcheck:",
+          "      test: [" <> Enum.map_join(probe, ", ", &TomlWriter.encode_string/1) <> "]",
+          "      interval: 10s",
+          "      timeout: 3s",
+          "      retries: 3"
+        ]
+    end
   end
 
   defp list_block(_key, []), do: []
