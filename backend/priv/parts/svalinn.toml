@@ -20,11 +20,11 @@ containerfile = "Containerfile"
 context = "."
 
 [part.runtime]
-ports = [{ port = 8000, protocol = "tcp", transaction = "edge-gateway HTTP + /healthz" }]
+ports = [{ port = 7825, protocol = "tcp", transaction = "edge-gateway HTTP + /healthz" }]
 mounts = ["./.gatekeeper.yaml:/app/.gatekeeper.yaml:ro,Z"]
 command = []
 env = ["SVALINN_GATEKEEPER_CONFIG", "SVALINN_API_TOKEN"]
-health = { path = "/healthz", port = 8000 }
+health = { path = "/healthz", port = 7825 }
 
 [part.contract]
 consumes = [".gatekeeper.yaml"]
