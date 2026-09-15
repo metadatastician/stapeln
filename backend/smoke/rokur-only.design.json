@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "name": "rokur-smoke",
+    "created": "2026-09-15T09:00:00Z",
+    "author": "Jonathan D.A. Jewell",
+    "description": "One-satellite closure chain (STAPELN-R-32): stapeln compiles rokur's descriptor, emits a bundle, and the bundle runs."
+  },
+  "canvas": {
+    "components": [
+      {
+        "id": "rokur",
+        "type": "Rokur",
+        "position": { "x": 0.0, "y": 0.0 },
+        "config": { "port": "7658" }
+      }
+    ],
+    "connections": []
+  }
+}

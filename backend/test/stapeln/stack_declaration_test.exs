@@ -305,7 +305,7 @@ defmodule Stapeln.StackDeclarationTest do
         "CMD",
         "bun",
         "-e",
-        "try{await fetch('http://127.0.0.1:7658/health')}catch{process.exit(1)}"
+        "try{process.exit((await(fetch('http://127.0.0.1:7658/health'))).ok?0:1)}catch{process.exit(1)}"
       ]
 
       compose = compose_with_probe(probe)
@@ -333,7 +333,7 @@ defmodule Stapeln.StackDeclarationTest do
         "CMD",
         "bun",
         "-e",
-        "try{await fetch('http://127.0.0.1:7658/health')}catch{process.exit(1)}"
+        "try{process.exit((await(fetch('http://127.0.0.1:7658/health'))).ok?0:1)}catch{process.exit(1)}"
       ]
 
       # Read back from the encoded bytes, so this fails if the serialiser drops
@@ -554,6 +554,147 @@ defmodule Stapeln.StackDeclarationTest do
           Parts.load!(dir)
         end
       end)
+    end
+
+    # SEAM 4, measured 2026-09-15. Every test below exists because a probe that
+    # LOOKED right shipped, built, started, served traffic, and reported
+    # UNHEALTHY for ever -- with nothing red anywhere upstream to say so.
+    test "a CMD element containing whitespace is refused, because podman splits it" do
+      in_tmp(fn dir ->
+        File.write!(Path.join(dir, "spaced.toml"), """
+        [part]
+        name = "spaced"
+        slot = "custom"
+        interface = "oci"
+        repo = "https://example.org/spaced"
+        sha = "#{String.duplicate("a", 40)}"
+        [part.runtime]
+        health = { path = "/health", port = 7658, probe = ["CMD", "bun", "-e", "a b"] }
+        """)
+
+        # This is the EXACT shape stapeln emitted until today: a 4-element argv
+        # whose last element holds a space. podman stored it as 5 elements and
+        # handed the runtime a truncated program.
+        assert_raise ArgumentError, ~r/podman splits a CMD element on whitespace/, fn ->
+          Parts.load!(dir)
+        end
+      end)
+    end
+
+    test "the refusal names CMD-SHELL, so the author is told the cure" do
+      in_tmp(fn dir ->
+        File.write!(Path.join(dir, "spaced.toml"), """
+        [part]
+        name = "spaced"
+        slot = "custom"
+        interface = "oci"
+        repo = "https://example.org/spaced"
+        sha = "#{String.duplicate("a", 40)}"
+        [part.runtime]
+        health = { path = "/health", port = 7658, probe = ["CMD", "sh", "-c", "a b"] }
+        """)
+
+        # An error that only says "no" costs the reader the hour I spent. This
+        # asserts the message carries the way out, not just the refusal.
+        assert_raise ArgumentError, ~r/use CMD-SHELL with a single/, fn ->
+          Parts.load!(dir)
+        end
+      end)
+    end
+
+    test "CMD-SHELL with one string is accepted, whitespace and all" do
+      in_tmp(fn dir ->
+        File.write!(Path.join(dir, "shell.toml"), """
+        [part]
+        name = "shell"
+        slot = "custom"
+        interface = "oci"
+        repo = "https://example.org/shell"
+        sha = "#{String.duplicate("a", 40)}"
+        [part.runtime]
+        health = { path = "/health", port = 7658, probe = ["CMD-SHELL", "bun -e 0"] }
+        """)
+
+        # The guard must not simply ban spaces: CMD-SHELL is the supported way
+        # to carry them, and banning it outright would leave no legal probe for
+        # a part whose check genuinely needs a shell.
+        assert %{"shell" => part} = Parts.load!(dir)
+        assert part.health.probe == ["CMD-SHELL", "bun -e 0"]
+      end)
+    end
+
+    test "CMD-SHELL with several arguments is refused" do
+      in_tmp(fn dir ->
+        File.write!(Path.join(dir, "shell.toml"), """
+        [part]
+        name = "shell"
+        slot = "custom"
+        interface = "oci"
+        repo = "https://example.org/shell"
+        sha = "#{String.duplicate("a", 40)}"
+        [part.runtime]
+        health = { path = "/health", port = 7658, probe = ["CMD-SHELL", "bun", "-e", "0"] }
+        """)
+
+        # Written as an argv but labelled CMD-SHELL, only the first argument is
+        # ever run -- silently, and the rest are dropped.
+        assert_raise ArgumentError, ~r/takes exactly one shell string/, fn ->
+          Parts.load!(dir)
+        end
+      end)
+    end
+
+    test "a probe beginning with the program name is refused" do
+      in_tmp(fn dir ->
+        File.write!(Path.join(dir, "bare.toml"), """
+        [part]
+        name = "bare"
+        slot = "custom"
+        interface = "oci"
+        repo = "https://example.org/bare"
+        sha = "#{String.duplicate("a", 40)}"
+        [part.runtime]
+        health = { path = "/health", port = 7658, probe = ["bun", "-e", "0"] }
+        """)
+
+        # Compose reads element 0 as the FORM. A probe starting with the program
+        # name is the most natural thing to write and is never run as written.
+        assert_raise ArgumentError, ~r/must begin with one of/, fn ->
+          Parts.load!(dir)
+        end
+      end)
+    end
+  end
+
+  describe "the shipped rokur descriptor's probe" do
+    test "carries no whitespace in any CMD element" do
+      # Pins the real catalogue file, not a fixture. The guard above can only
+      # refuse what it is handed; this asserts what stapeln actually ships.
+      probe = Parts.load!()["rokur"].health.probe
+      assert ["CMD" | args] = probe
+
+      for arg <- args do
+        refute String.contains?(arg, " "), "rokur probe element has a space: #{inspect(arg)}"
+      end
+    end
+
+    test "names the same port and path the health table declares" do
+      # The probe URL and the declared port/path sit in ONE inline table and can
+      # still disagree. They did, in effect, for the whole life of the old
+      # bundle template: 8081 in the config, 7658 in the descriptor.
+      health = Parts.load!()["rokur"].health
+      program = List.last(health.probe)
+      assert program =~ to_string(health.port)
+      assert program =~ health.path
+    end
+
+    test "is emittable: it carries no character TomlWriter refuses" do
+      # TomlWriter.encode_string RAISES on a double quote or backslash, so a
+      # probe can pass every check above and still make the emitter blow up at
+      # bundle time. Proving it encodes is cheaper than discovering that later.
+      for arg <- Parts.load!()["rokur"].health.probe do
+        assert is_binary(Stapeln.TomlWriter.encode_string(arg))
+      end
     end
   end
 

@@ -30,6 +30,11 @@ defmodule Stapeln.Parts do
   @contract_keys ~w(consumes manifest_url)
   @port_keys ~w(port protocol transaction)
   @health_keys ~w(path port probe)
+
+  # The three forms compose reads as the FIRST element of a healthcheck test.
+  @probe_forms ["CMD", "CMD-SHELL", "NONE"]
+  # Byte literals rather than an escape, so this list is readable as data.
+  @probe_whitespace [" ", <<9>>, <<10>>, <<13>>]
   @interfaces ~w(oci groove)
 
   @sha_re ~r/\A[0-9a-f]{40}\z/
@@ -263,11 +268,68 @@ defmodule Stapeln.Parts do
             "#{path}: runtime.health probe must be a list of strings, got #{inspect(probe)}"
     end
 
-    probe
+    check_probe_form!(path, probe)
   end
 
   defp probe!(path, other) do
     raise ArgumentError,
           "#{path}: runtime.health probe must be a list of strings, got #{inspect(other)}"
+  end
+
+  # MEASURED 2026-09-15 against podman 5.4.2. A CMD probe is an argv, and podman
+  # SPLITS every element on whitespace before storing it, so the 4-element argv
+  # stapeln emitted reached the container as 5 and bun was handed `try{await` on
+  # its own:
+  #
+  #     1 | try{await
+  #                 ^
+  #     error: Unexpected end of file
+  #
+  # The emitted YAML was not at fault. Ruby's YAML loader and `docker-compose
+  # config` both read 4 elements from that same file; only podman read 5. A
+  # direct `podman --health-cmd` control settled it: the JSON-array form came
+  # back split, the single-string form came back intact.
+  #
+  # The failure mode is the expensive kind. The container builds, starts, serves
+  # real traffic, and reports UNHEALTHY for ever, with the reason visible only
+  # in `podman inspect .State.Health`. Nothing upstream is red. Refusing to emit
+  # turns that silence into a build-time error that names the cure, which is the
+  # whole point of a gate: it must be able to fail.
+  #
+  # Two cures are open to a part author. Keep CMD and write each element without
+  # whitespace -- rokur's probe does, and it needs no shell in the image at all.
+  # Or use CMD-SHELL, which carries ONE string to `/bin/sh -c` and survives both
+  # engines. Note that TomlWriter.encode_string refuses a double quote outright,
+  # so a CMD-SHELL string has to quote with single quotes.
+  defp check_probe_form!(path, [form | args] = probe) do
+    cond do
+      form not in @probe_forms ->
+        raise ArgumentError,
+              "#{path}: runtime.health probe must begin with one of " <>
+                "#{Enum.join(@probe_forms, ", ")}, got #{inspect(form)}. Compose reads " <>
+                "the first element as the probe FORM, so a probe that begins with the " <>
+                "program name is not run as written."
+
+      form == "CMD" and Enum.any?(args, &whitespace?/1) ->
+        raise ArgumentError,
+              "#{path}: runtime.health probe uses CMD form and an element contains " <>
+                "whitespace. podman splits a CMD element on whitespace (measured on " <>
+                "podman 5.4.2), so the container receives more arguments than were " <>
+                "written and reports UNHEALTHY for ever while serving traffic. Either " <>
+                "write the element without whitespace, or use CMD-SHELL with a single " <>
+                "shell string. Probe: #{inspect(probe)}"
+
+      form == "CMD-SHELL" and length(args) != 1 ->
+        raise ArgumentError,
+              "#{path}: runtime.health probe uses CMD-SHELL form, which takes exactly " <>
+                "one shell string, got #{length(args)}. Probe: #{inspect(probe)}"
+
+      true ->
+        probe
+    end
+  end
+
+  defp whitespace?(value) do
+    Enum.any?(@probe_whitespace, &String.contains?(value, &1))
   end
 end
