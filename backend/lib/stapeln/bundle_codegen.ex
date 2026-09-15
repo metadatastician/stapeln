@@ -59,7 +59,7 @@ defmodule Stapeln.BundleCodegen do
   plausible wrong value is not.
   """
 
-  alias Stapeln.{Codegen, ComposeYaml, StackDeclaration}
+  alias Stapeln.{Codegen, ComposeYaml, Parts, StackDeclaration}
 
   @typedoc "Bundle file name => file content."
   @type bundle :: %{String.t() => String.t()}
@@ -227,13 +227,38 @@ def generated_files, do: Enum.sort([@design_file, @compose_file, @stack_lock_fil
     end
   end
 
+  # rokur.toml's [server] port and health_path are the DESCRIPTOR's, never
+  # literals in the template. The template this replaced carried its own
+  # invented listener -- `listen = "[::]:8081"` and a `backend` key rokur has
+  # never implemented -- so the file stapeln emitted made rokur refuse to
+  # start. Sourcing both from the part descriptor is what stops the config the
+  # gate reads, the port compose publishes and the probe the healthcheck runs
+  # from drifting apart again.
+  defp rokur_descriptor(opts) do
+    catalogue = Keyword.get_lazy(opts, :catalogue, &Parts.load!/0)
+
+    case catalogue["rokur"] do
+      %{health: %{path: path, port: port}} when is_binary(path) and is_integer(port) ->
+        %{port: port, health_path: path}
+
+      _ ->
+        raise ArgumentError,
+              "the part catalogue has no \"rokur\" descriptor declaring a health path " <>
+                "and port, so rokur.toml has no source for [server] port and " <>
+                "health_path. A literal here would drift from the port compose publishes."
+    end
+  end
+
   defp do_build_tokens(stack, opts) do
     project = stack_name(stack)
     services = Codegen.normalise_services(stack)
     primary = List.first(services)
+    rokur = rokur_descriptor(opts)
 
     %{
       "PROJECT_NAME" => project,
+      "ROKUR_PORT" => to_string(rokur.port),
+      "ROKUR_HEALTH_PATH" => rokur.health_path,
       "SERVICE_NAME" => (primary && Codegen.service_name(primary)) || project,
       "PORT" => to_string(primary_port(primary)),
       "PROJECT_DESCRIPTION" => description(stack, project),

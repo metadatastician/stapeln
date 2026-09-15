@@ -3,7 +3,7 @@
 defmodule Stapeln.BundleCodegenTest do
   use ExUnit.Case, async: true
 
-  alias Stapeln.BundleCodegen
+  alias Stapeln.{BundleCodegen, Parts}
 
   @sample_stack %{
     name: "acme-platform",
@@ -224,6 +224,97 @@ defmodule Stapeln.BundleCodegenTest do
       for name <- BundleCodegen.bundle_files() -- BundleCodegen.generated_files() do
         path = Path.join(BundleCodegen.template_dir(), name)
         assert File.exists?(path), "missing template: #{path}"
+      end
+    end
+  end
+  # W5/#76. The template this pins replaced one that made rokur REFUSE TO
+  # START: it invented `[server] listen`, a `backend` key rokur has never
+  # implemented, and rate_limit/policy/audit key names taken from nowhere. The
+  # suite was 209 green over that file, because nothing asserted on it -- so
+  # these tests pin what stapeln EMITS rather than restating rokur's schema,
+  # which is rokur's to own and would simply drift here in a second copy.
+  describe "the emitted rokur.toml" do
+    defp rokur_toml(opts \\ []) do
+      {:ok, bundle} = BundleCodegen.generate(@sample_stack, @required ++ opts)
+      bundle["rokur.toml"]
+    end
+
+    test "decodes with a real TOML decoder" do
+      assert {:ok, _doc} = Toml.decode(rokur_toml())
+    end
+
+    test "emits only the three tables stapeln has a source for" do
+      doc = Toml.decode!(rokur_toml())
+
+      assert Enum.sort(Map.keys(doc)) == ["metadata", "secrets", "server"]
+
+      assert Enum.sort(Map.keys(doc["server"])) == ["health_path", "host", "port"]
+    end
+
+    test "carries no key rokur's parser rejects" do
+      doc = Toml.decode!(rokur_toml())
+
+      # Each of these was in the previous template and is independently fatal.
+      refute Map.has_key?(doc["server"], "listen")
+      refute Map.has_key?(doc["server"], "backend")
+      refute Map.has_key?(doc, "rate_limit")
+      refute Map.has_key?(doc, "policy")
+      refute Map.has_key?(doc, "audit")
+    end
+
+    test "takes port and health_path from the part descriptor" do
+      doc = Toml.decode!(rokur_toml())
+      rokur = Parts.load!()["rokur"]
+
+      assert doc["server"]["port"] == rokur.health.port
+      assert doc["server"]["health_path"] == rokur.health.path
+    end
+
+    test "follows a descriptor that declares a different port" do
+      # The mutant this kills is a template that hardcodes 7658 and passes the
+      # test above by coincidence. Move the descriptor; the file must move.
+      catalogue = Parts.load!()
+      rokur = catalogue["rokur"]
+      moved = %{rokur | health: %{rokur.health | port: 7777, path: "/probe"}}
+
+      doc = Toml.decode!(rokur_toml(catalogue: Map.put(catalogue, "rokur", moved)))
+
+      assert doc["server"]["port"] == 7777
+      assert doc["server"]["health_path"] == "/probe"
+    end
+
+    test "binds 0.0.0.0, because loopback in a container is a half-green" do
+      # Bound to 127.0.0.1, the in-image healthcheck passes while every probe
+      # through the published port fails: a green container, an unreachable gate.
+      assert Toml.decode!(rokur_toml())["server"]["host"] == "0.0.0.0"
+    end
+
+    test "declares an empty required-secrets list and says it fails closed" do
+      content = rokur_toml()
+
+      assert Toml.decode!(content)["secrets"]["required"] == []
+
+      # The previous template called this "the gate starts open". Rokur exits at
+      # startup instead (main.js: fatalConfigurationError). A fail-open claim
+      # about a fail-closed gate is the one error here that costs a deployment.
+      assert content =~ "FAILS CLOSED"
+      assert content =~ "does NOT mean the gate starts open"
+      refute content =~ "tighten this before production"
+    end
+
+    test "names no banned runtime" do
+      content = String.downcase(rokur_toml())
+
+      for banned <- ~w(deno rescript typescript python) do
+        refute content =~ banned, "rokur.toml names the banned runtime #{banned}"
+      end
+    end
+
+    test "publishes no 8080-class port" do
+      content = rokur_toml()
+
+      for banned <- ~w(8080 8081 8000 3000) do
+        refute content =~ banned, "rokur.toml carries the banned port #{banned}"
       end
     end
   end
