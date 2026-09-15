@@ -260,8 +260,76 @@ defmodule Stapeln.StackDeclarationTest do
       refute compose =~ "ROKUR_API_TOKEN:"
     end
 
-    test "the healthcheck comes from the declaration's health URL" do
-      assert bundle()["compose.yaml"] =~ "curl -fsS http://rokur:9090/health"
+    # RULED R-31. Until 2026-09-15 this asserted
+    # `curl -fsS http://rokur:9090/health`, and that one string was wrong twice
+    # over: `curl` is absent from both satellite runtime images (measured), and
+    # `-f` turns an honest 503 from a readiness endpoint into a liveness
+    # failure. Neither the tool nor the success predicate was ever declared by
+    # the part, and neither was asked of it -- a descriptor declares a LOCATION,
+    # so composing a probe out of it is guessing.
+    #
+    # The contract now: the PART declares its own probe argv and the emitter
+    # emits exactly that, or nothing at all. One emitter serves Ada (vordr),
+    # Rust (svalinn-gate) and bun parts, so any emitter-side default is a wrong
+    # answer for most of the estate.
+    test "a part that declares no probe gets NO healthcheck stanza" do
+      # By construction, from a descriptor that declares an empty probe: the
+      # coming commit that adds probes to the shipped descriptors cannot turn
+      # this assertion green-for-the-wrong-reason by removing its subject.
+      refute compose_with_probe([]) =~ "healthcheck:"
+
+      # And the bundle as it ships today, where honest silence beats a guess:
+      # the whole stanza is absent rather than present-and-unpassable.
+      compose = bundle()["compose.yaml"]
+      refute compose =~ "healthcheck:"
+      refute compose =~ "curl"
+    end
+
+    test "a declared probe is emitted verbatim -- no tool and no predicate added" do
+      probe = [
+        "CMD",
+        "bun",
+        "-e",
+        "try{await fetch('http://127.0.0.1:7658/health')}catch{process.exit(1)}"
+      ]
+
+      compose = compose_with_probe(probe)
+
+      # Built FROM the probe rather than typed out, so the assertion cannot
+      # drift from what the descriptor declared -- which is the whole contract.
+      expected =
+        "      test: [" <>
+          Enum.map_join(probe, ", ", fn arg -> "\"" <> arg <> "\"" end) <> "]"
+
+      assert compose =~ "    healthcheck:"
+      assert compose =~ expected
+      assert compose =~ "      interval: 10s"
+
+      # The two defects the old hard-coded line carried must not return by any
+      # other route: the emitter contributes no tool and no success predicate,
+      # and does not wrap the argv in a shell.
+      refute compose =~ "curl"
+      refute compose =~ "|| exit 1"
+      refute compose =~ "CMD-SHELL"
+    end
+
+    test "a declared probe survives the stack.lock round trip verbatim" do
+      probe = [
+        "CMD",
+        "bun",
+        "-e",
+        "try{await fetch('http://127.0.0.1:7658/health')}catch{process.exit(1)}"
+      ]
+
+      # Read back from the encoded bytes, so this fails if the serialiser drops
+      # the key, reorders the argv, or mangles the embedded single quotes.
+      assert lock_with_probe(probe)["probe"] == probe
+    end
+
+    test "an undeclared probe round-trips as [], never as a missing key" do
+      # One shape for every consumer: a reader never has to distinguish "no
+      # probe declared" from "probe key absent from this record".
+      assert lock_with_probe([])["probe"] == []
     end
 
     test "the consumed file is mounted read-only" do
@@ -387,6 +455,91 @@ defmodule Stapeln.StackDeclarationTest do
         assert_raise ArgumentError, ~r/is not in the slot table/, fn -> Parts.load!(dir) end
       end)
     end
+
+    # RULED R-31. `probe` is a new key inside `runtime.health`, and the loader
+    # runs `reject_unknown!` against a fixed allow-list, so a descriptor
+    # carrying a key the loader does not know does not merely lose the key --
+    # it RAISES. `load!/0` is all-or-nothing by design ("there is no partial
+    # catalogue"), so one mis-read probe takes down the whole bundle rather
+    # than its own part. These four cases are what decide that.
+    test "a declared probe is read as a list of strings" do
+      in_tmp(fn dir ->
+        File.write!(Path.join(dir, "probed.toml"), """
+        [part]
+        name = "probed"
+        slot = "custom"
+        interface = "oci"
+        repo = "https://example.org/probed"
+        sha = "#{String.duplicate("a", 40)}"
+        [part.runtime]
+        health = { path = "/health", port = 7658, probe = ["CMD", "bun", "-e", "0"] }
+        """)
+
+        assert %{"probed" => part} = Parts.load!(dir)
+        assert part.health.probe == ["CMD", "bun", "-e", "0"]
+      end)
+    end
+
+    test "a health table with no probe reads as an empty probe, never nil" do
+      in_tmp(fn dir ->
+        File.write!(Path.join(dir, "unprobed.toml"), """
+        [part]
+        name = "unprobed"
+        slot = "custom"
+        interface = "oci"
+        repo = "https://example.org/unprobed"
+        sha = "#{String.duplicate("a", 40)}"
+        [part.runtime]
+        health = { path = "/health", port = 7658 }
+        """)
+
+        # An empty list rather than nil, so every consumer has one shape to
+        # handle and "declared nothing" needs no separate branch downstream.
+        assert %{"unprobed" => part} = Parts.load!(dir)
+        assert part.health.probe == []
+      end)
+    end
+
+    test "a probe that is not a list is rejected" do
+      in_tmp(fn dir ->
+        File.write!(Path.join(dir, "bad.toml"), """
+        [part]
+        name = "bad"
+        slot = "custom"
+        interface = "oci"
+        repo = "https://example.org/bad"
+        sha = "#{String.duplicate("a", 40)}"
+        [part.runtime]
+        health = { path = "/health", port = 7658, probe = "bun -e 0" }
+        """)
+
+        assert_raise ArgumentError, ~r/probe must be a list of strings/, fn ->
+          Parts.load!(dir)
+        end
+      end)
+    end
+
+    test "a probe carrying a non-string element is rejected" do
+      in_tmp(fn dir ->
+        File.write!(Path.join(dir, "bad.toml"), """
+        [part]
+        name = "bad"
+        slot = "custom"
+        interface = "oci"
+        repo = "https://example.org/bad"
+        sha = "#{String.duplicate("a", 40)}"
+        [part.runtime]
+        health = { path = "/health", port = 7658, probe = ["CMD", 7658] }
+        """)
+
+        # A bare port number where an argv element belongs is the realistic
+        # slip, and TOML happily parses the mixed array (measured), so nothing
+        # but this validator stands between it and the emitted file.
+        assert_raise ArgumentError, ~r/probe must be a list of strings/, fn ->
+          Parts.load!(dir)
+        end
+      end)
+    end
   end
 
   # ---------------------------------------------------------------------------
@@ -474,6 +627,57 @@ defmodule Stapeln.StackDeclarationTest do
       end
     end)
     |> Enum.sort()
+  end
+
+  # RULED R-31. A probe travels from a descriptor, through the loader, through
+  # the lowering, into the emitted file -- so the only honest test of it drives
+  # that whole path rather than hand-building a part map the lowering never
+  # produced. `Parts.load!/1` and `lower/3`'s `:catalogue` option are the two
+  # seams that allow it without touching the shipped catalogue.
+  #
+  # The catalogue here holds rokur ONLY, so `edge-1` lowers down the
+  # design-only path in the same render. That is deliberate: it proves a part
+  # with no descriptor at all still emits no healthcheck while a probed part
+  # beside it emits one.
+  defp compose_with_probe(probe) do
+    with_probe(probe, fn declaration ->
+      {:ok, compose} = ComposeYaml.render(@stack, declaration)
+      compose
+    end)
+  end
+
+  # The same descriptor read back through the serialiser rather than the
+  # emitter, so a probe is proved to survive the round trip a real consumer
+  # makes -- encode/1 -> bytes -> Toml.decode!/1 -- not merely the in-process
+  # lowering, which never leaves memory.
+  defp lock_with_probe(probe) do
+    with_probe(probe, fn declaration ->
+      declaration
+      |> StackDeclaration.encode()
+      |> Toml.decode!()
+      |> Map.fetch!("part")
+      |> Enum.find(&(&1["name"] == "rokur"))
+    end)
+  end
+
+  defp with_probe(probe, fun) do
+    in_tmp(fn dir ->
+      File.write!(Path.join(dir, "rokur.toml"), """
+      [part]
+      name = "rokur"
+      slot = "secrets-gate"
+      interface = "oci"
+      model_component = "Rokur"
+      repo = "https://example.org/rokur"
+      sha = "#{String.duplicate("b", 40)}"
+      [part.runtime]
+      ports = [{ port = 7658, protocol = "tcp", transaction = "secrets-gate API" }]
+      health = { path = "/health", port = 7658, probe = #{inspect(probe)} }
+      """)
+
+      catalogue = Parts.load!(dir)
+      fun.(StackDeclaration.lower(@stack, "design-bytes", catalogue: catalogue))
+    end)
   end
 
   defp in_tmp(fun) do
