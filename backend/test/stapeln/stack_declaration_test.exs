@@ -155,13 +155,13 @@ defmodule Stapeln.StackDeclarationTest do
       assert rokur["consumes"] == ["rokur.toml"]
       assert rokur["command"] == ["--config", "/app/rokur.toml"]
       assert rokur["env"] == ["ROKUR_API_TOKEN", "ROKUR_REQUIRED_SECRETS"]
-      assert [%{"port" => 9090, "protocol" => "tcp"}] = rokur["ports"]
+      assert [%{"port" => 7658, "protocol" => "tcp"}] = rokur["ports"]
       assert rokur["build"] == %{"containerfile" => "Containerfile", "context" => "."}
     end
 
     test "the descriptor's health table lowers to a URL the runner can probe" do
       rokur = Enum.find(decoded()["part"], &(&1["name"] == "rokur"))
-      assert rokur["health"] == "http://rokur:9090/health"
+      assert rokur["health"] == "http://rokur:7658/health"
     end
 
     test "a part the catalogue does not know is recorded design-only, not dropped" do
@@ -278,11 +278,26 @@ defmodule Stapeln.StackDeclarationTest do
       # this assertion green-for-the-wrong-reason by removing its subject.
       refute compose_with_probe([]) =~ "healthcheck:"
 
-      # And the bundle as it ships today, where honest silence beats a guess:
-      # the whole stanza is absent rather than present-and-unpassable.
+      # And the bundle as it ships. rokur's descriptor now declares a probe, so
+      # its stanza carries a healthcheck; svalinn's declares none, so svalinn's
+      # stanza has none. Asserting the COUNT is what makes this a test of the
+      # contract rather than of rokur: it fails if the emitter ever invents a
+      # stanza for the part that stayed silent.
       compose = bundle()["compose.yaml"]
-      refute compose =~ "healthcheck:"
+      assert length(String.split(compose, "healthcheck:")) == 2
+
+      # Built from the shipped descriptor rather than typed out, so the
+      # assertion cannot drift from what rokur actually declares.
+      probe = Parts.load!()["rokur"].health.probe
+      assert probe != []
+
+      assert compose =~
+               "      test: [" <>
+                 Enum.map_join(probe, ", ", &Stapeln.TomlWriter.encode_string/1) <> "]"
+
+      # Still no tool the emitter was never given.
       refute compose =~ "curl"
+      refute compose =~ "wget"
     end
 
     test "a declared probe is emitted verbatim -- no tool and no predicate added" do
@@ -346,13 +361,13 @@ defmodule Stapeln.StackDeclarationTest do
     test "two services publishing the same host port refuse the file" do
       stack = put_in(@stack.services, [
         %{"name" => "gate-1", "kind" => "Rokur", "port" => 0},
-        %{"name" => "clash", "kind" => "SomethingElse", "port" => 9090}
+        %{"name" => "clash", "kind" => "SomethingElse", "port" => 7658}
       ])
 
       declaration = StackDeclaration.lower(stack, "design-bytes")
 
       assert {:error, reason} = ComposeYaml.render(stack, declaration)
-      assert reason =~ "port 9090 is published by"
+      assert reason =~ "port 7658 is published by"
       assert reason =~ "clash"
       assert reason =~ "rokur"
     end
@@ -360,7 +375,7 @@ defmodule Stapeln.StackDeclarationTest do
     test "the refusal propagates -- the bundle fails closed rather than emitting" do
       stack = put_in(@stack.services, [
         %{"name" => "gate-1", "kind" => "Rokur", "port" => 0},
-        %{"name" => "clash", "kind" => "SomethingElse", "port" => 9090}
+        %{"name" => "clash", "kind" => "SomethingElse", "port" => 7658}
       ])
 
       assert {:error, reason} = BundleCodegen.generate(stack, @required)

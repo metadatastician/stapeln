@@ -17,11 +17,11 @@ containerfile = "Containerfile"
 context = "."
 
 [part.runtime]
-ports = [{ port = 9090, protocol = "tcp", transaction = "secrets-gate API + /health" }]
+ports = [{ port = 7658, protocol = "tcp", transaction = "secrets-gate API + /health" }]
 mounts = ["./rokur.toml:/app/rokur.toml:ro,Z"]
 command = ["--config", "/app/rokur.toml"]
 env = ["ROKUR_API_TOKEN", "ROKUR_REQUIRED_SECRETS"]
-health = { path = "/health", port = 9090 }
+health = { path = "/health", port = 7658, probe = ["CMD", "bun", "-e", "try{await fetch('http://127.0.0.1:7658/health')}catch{process.exit(1)}"] }
 
 [part.contract]
 consumes = ["rokur.toml"]
