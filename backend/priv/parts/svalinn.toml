@@ -9,7 +9,7 @@ slot = "edge-gateway"
 interface = "oci"
 model_component = "Svalinn"
 repo = "https://github.com/metadatastician/svalinn"
-sha = "0000000000000000000000000000000000000000"
+sha = "3e3a830dde61b3574b06f50826060d27c041b8d1"
 # svalinn publishes an image, but its digest cannot be resolved offline and the
 # compiler never touches the network. Empty means "build from context" until a
 # human pins the published digest by PR, exactly as `sha` is pinned by PR.

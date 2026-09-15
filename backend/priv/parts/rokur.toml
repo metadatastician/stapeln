@@ -9,7 +9,7 @@ slot = "secrets-gate"
 interface = "oci"
 model_component = "Rokur"
 repo = "https://github.com/metadatastician/rokur"
-sha = "0000000000000000000000000000000000000000"
+sha = "e92a7704792f7faff3cf54c7579b824d80708e6f"
 image = ""
 
 [part.build]
