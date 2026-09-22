@@ -12,7 +12,6 @@ workflows:
         - 'github/codeql-action@v4.38.0'
     '.github/workflows/dogfood-gate.yml':
         - 'actions/checkout@v7.0.1'
-        - 'hyperpolymath/a2ml-ecosystem@main'
         - 'hyperpolymath/k9-ecosystem@main'
     '.github/workflows/e2e.yml':
         - 'actions/checkout@v7.0.1'
@@ -107,11 +106,6 @@ dependencies:
         commit: 'sha1-b96794f015dfd88f77b49b1c93e0fa7110f94c63'
         owner_id: 9919
         repo_id: 259445878
-    'hyperpolymath/a2ml-ecosystem@main':
-        ref: 'main'
-        commit: 'sha1-aa4b836bd969df2bc58128cb8e3d20bbc88d5e79'
-        owner_id: 6759885
-        repo_id: 1275649586
     'hyperpolymath/k9-ecosystem@main':
         ref: 'main'
         commit: 'sha1-89f3c2702f4f650a92aa7411502f38da06abd562'
