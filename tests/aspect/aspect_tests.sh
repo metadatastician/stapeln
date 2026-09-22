@@ -11,6 +11,7 @@
 #   4. Containerfile uses Chainguard base image
 #   5. No banned package managers (npm, bun, yarn)
 #   6. Aspect security test passes via Deno
+#   7. Public badge claims match the badge register
 
 set -euo pipefail
 
@@ -69,6 +70,13 @@ if command -v deno >/dev/null 2>&1 && [ -f tests/aspect/security_test.ts ]; then
     check "Deno security aspect test passes" "$?"
 else
     echo -e "  ${YELLOW}SKIP${NC} Deno security test — deno not found or test missing"
+fi
+
+# 7. Badge claim contract
+if bash tests/aspect/badge_claims_test.sh; then
+    check "Public badge claims match the badge register" "0"
+else
+    check "Public badge claims match the badge register" "1"
 fi
 
 echo ""
