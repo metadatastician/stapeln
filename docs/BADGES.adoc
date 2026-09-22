@@ -2,8 +2,8 @@
 // SPDX-FileCopyrightText: 2026 Jonathan D.A. Jewell
 = Badge Register — restore these
 
-*Status as of 2026-08-07.* This is the working list of every badge stapeln wants on its
-README, what each one asserts, and exactly what is needed to put it back. Five were removed
+*Status as of 2026-09-22.* This is the working list of every badge stapeln wants on its
+README, what each one asserts, and exactly what is needed to put it back. Six were removed
 on 2026-08-07 because nothing in the repository verified them — *they are wanted, and this
 file exists so they get restored as soon as the evidence is in place, not quietly forgotten.*
 
@@ -192,9 +192,12 @@ project owner can do this; it cannot be done on their behalf
 [[the-standing-rule]]
 == The standing rule
 
-*No badge without a resolvable reference that names this project.* Before adding one,
-answer: _if a stranger clicks this, do they reach something that could contradict the
-claim?_ If the honest answer is no, the badge is decoration and does not go on the README.
+*No compliance, certification, or registry-backed badge without a resolvable reference
+that names this project.* Before adding a badge that requires external evidence, answer:
+_if a stranger clicks this, do they reach something that could contradict the claim?_ If
+the honest answer is no, the badge is decoration and does not go on the README. License
+and descriptive technology badges may remain without link targets when their claims are
+directly verifiable from this repository.
 
 *And resolving is not enough.* "The link works" is a necessary test, never a sufficient
 one — it is exactly the test that let project 8509 sit on thirteen READMEs. For any badge
