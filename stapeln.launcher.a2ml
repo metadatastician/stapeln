@@ -2,7 +2,7 @@
 # Copyright (c) 2026 Jonathan D.A. Jewell (hyperpolymath) <j.d.a.jewell@open.ac.uk>
 #
 # stapeln.launcher.a2ml — per-app launcher config for Stapeln.
-# Compliant with launcher-standard.a2ml v0.3.0
+# Compliant with launcher-standard_praxis.deed v0.4.0
 #
 # This is the repo-root copy. The canonical test-fixture duplicate lives at
 # launch-scaffolder/examples/stapeln.launcher.a2ml and is used by unit tests;
@@ -29,7 +29,7 @@ startup-command-search = [
     "{repo-dir}/scripts/run.sh",
     "{repo-dir}/dev.sh",
 ]
-# Per launcher-standard.a2ml [runtime] section:
+# Per launcher-standard_praxis.deed (runtime ...) clause:
 # PID files MUST use XDG_RUNTIME_DIR or TMPDIR, NEVER /tmp directly
 # Log files MUST use XDG_STATE_HOME, NEVER /tmp directly
 pid-file = "${XDG_RUNTIME_DIR:-${TMPDIR:-/tmp}}/stapeln-server.pid"
@@ -37,7 +37,7 @@ log-file = "${XDG_STATE_HOME:-$HOME/.local/state}/stapeln/server.log"
 wait-for-url-timeout-seconds = 15
 
 [version-output]
-# Per launcher-standard.a2ml [version-output] section
+# Per launcher-standard_praxis.deed (version-output ...) clause
 first-line-format = "stapeln {version} ({build-sha-short}) [{platform}]"
 example = "stapeln 0.1.0 (abc1234) [linux-x86_64]"
 exit-code = 0
