@@ -117,7 +117,7 @@ done
 standing_rule=$(awk '
     $0 == "== The standing rule" { in_section = 1 }
     in_section { print }
-' "$register")
+' "$register" | tr '\n' ' ')
 for requirement in \
     'resolvable reference that names this project' \
     'resolving is not enough' \
