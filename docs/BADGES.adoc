@@ -8,8 +8,10 @@ on 2026-08-07 because nothing in the repository verified them — *they are want
 file exists so they get restored as soon as the evidence is in place, not quietly forgotten.*
 
 A badge is a public claim. The bar is simple: *the claim must resolve to something a
-stranger can check.* A shields.io image with no artefact behind it is decoration; worse, it
-is decoration that looks like assurance.
+stranger can check, and that something must be this project.* A shields.io image with no
+artefact behind it is decoration; worse, it is decoration that looks like assurance. A
+badge that resolves to *somebody else’s* artefact is worse still — it is a false claim
+wearing the costume of a verified one, and "does the link resolve?" will never catch it.
 
 '''''
 
@@ -123,7 +125,6 @@ ____
 |Badge |Why it is honest
 |*License MPL-2.0* |Accurate; matches `LICENSE`, which GitHub detects. See link:../LICENSING.adoc[`LICENSING.adoc`]
 |*OpenSSF Scorecard* |Live API badge, resolves to a public scorecard page. _Caveat: the Scorecard workflow is currently `startup_failure`ing daily (debt CI-1), so the score may be stale — fixing that is what makes this badge meaningful_
-|*OpenSSF Best Practices* |Live badge, public project record (https://www.bestpractices.dev/projects/8509[project 8509]). Was silently broken by an `nimage:` typo; fixed 2026-08-07
 |*ReScript / Elixir / Idris2* |Descriptive technology badges, not compliance claims. Accurate
 |===
 
@@ -142,10 +143,67 @@ Adding it _before_ then would advertise a gate that does not gate.
 
 '''''
 
+[[removed-as-a-false-claim]]
+== Removed as a false claim — 2026-09-22
+
+Distinct from everything above. The badges above were removed because nothing here
+*verified* them. This one was removed because it was *not ours*.
+
+[[8-openssf-best-practices]]
+=== 8. OpenSSF Best Practices
+
+The badge pointed at project *8509*, which is not stapeln:
+
+[source,console]
+----
+$ curl -s https://www.bestpractices.dev/projects/8509.json \
+    | jq -r '.name, .repo_url, .license, .badge'
+PA-updated-Weapon-Master
+https://github.com/Isaiah0521/PA-updated-Weapon-Master
+MS-PL
+passing
+----
+
+An unrelated MS-PL adventure game by another author. Because 8509’s level is `passing`, the
+README rendered a green *earned-certification* badge for a certification stapeln never
+applied for.
+
+[cols=",",]
+|===
+|*Asserted* |That stapeln holds an OpenSSF Best Practices badge at level `passing`
+|*Why removed* |It was another project’s badge. This register previously recorded it as
+honest on the strength of being a "live badge, public project record" — both statements
+true, and neither one the test that mattered
+|*Scope* |Not a stapeln slip. Every occurrence of a bestpractices.dev project id across the
+estate was this same id, propagated by copying the badge block between READMEs — *13
+repositories*
+|*Closest existing asset* |None. A bestpractices.dev project search returns *zero* results
+for `stapeln`, `metadatastician` and `hyperpolymath`. There is no registration to point at,
+so there was no correct id to substitute — removal was the only truthful option
+|*To restore* |Register the project at https://www.bestpractices.dev/en/projects/new[bestpractices.dev],
+complete the questionnaire, then add the badge with the id that registration returns —
+verified by the check in <<the-standing-rule>> before it is committed
+|*Owner action* |Register stapeln, and each sibling repo that wants the badge. Only the
+project owner can do this; it cannot be done on their behalf
+|===
+
+'''''
+
+[[the-standing-rule]]
 == The standing rule
 
-*No badge without a resolvable reference.* Before adding one, answer: _if a stranger clicks
-this, do they reach something that could contradict the claim?_ If the honest answer is no,
-the badge is decoration and does not go on the README.
+*No badge without a resolvable reference that names this project.* Before adding one,
+answer: _if a stranger clicks this, do they reach something that could contradict the
+claim?_ If the honest answer is no, the badge is decoration and does not go on the README.
+
+*And resolving is not enough.* "The link works" is a necessary test, never a sufficient
+one — it is exactly the test that let project 8509 sit on thirteen READMEs. For any badge
+backed by a registry, the check is that the record names *this repository*:
+
+[source,console]
+----
+$ curl -s https://www.bestpractices.dev/projects/<id>.json | jq -r .repo_url
+https://github.com/metadatastician/stapeln    # <-- must be this repo, not merely a valid page
+----
 
 Related: link:../DEBT.adoc[`DEBT.adoc`] D-2 · link:../LICENSING.adoc[`LICENSING.adoc`]
