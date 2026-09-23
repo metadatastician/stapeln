@@ -304,7 +304,7 @@
 - `DOM-MOUNTER-ENHANCEMENTS.md` - Full enhancement plan
 - `PHASE1-IMPLEMENTATION.md` - Phase 1 detailed documentation
 - `BUILD-SUMMARY.md` - Build system documentation
-- `ABI-FFI-README.md` - Architecture overview
+- `ABI-FFI-README.adoc` - Architecture overview
 - `COMPLETED-WORK.md` - Import/Export + ABI/FFI work
 
 ---

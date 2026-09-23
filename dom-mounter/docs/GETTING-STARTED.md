@@ -501,7 +501,7 @@ npx rescript build
 2. **Explore migration guides**: [MIGRATION-GUIDE.md](./MIGRATION-GUIDE.md)
 3. **Check performance benchmarks**: [BENCHMARKS.md](./BENCHMARKS.md)
 4. **Review architecture decisions**: [META.scm](./META.scm)
-5. **See what's next**: [ROADMAP.md](./ROADMAP.md)
+5. **See what's next**: [ROADMAP.adoc](./ROADMAP.adoc)
 
 ---
 

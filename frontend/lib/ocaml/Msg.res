@@ -40,7 +40,7 @@ type msg =
   // API communication
   | SaveStack
   | LoadStack(string)
-  | StackSaved(Result.t<string, string>)
+  | StackSaved(Result.t<int, string>)
   | StackLoaded(Result.t<model, string>)
   // Security
   | RunSecurityScan

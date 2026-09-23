@@ -329,7 +329,7 @@ The "Idris² inside" badge (`IdrisBadge.res`) appears in the UI to indicate form
 - [FFI Guide](https://idris2.readthedocs.io/en/latest/ffi/ffi.html)
 
 ### ABI/FFI Universal Standard
-- **Location**: `~/Documents/hyperpolymath-repos/rsr-template-repo/ABI-FFI-README.md`
+- **Location**: `~/Documents/hyperpolymath-repos/rsr-template-repo/ABI-FFI-README.adoc`
 - **Established**: 2026-01-30
 - **Purpose**: Standardize Idris2 → Zig → Language bindings
 

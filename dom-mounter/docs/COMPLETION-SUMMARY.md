@@ -110,7 +110,7 @@ Adapters:
 
 Documentation:
 - README.md (580 lines)
-- ROADMAP.md (370 lines)
+- ROADMAP.adoc (370 lines)
 - GETTING-STARTED.md (500+ lines)
 - MIGRATION-GUIDE.md
 - BENCHMARKS.md
@@ -315,7 +315,7 @@ The core implementation is 100% complete. Only optional publication steps remain
 
 **Primary Docs:**
 - `README.md` (580 lines)
-- `ROADMAP.md` (370 lines)
+- `ROADMAP.adoc` (370 lines)
 - `GETTING-STARTED.md` (500+ lines)
 - `MIGRATION-GUIDE.md`
 - `BENCHMARKS.md`

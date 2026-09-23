@@ -67,11 +67,25 @@ defmodule Stapeln.GapAnalyzer do
             affectedComponents: [name],
             fixAvailable: true,
             fixConfidence: "high",
-            fixDescription: "Add a HEALTHCHECK instruction to the Containerfile or a healthcheck key in the stack definition.",
+            # RULED R-31. This used to recommend `curl -f http://localhost/healthz`,
+            # which cannot run: curl is absent from the satellite runtime images,
+            # and `-f` fails an honest 503. Remediation text is where a wrong
+            # convention propagates, so it teaches the declared-probe shape and
+            # names a tool the part itself chooses.
+            fixDescription:
+              "Declare the probe in the part descriptor's runtime.health table. The part owns " <>
+                "its own probe because only the part knows which tools its image contains; the " <>
+                "compiler emits what is declared and nothing when nothing is declared.",
             fixCommands: [
-              "# In Containerfile:",
-              "HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD curl -f http://localhost:#{svc_port(service) || 8080}/healthz || exit 1",
-              "# Or in stack definition, add healthcheck: { test: ['CMD', 'curl', '-f', 'http://localhost/healthz'], interval: '30s' }"
+              "# In the part descriptor (backend/priv/parts/<part>.toml), under [part.runtime]:",
+              "health = { path = \"/health\", port = #{svc_port(service) || 7658}, probe = [\"CMD\", \"<a tool that exists in YOUR image>\", \"...\"] }",
+              "#",
+              "# A bun part, for example, has no curl and no wget, so it probes with bun itself:",
+              "#   probe = [\"CMD\", \"bun\", \"-e\", \"try{await fetch('http://127.0.0.1:#{svc_port(service) || 7658}/health');process.exit(0)}catch{process.exit(1)}\"]",
+              "#",
+              "# Do NOT use `curl -f`: curl is absent from bun- and Ada-based images, and `-f`",
+              "# turns an honest 503 from a readiness endpoint into a liveness failure. Probe",
+              "# LIVENESS here (is the process up), and keep dependency state at /ready."
             ],
             estimatedEffort: "15 minutes",
             tags: ["health", "reliability", "observability"]

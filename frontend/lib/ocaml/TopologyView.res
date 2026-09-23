@@ -63,9 +63,15 @@ let toCiscoComponent = (comp: component): ciscoComponent => {
   | CerroTorre | Svalinn => Gateway
   | LagoGrey => Box
   | Selur | Vordr => Box
+  // Rokur is a secrets gate sitting between svalinn and the app — a gateway
+  // in the topology sense, like svalinn, not a plain box.
+  | Rokur => Gateway
   | Podman | Docker | Nerdctl => Box
   | Volume => Oval
   | Network => Box
+  // Drawn as an ordinary box. The shape carries no claim about what an
+  // unrecognised component does, which is the honest rendering.
+  | UnknownType(_) => Box
   }
 
   {

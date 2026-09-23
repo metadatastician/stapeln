@@ -5,7 +5,7 @@
 
 **Status:** vision doc (authoritative), drafted 2026-04-10
 **Audience:** anyone — users, platform maintainers, developers, AI agents
-**Relationship to other docs:** this is the *why* and the *flow*. `UX-MANIFESTO.md` is the *design philosophy*. `CONTAINER-HATER-TEST.md` is the *acceptance criterion*. `ARCHITECTURE.md` / `IMPLEMENTATION-PLAN.md` are the *how*. If those disagree with this doc, this doc wins until edited.
+**Relationship to other docs:** this is the *why* and the *flow*. `UX-MANIFESTO.adoc` is the *design philosophy*. `CONTAINER-HATER-TEST.adoc` is the *acceptance criterion*. `ARCHITECTURE.adoc` / `IMPLEMENTATION-PLAN.adoc` are the *how*. If those disagree with this doc, this doc wins until edited.
 
 ---
 
@@ -25,7 +25,7 @@ This is the same reason Dell.com, Framework.com, and Azure Resource Manager exis
 
 ## Acceptance criterion
 
-From `CONTAINER-HATER-TEST.md`: *A government cyberwar officer who loathes containerization must be able to ship a secure container stack through Stapeln without ever reading the manual.* If the flow fails that test, the flow is wrong.
+From `CONTAINER-HATER-TEST.adoc`: *A government cyberwar officer who loathes containerization must be able to ship a secure container stack through Stapeln without ever reading the manual.* If the flow fails that test, the flow is wrong.
 
 Operationally: **a twelve-year-old who is reasonably IT-capable can help their parents build a secure container stack.** Same goal, different phrasing.
 

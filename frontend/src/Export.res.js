@@ -39,6 +39,9 @@ function exportDesignToJson(model, description) {
 }
 
 function componentTypeToImage(ct) {
+  if (typeof ct === "object") {
+    return "scratch # unrecognised component type: " + ct._0;
+  }
   switch (ct) {
     case "LagoGrey" :
       return "ghcr.io/hyperpolymath/lago-grey:latest";
@@ -48,6 +51,8 @@ function componentTypeToImage(ct) {
       return "ghcr.io/hyperpolymath/selur:latest";
     case "Vordr" :
       return "ghcr.io/hyperpolymath/vordr:latest";
+    case "Rokur" :
+      return "ghcr.io/hyperpolymath/rokur:latest";
     case "CerroTorre" :
     case "Podman" :
     case "Docker" :

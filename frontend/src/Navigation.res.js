@@ -50,6 +50,10 @@ function Navigation(props) {
                 children: item.label
               })
             ],
+            "aria-current": isActive ? "page" : "false",
+            "aria-label": item.label + (
+              isActive ? " (current page)" : ""
+            ),
             style: {
               alignItems: "center",
               background: isActive ? "rgba(74, 158, 255, 0.15)" : "transparent",
@@ -69,6 +73,7 @@ function Navigation(props) {
             onClick: param => onNavigate(item.route)
           }, AppRouter.routeToPath(item.route));
         }),
+        "aria-label": "Main navigation",
         style: {
           flex: "1",
           padding: "12px 0"

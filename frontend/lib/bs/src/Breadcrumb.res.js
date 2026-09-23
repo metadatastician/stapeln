@@ -6,39 +6,43 @@ import * as JsxRuntime from "react/jsx-runtime";
 function Breadcrumb(props) {
   let currentRoute = props.currentRoute;
   let meta = AppRouter.getRouteMeta(currentRoute);
-  return JsxRuntime.jsxs("div", {
-    children: [
-      JsxRuntime.jsx("span", {
-        children: AppRouter.getRouteIcon(currentRoute),
-        style: {
-          fontSize: "16px"
-        }
-      }),
-      JsxRuntime.jsx("span", {
-        children: AppRouter.getRouteLabel(currentRoute),
-        style: {
-          color: "#e0e6ed",
-          fontSize: "14px",
-          fontWeight: "600"
-        }
-      }),
-      meta !== undefined ? JsxRuntime.jsx("span", {
-          children: "— " + meta.description,
+  return JsxRuntime.jsx("nav", {
+    children: JsxRuntime.jsxs("div", {
+      children: [
+        JsxRuntime.jsx("span", {
+          children: AppRouter.getRouteIcon(currentRoute),
+          "aria-hidden": true,
           style: {
-            color: "#8892a6",
-            fontSize: "12px",
-            marginLeft: "8px"
+            fontSize: "16px"
           }
-        }) : null
-    ],
-    style: {
-      alignItems: "center",
-      background: "rgba(30, 36, 49, 0.6)",
-      borderBottom: "1px solid #2a3142",
-      display: "flex",
-      gap: "8px",
-      padding: "12px 20px"
-    }
+        }),
+        JsxRuntime.jsx("span", {
+          children: AppRouter.getRouteLabel(currentRoute),
+          style: {
+            color: "#e0e6ed",
+            fontSize: "14px",
+            fontWeight: "600"
+          }
+        }),
+        meta !== undefined ? JsxRuntime.jsx("span", {
+            children: "-- " + meta.description,
+            style: {
+              color: "#8892a6",
+              fontSize: "12px",
+              marginLeft: "8px"
+            }
+          }) : null
+      ],
+      style: {
+        alignItems: "center",
+        background: "rgba(30, 36, 49, 0.6)",
+        borderBottom: "1px solid #2a3142",
+        display: "flex",
+        gap: "8px",
+        padding: "12px 20px"
+      }
+    }),
+    "aria-label": "Breadcrumb"
   });
 }
 

@@ -167,8 +167,8 @@ await testFileContains(
 // Test 7: Documentation
 console.log("\n📚 Testing Documentation...\n");
 
-testFileExists("../PROVEN-LIBRARIES.md", "Proven libraries documentation");
-testFileExists("../ROADMAP.md", "Project roadmap");
+testFileExists("../PROVEN-LIBRARIES.adoc", "Proven libraries documentation");
+testFileExists("../ROADMAP.adoc", "Project roadmap");
 testFileExists("../STATE.scm", "Project state");
 testFileExists(
   "../SESSION-SUMMARY-2026-02-05.md",

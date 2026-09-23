@@ -5,9 +5,6 @@ open Model
 open Msg
 open Update
 
-// Direct JS binding for Array.join (avoids deprecated Js.Array2.joinWith)
-@send external joinWith: (array<string>, string) => string = "join"
-
 // Page type delegated to AppRouter for URL synchronisation
 type page = AppRouter.route
 
@@ -43,23 +40,20 @@ let initialAppState = {
   isDark: resolveInitialDark(),
 }
 
-// Serialise the current stack model to a JSON string suitable for the API.
-let serializeStack = (model: model): string => {
-  let services =
-    model.components
-    ->Array.map(comp => {
-      let port =
-        comp.config->Dict.get("port")->Belt.Option.mapWithDefault("0", p => p)
-      "{\"name\":\"" ++
-      comp.id ++
-      "\",\"kind\":\"" ++
-      Model.componentTypeToString(comp.componentType) ++
-      "\",\"port\":" ++
-      port ++
-      "}"
-    })
-    ->joinWith(",")
-  "{\"name\":\"stapeln-stack\",\"services\":[" ++ services ++ "]}"
+// Serialise the current stack model to the full-fidelity design-document
+// JSON string (see DesignFormat.res). This replaces the old hand-rolled
+// `serializeStack`, which emitted only `{"name","kind","port"}` per
+// component, hardcoded the stack name to `"stapeln-stack"`, and dropped
+// position, config (beyond port), and every connection — so autosave was
+// silently destroying topology on every save.
+let serializeForApi = (model: model): string => {
+  let metadata: DesignFormat.designMetadata = {
+    version: DesignFormat.currentVersion,
+    created: Date.toISOString(Date.make()),
+    author: "stapeln-editor",
+    description: "",
+  }
+  DesignFormat.serializeDesign(model, metadata)
 }
 
 // ---------------------------------------------------------------------------
@@ -81,7 +75,7 @@ let make = () => {
     // Handle side effects (API calls + WebSocket)
     switch msg {
     | SaveStack => {
-        let body = serializeStack(newModel)
+        let body = serializeForApi(newModel)
         ignore(
           ApiClient.saveStack(body)
           ->Promise.then(result => {
@@ -93,21 +87,16 @@ let make = () => {
 
     | RunSecurityScan => {
         // First save the stack, then run the security scan with the ID
-        let body = serializeStack(newModel)
+        let body = serializeForApi(newModel)
         ignore(
           ApiClient.saveStack(body)
           ->Promise.then(saveResult => {
             switch saveResult {
-            | Ok(stackIdStr) => {
-                let stackId = switch Int.fromString(stackIdStr) {
-                | Some(id) => id
-                | None => 0
-                }
-                ApiClient.runSecurityScan(stackId)->Promise.then(scanResult => {
-                  dispatch(SecurityScanResult(scanResult))
-                  Promise.resolve()
-                })
-              }
+            | Ok(stackId) =>
+              ApiClient.runSecurityScan(stackId)->Promise.then(scanResult => {
+                dispatch(SecurityScanResult(scanResult))
+                Promise.resolve()
+              })
             | Error(err) => {
                 dispatch(SecurityScanResult(Error(err)))
                 Promise.resolve()
@@ -123,21 +112,16 @@ let make = () => {
 
     | RunGapAnalysis => {
         // First save the stack, then run gap analysis with the ID
-        let body = serializeStack(newModel)
+        let body = serializeForApi(newModel)
         ignore(
           ApiClient.saveStack(body)
           ->Promise.then(saveResult => {
             switch saveResult {
-            | Ok(stackIdStr) => {
-                let stackId = switch Int.fromString(stackIdStr) {
-                | Some(id) => id
-                | None => 0
-                }
-                ApiClient.runGapAnalysis(stackId)->Promise.then(gapResult => {
-                  dispatch(GapAnalysisResult(gapResult))
-                  Promise.resolve()
-                })
-              }
+            | Ok(stackId) =>
+              ApiClient.runGapAnalysis(stackId)->Promise.then(gapResult => {
+                dispatch(GapAnalysisResult(gapResult))
+                Promise.resolve()
+              })
             | Error(err) => {
                 dispatch(GapAnalysisResult(Error(err)))
                 Promise.resolve()
@@ -212,7 +196,7 @@ let make = () => {
     | WsValidate => {
         switch stackChannel.contents {
         | Some(ch) => {
-            let stackJson = serializeStack(newModel)
+            let stackJson = serializeForApi(newModel)
             let payload = JSON.Encode.object(
               Dict.fromArray([("stack", JSON.Encode.string(stackJson))]),
             )
@@ -225,7 +209,7 @@ let make = () => {
     | WsSecurityScan => {
         switch stackChannel.contents {
         | Some(ch) => {
-            let stackJson = serializeStack(newModel)
+            let stackJson = serializeForApi(newModel)
             let payload = JSON.Encode.object(
               Dict.fromArray([("stack", JSON.Encode.string(stackJson))]),
             )
@@ -238,7 +222,7 @@ let make = () => {
     | WsGapAnalysis => {
         switch stackChannel.contents {
         | Some(ch) => {
-            let stackJson = serializeStack(newModel)
+            let stackJson = serializeForApi(newModel)
             let payload = JSON.Encode.object(
               Dict.fromArray([("stack", JSON.Encode.string(stackJson))]),
             )
@@ -318,7 +302,7 @@ let make = () => {
     | AutoSaveTick => {
         // Only save if model is dirty
         if state.model.isDirty {
-          let body = serializeStack(state.model)
+          let body = serializeForApi(state.model)
           ignore(
             ApiClient.saveStack(body)
             ->Promise.then(result => {
@@ -429,66 +413,93 @@ let make = () => {
       }
     } else {
     <div className="app">
-      <nav className="nav-tabs">
+      // Skip-to-content link (WCAG 2.4.1 — Bypass Blocks)
+      <a
+        className="skip-to-content"
+        href="#main-content"
+      >
+        {"Skip to main content"->React.string}
+      </a>
+      <nav className="nav-tabs" role="tablist" ariaLabel="Main navigation">
         <button
+          role="tab"
+          ariaSelected={state.currentPage == NetworkView}
           className={state.currentPage == NetworkView ? "tab active" : "tab"}
           onClick={_ => switchPage(NetworkView)}
         >
-          {"🌐 Network"->React.string}
+          {"Network"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == StackView}
           className={state.currentPage == StackView ? "tab active" : "tab"}
           onClick={_ => switchPage(StackView)}
         >
-          {"📚 Stack"->React.string}
+          {"Stack"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == PipelineView}
           className={state.currentPage == PipelineView ? "tab active" : "tab"}
           onClick={_ => switchPage(PipelineView)}
         >
-          {"🔧 Pipeline"->React.string}
+          {"Pipeline"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == LagoGreyView}
           className={state.currentPage == LagoGreyView ? "tab active" : "tab"}
           onClick={_ => switchPage(LagoGreyView)}
         >
-          {"🏔️ Lago Grey"->React.string}
+          {"Lago Grey"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == PortConfigView}
           className={state.currentPage == PortConfigView ? "tab active" : "tab"}
           onClick={_ => switchPage(PortConfigView)}
         >
-          {"🔌 Ports"->React.string}
+          {"Ports"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == SecurityView}
           className={state.currentPage == SecurityView ? "tab active" : "tab"}
           onClick={_ => switchPage(SecurityView)}
         >
-          {"🛡️ Security"->React.string}
+          {"Security"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == AttackSurfaceView}
           className={state.currentPage == AttackSurfaceView ? "tab active" : "tab"}
           onClick={_ => switchPage(AttackSurfaceView)}
         >
-          {"🎯 Surface"->React.string}
+          {"Surface"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == GapAnalysisView}
           className={state.currentPage == GapAnalysisView ? "tab active" : "tab"}
           onClick={_ => switchPage(GapAnalysisView)}
         >
-          {"🔍 Gaps"->React.string}
+          {"Gaps"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == SimulationView}
           className={state.currentPage == SimulationView ? "tab active" : "tab"}
           onClick={_ => switchPage(SimulationView)}
         >
-          {"🎮 Simulation"->React.string}
+          {"Simulation"->React.string}
         </button>
         <button
+          role="tab"
+          ariaSelected={state.currentPage == SettingsView}
           className={state.currentPage == SettingsView ? "tab active" : "tab"}
           onClick={_ => switchPage(SettingsView)}
         >
-          {"⚙️ Settings"->React.string}
+          {"Settings"->React.string}
         </button>
 
         <div className="nav-actions">
@@ -590,7 +601,7 @@ let make = () => {
           </div>
         : React.null}
 
-      <div className="content">
+      <div className="content" id="main-content" role="tabpanel">
         {switch state.currentPage {
         | NetworkView => TopologyView.view(state.model, state.isDark, dispatch)
         | StackView => StackView.view(state.model, ~isDark=state.isDark)
@@ -653,6 +664,9 @@ let make = () => {
       >
         <IdrisBadge style=Compact />
       </div>
+
+      // Interactive tour overlay (shows on first visit or via `just tour`)
+      <Tour />
     </div>
     }} // closes the else branch of the auth gate
   </ErrorBoundary>

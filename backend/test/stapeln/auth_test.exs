@@ -7,7 +7,20 @@ defmodule Stapeln.AuthTest do
   alias Stapeln.Auth.{Token, UserStore}
 
   setup do
-    # Ensure clean state — UserStore is an in-memory GenServer
+    # This block used to claim "Ensure clean state" and then do nothing but
+    # return :ok. It is now a real assertion instead of a comforting comment.
+    #
+    # Cleanliness comes from config/test.exs setting persist_path: nil, so the
+    # store never reads or writes /tmp/stapeln-user-store.json under test. That
+    # file is what made these tests flaky: addresses are built from
+    # System.unique_integer/1, which restarts low each VM run, so a run
+    # reissuing an integer a PREVIOUS run had persisted got :email_taken.
+    #
+    # If someone re-enables persistence for the test env, this fails loudly
+    # here rather than as a mystery :email_taken in an unrelated test.
+    assert Stapeln.Auth.UserStore.persist_path() == nil,
+           "UserStore must not persist under test — see config/test.exs"
+
     :ok
   end
 

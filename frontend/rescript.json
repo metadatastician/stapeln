@@ -1,0 +1,26 @@
+{
+  "name": "@hyperpolymath/stapeln-frontend",
+  "sources": [
+    {
+      "dir": "src",
+      "subdirs": true
+    }
+  ],
+  "package-specs": [
+    {
+      "module": "esmodule",
+      "in-source": true
+    }
+  ],
+  "suffix": ".res.js",
+  "jsx": {
+    "version": 4,
+    "mode": "classic"
+  },
+  "dependencies": ["@rescript/react"],
+  "dev-dependencies": [],
+  "warnings": {
+    "error": "+101"
+  },
+  "compiler-flags": ["-open Belt"]
+}

@@ -1,4 +1,3 @@
-# This workflow is managed by gh actions-lock.
 # SPDX-License-Identifier: MPL-2.0
 # This workflow is managed by gh actions-lock.
 name: OSSF Scorecard
@@ -16,7 +15,7 @@ permissions:
 
 jobs:
   scorecard:
-    uses: hyperpolymath/standards/.github/workflows/scorecard-reusable.yml@8750b94ac1bbe8c51ad13fe106669b13478f0b62
+    uses: hyperpolymath/standards/.github/workflows/scorecard-reusable.yml@fad242d35291de1898242d6737ba02b74a59a2f2
     permissions:
       # `actions: read` is REQUIRED here, not redundant. A job-level permissions
       # block REPLACES the workflow-level one for that job; the reusable workflow

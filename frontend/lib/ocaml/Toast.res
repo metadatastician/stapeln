@@ -95,6 +95,9 @@ let viewToast = (toast: toast, dispatch: msg => unit): React.element => {
   <div
     key={toast.id}
     className="toast"
+    role="status"
+    ariaLive=#polite
+    ariaAtomic=true
     style={Sx.make(
       ~position="relative",
       ~display="flex",
@@ -144,6 +147,7 @@ let viewToast = (toast: toast, dispatch: msg => unit): React.element => {
 
     <button
       onClick={_ => dispatch(DismissToast(toast.id))}
+      ariaLabel={"Dismiss " ++ toastLabel(toast.toastType) ++ " notification"}
       style={Sx.make(
         ~background="transparent",
         ~border="none",

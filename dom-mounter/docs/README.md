@@ -436,7 +436,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for gu
 - [MIGRATION-GUIDE.md](./MIGRATION-GUIDE.md) - Migrating from other solutions
 - [BENCHMARKS.md](./BENCHMARKS.md) - Performance measurements
 - [ALL-PHASES-COMPLETE.md](./ALL-PHASES-COMPLETE.md) - Implementation overview
-- [ROADMAP.md](./ROADMAP.md) - Future plans
+- [ROADMAP.adoc](./ROADMAP.adoc) - Future plans
 - [STATE.scm](./STATE.scm) - Current project state
 - [ECOSYSTEM.scm](./ECOSYSTEM.scm) - Ecosystem position
 - [META.scm](./META.scm) - Philosophy and ADRs

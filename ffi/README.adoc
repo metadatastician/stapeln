@@ -29,7 +29,7 @@ a C-ABI shared library. This allows:
 == ABI Definition
 
 The interface contract is formally specified in `src/abi/` using Idris2 dependent
-types. The Zig implementation must satisfy those specs. See `ABI-FFI-README.md`
+types. The Zig implementation must satisfy those specs. See `ABI-FFI-README.adoc`
 in the root for the full architecture rationale.
 
 == Building

@@ -8,10 +8,10 @@ template repository, not stapeln.** Where it disagrees with this project, this p
 
 Specifically: it lists `LICENSE.txt` as "AGPL + Palimpsest dual license". **stapeln is
 MPL-2.0 for code and CC-BY-SA-4.0 for documentation**, and the file is `LICENSE`, not
-`LICENSE.txt`. See link:LICENSING.md[LICENSING.md]. It also says "README.adoc | This file",
+`LICENSE.txt`. See link:LICENSING.adoc[LICENSING.adoc]. It also says "README.adoc | This file",
 which is true of the template, not of this document.
 
-Retained as a reference for RSR structure. See link:DEBT.md[DEBT.md] D-7.
+Retained as a reference for RSR structure. See link:DEBT.adoc[DEBT.adoc] D-7.
 ====
 
 image:[Palimpsest-MPL-1.0,link="https://github.com/hyperpolymath/palimpsest-license"] image:[Palimpsest,link="https://github.com/hyperpolymath/palimpsest-license"]

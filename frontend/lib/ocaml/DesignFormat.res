@@ -79,19 +79,47 @@ let componentFromJson = (json: JSON.t): option<component> => {
         }
       })
 
-      // Convert type string to componentType
+      // Convert type string to componentType.
+      //
+      // The catch-all used to be `| _ => None`, and because a component only
+      // decodes when id/type/position/config are ALL Some, an unrecognised
+      // type made the WHOLE COMPONENT disappear — silently, with no error.
+      // Opening a design saved by a newer build quietly lost boxes.
+      //
+      // Now an unrecognised type is preserved as Unknown(name) and announced.
+      // Two distinct cases, and they are NOT the same failure:
+      //
+      //   Some(other) — a type string this build does not know. Recoverable:
+      //                 keep it, say so, round-trip it unchanged.
+      //   None        — the component had no "type" field at all. That is a
+      //                 malformed document, not a version skew, and it still
+      //                 fails to decode.
+      //
+      // This table must agree with Model.res's componentTypeToString. Nothing
+      // enforces that but the round-trip test in tests/unit/ — the encoder is
+      // exhaustiveness-checked by the compiler, this string match is not.
       let componentType = switch typeStr {
       | Some("Cerro Torre") => Some(CerroTorre)
       | Some("Lago Grey") => Some(LagoGrey)
       | Some("Svalinn") => Some(Svalinn)
       | Some("selur") => Some(Selur)
       | Some("Vörðr") => Some(Vordr)
+      | Some("Rokur") => Some(Rokur)
       | Some("Podman") => Some(Podman)
       | Some("Docker") => Some(Docker)
       | Some("nerdctl") => Some(Nerdctl)
       | Some("Volume") => Some(Volume)
       | Some("Network") => Some(Network)
-      | _ => None
+      | Some(other) => {
+          Console.error(
+            "stapeln: unrecognised component type \"" ++
+            other ++
+            "\" — kept as UnknownType so the component is not lost. " ++
+            "This usually means the design was saved by a newer build.",
+          )
+          Some(UnknownType(other))
+        }
+      | None => None
       }
 
       switch (id, componentType, position, config) {

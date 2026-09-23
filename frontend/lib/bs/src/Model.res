@@ -7,11 +7,24 @@ type componentType =
   | Svalinn // Edge gateway
   | Selur // IPC bridge
   | Vordr // Runtime/orchestrator
+  | Rokur // Secrets gate
   | Podman // Container runtime
   | Docker // Container runtime
   | Nerdctl // Container runtime
   | Volume // Persistent storage
   | Network // Networking
+  // A type this build does not recognise, carrying the string it was saved as.
+  //
+  // WHY THIS EXISTS. The decoder used to map an unknown type string to None,
+  // and because a component only decodes when ALL of id/type/position/config
+  // are Some, that made the WHOLE COMPONENT vanish — silently, with no error.
+  // A design saved by a newer build lost boxes when opened in an older one,
+  // and nobody was told.
+  //
+  // Keeping the original string means the component survives the round-trip:
+  // it renders as unrecognised, and re-saving preserves what it was. Nothing
+  // the user drew is destroyed by a version skew.
+  | UnknownType(string)
 
 type position = {
   x: float,
@@ -222,6 +235,11 @@ let pushUndo = (model: model): model => {
 let canUndo = (model: model): bool => Array.length(model.undoStack) > 0
 let canRedo = (model: model): bool => Array.length(model.redoStack) > 0
 
+// The wire format of every saved design. These are DISPLAY names, not variant
+// names, and they are irregular on purpose: "Cerro Torre" and "Lago Grey"
+// contain a space, "selur" and "nerdctl" are lowercase, and "Vörðr" is not
+// ASCII (U+00F6, U+00F0). Changing any of them breaks every design already on
+// disk. DesignFormat.res decodes these — the two tables must agree exactly.
 let componentTypeToString = (ct: componentType): string => {
   switch ct {
   | CerroTorre => "Cerro Torre"
@@ -229,10 +247,14 @@ let componentTypeToString = (ct: componentType): string => {
   | Svalinn => "Svalinn"
   | Selur => "selur"
   | Vordr => "Vörðr"
+  | Rokur => "Rokur"
   | Podman => "Podman"
   | Docker => "Docker"
   | Nerdctl => "nerdctl"
   | Volume => "Volume"
   | Network => "Network"
+  // Round-trips as whatever it was saved as, so re-saving a design opened in
+  // an older build does not rewrite a component it did not understand.
+  | UnknownType(name) => name
   }
 }

@@ -10,7 +10,7 @@ Jonathan D.A. Jewell <j.d.a.jewell@open.ac.uk>
 
 This audit evaluates every ReScript component in `frontend/src/` against WCAG 2.1 AA
 criteria for keyboard navigation, ARIA coverage, focus management, and visible focus
-indicators. The existing ACCESSIBILITY.md claims WCAG 2.3 AAA conformance. This audit
+indicators. The existing ACCESSIBILITY.adoc claims WCAG 2.3 AAA conformance. This audit
 checks the *actual code* against those claims.
 
 Overall: The codebase has strong ARIA landmark and label coverage in newer components
@@ -25,7 +25,7 @@ components.
 * Read every `.res` file in `frontend/src/`
 * Searched for: `tabIndex`, `onKeyDown`, `ariaLabel`, `ariaDescribedby`, `ariaLive`,
   `role=`, skip-to-content links, `outline` CSS, focus trap patterns
-* Cross-referenced ACCESSIBILITY.md claims against actual implementation
+* Cross-referenced ACCESSIBILITY.adoc claims against actual implementation
 * Graded each component on Keyboard Support, ARIA Coverage, and Issues
 
 == Component Audit Table
@@ -219,7 +219,7 @@ using Tailwind classes (`focus:ring-2 focus:ring-blue-500`) have visible focus.
 Added `outline` and `outlineOffset` to `Sx.res` for component-level overrides.
 
 === Missing: `prefers-reduced-motion` CSS
-ACCESSIBILITY.md claims `prefers-reduced-motion` support. The CSS in App.css has
+ACCESSIBILITY.adoc claims `prefers-reduced-motion` support. The CSS in App.css has
 `@keyframes` for `spin` and `pulse` but no `prefers-reduced-motion` media query.
 
 **Fix:** Added the `prefers-reduced-motion` media query to App.css.
@@ -275,4 +275,4 @@ Known gaps remaining (aspirational, not AA blockers):
 
 * WCAG 2.1 Quick Reference: https://www.w3.org/WAI/WCAG21/quickref/
 * WAI-ARIA Authoring Practices: https://www.w3.org/WAI/ARIA/apg/
-* Existing: `ACCESSIBILITY.md` in project root
+* Existing: `ACCESSIBILITY.adoc` in project root

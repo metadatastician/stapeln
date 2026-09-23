@@ -138,6 +138,8 @@ function RegisterPage(props) {
                 }),
                 passwordTooShort ? JsxRuntime.jsx("p", {
                     children: "Password must be at least 6 characters",
+                    "aria-live": "polite",
+                    role: "alert",
                     style: {
                       color: isDark ? "#ff6b6b" : "#c53030",
                       fontSize: "0.85rem",
@@ -177,6 +179,8 @@ function RegisterPage(props) {
                 }),
                 passwordMismatch ? JsxRuntime.jsx("p", {
                     children: "Passwords do not match",
+                    "aria-live": "polite",
+                    role: "alert",
                     style: {
                       color: isDark ? "#ff6b6b" : "#c53030",
                       fontSize: "0.85rem",

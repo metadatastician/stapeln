@@ -1,0 +1,86 @@
+# SPDX-License-Identifier: MPL-2.0
+#
+# Rokur secrets-gate configuration for {{PROJECT_NAME}}
+#
+# Rokur is a secrets-management gate: it answers /health as soon as the process
+# is up, and answers /ready ONLY while every declared secret is present. It is
+# NOT a reverse proxy -- it forwards no traffic and has never had a `backend`.
+#
+# Rokur's parser is an ALLOWLIST: an unknown table, an unknown key or a wrong
+# type makes it REFUSE TO START. That is deliberate -- a secrets gate running on
+# a half-understood policy is worse than one that does not run. So this file
+# contains only keys rokur actually reads, and the commented examples below use
+# the real key names rather than plausible ones.
+#
+# Environment variables win over file values.
+#
+# Usage:
+#   rokur --config /app/rokur.toml
+#   # or, in the stack, via compose (see compose.yaml)
+
+[metadata]
+name = "{{PROJECT_NAME}}-gate"
+version = "{{VERSION}}"
+
+# ============================================================================
+# Listener  (env: ROKUR_HOST, ROKUR_PORT, ROKUR_HEALTH_PATH, ROKUR_READY_PATH)
+# ============================================================================
+
+[server]
+# 0.0.0.0, not 127.0.0.1. Bound to loopback inside a container, an in-image
+# healthcheck still passes while every published-port probe fails -- a green
+# container in front of an unreachable gate.
+host = "0.0.0.0"
+# Emitted from rokur's part descriptor, so this port, the published port in
+# compose.yaml and the healthcheck probe cannot drift apart.
+port = {{ROKUR_PORT}}
+health_path = "{{ROKUR_HEALTH_PATH}}"
+# ready_path is left to rokur's own default (/ready): stapeln does not declare
+# it, and emitting a guess is how a config file starts disagreeing with code.
+
+# ============================================================================
+# Required secrets  (env: ROKUR_REQUIRED_SECRETS, comma-separated -- env wins)
+# ============================================================================
+#
+# Names of secrets that MUST be present before rokur will report ready.
+#
+# An empty list does NOT mean the gate starts open. Rokur FAILS CLOSED: with no
+# required secret named, it exits at startup with a configuration error unless
+# ROKUR_ALLOW_EMPTY_REQUIRED_SECRETS=true is set explicitly in non-production.
+# Name the secrets your deployment needs, here or in the environment.
+
+[secrets]
+required = []
+# Example:
+# required = ["DATABASE_URL", "JWT_SIGNING_KEY", "TLS_PRIVATE_KEY"]
+
+# ============================================================================
+# Keys stapeln does not author
+# ============================================================================
+#
+# The tables below are rokur's, not stapeln's: stapeln knows this stack's
+# topology, not your rate limits, policy engine or audit sink. They are
+# commented out so that the emitted file stays the minimum that is true.
+# Uncomment and set them as your deployment needs.
+#
+# [rate_limit]
+# window_ms = 60000
+# max = 60
+# auth_fail_max = 5
+#
+# [policy]
+# backend = "builtin"          # or "external", with the two keys below
+# command = "/usr/local/bin/my-policy"
+# command_args = ""
+# timeout_ms = 1500
+#
+# [audit]
+# ⚠ MEASURED 2026-09-15 against rokur's config.js: these three keys pass the
+# schema check and are then IGNORED -- loadConfig reads the audit settings from
+# the environment only (ROKUR_AUDIT_LOG, ROKUR_AUDIT_LOG_PATH,
+# ROKUR_REQUEST_LOG) and never consults the file. Setting them here is silently
+# ineffective, so use the environment instead. Same for [secrets] sources,
+# which the schema accepts and no consumer reads.
+# enabled = true
+# path = "/var/log/rokur/audit.jsonl"
+# request_log = false

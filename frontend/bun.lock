@@ -1,0 +1,45 @@
+{
+  "lockfileVersion": 1,
+  "configVersion": 0,
+  "workspaces": {
+    "": {
+      "name": "@hyperpolymath/stapeln-frontend",
+      "dependencies": {
+        "@rescript/core": "^1.0.0",
+        "@rescript/react": "^0.14.0",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "rescript": "^12.0.0",
+      },
+    },
+  },
+  "packages": {
+    "@rescript/core": ["@rescript/core@1.6.1", "", { "peerDependencies": { "rescript": ">=11.1.0" } }, "sha512-vyb5k90ck+65Fgui+5vCja/mUfzKaK3kOPT4Z6aAJdHLH1eljEi1zKhXroCiCtpNLSWp8k4ulh1bdB5WS0hvqA=="],
+
+    "@rescript/darwin-arm64": ["@rescript/darwin-arm64@12.3.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-tw0E+XcpPoFj3KizsT5qS/5O/dILi0NBZAz5I8ONK+F43qcqDJDDO+Ise45rGoNWhjwt9WOerYnOd0eUe3U9GA=="],
+
+    "@rescript/darwin-x64": ["@rescript/darwin-x64@12.3.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-dW2R31PpBvPjSy50mSd9zKOT3dFw/gKtsUZoML81fPuXPJh0h5rwu9z3S40UUUzOa68uKNxXcVLrG1RAgs20Bw=="],
+
+    "@rescript/linux-arm64": ["@rescript/linux-arm64@12.3.0", "", { "os": "linux", "cpu": "arm64" }, "sha512-4GImq346kefHtaMhruFxVwWmr2shWEGQzAGdgZzn5zNWFN32hOXnztHjSFUmj5gmK9fFbidx/oB3BwdbRp5QFQ=="],
+
+    "@rescript/linux-x64": ["@rescript/linux-x64@12.3.0", "", { "os": "linux", "cpu": "x64" }, "sha512-0bPcKI0M38EpoFbhLz2w8ZAY3oZ0GWChwcDn43AN2EAWGLiCORhLP6biqRDg37jK/Bh8Y0MhYzjNWIeHoEDINQ=="],
+
+    "@rescript/react": ["@rescript/react@0.14.2", "", { "peerDependencies": { "react": ">=19.1.0", "react-dom": ">=19.1.0" } }, "sha512-gRmWuHWQIdH0zgueEq1p5oMHwpsXLBpD3zZo+J9kop8z8CCQQtlxnGZbfBoNIdciHGbE0+oYpc5PaCGYskuLjQ=="],
+
+    "@rescript/runtime": ["@rescript/runtime@12.3.0", "", {}, "sha512-8SRM2f6+LaWach8NJjYQVCCmu6KYmJCb+437L7YpaUpJBDyUOC1x0FF75shZ/Gid9guKPF3zMHrTNHLuyQkkiQ=="],
+
+    "@rescript/win32-x64": ["@rescript/win32-x64@12.3.0", "", { "os": "win32", "cpu": "x64" }, "sha512-TM1aLfn8IJFi0/ztVwHqQOcmJg4jWFCmXjrIS9Tif+6Gx8NdX8ttommUscUghe+Dn2pI382FvqPPNWRUR3AI8g=="],
+
+    "js-tokens": ["js-tokens@4.0.0", "", {}, "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="],
+
+    "loose-envify": ["loose-envify@1.4.0", "", { "dependencies": { "js-tokens": "^3.0.0 || ^4.0.0" }, "bin": "cli.js" }, "sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q=="],
+
+    "react": ["react@18.3.1", "", { "dependencies": { "loose-envify": "^1.1.0" } }, "sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ=="],
+
+    "react-dom": ["react-dom@18.3.1", "", { "dependencies": { "loose-envify": "^1.1.0", "scheduler": "^0.23.2" }, "peerDependencies": { "react": "^18.3.1" } }, "sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw=="],
+
+    "rescript": ["rescript@12.3.0", "", { "dependencies": { "@rescript/runtime": "12.3.0" }, "optionalDependencies": { "@rescript/darwin-arm64": "12.3.0", "@rescript/darwin-x64": "12.3.0", "@rescript/linux-arm64": "12.3.0", "@rescript/linux-x64": "12.3.0", "@rescript/win32-x64": "12.3.0" }, "bin": { "bsc": "cli/bsc.js", "bstracing": "cli/bstracing.js", "rescript": "cli/rescript.js", "rescript-legacy": "cli/rescript-legacy.js", "rescript-tools": "cli/rescript-tools.js" } }, "sha512-xdnpEoDNoeYjZ8HHATwKJEfWti1Nqwx266edfUC8378a5AO1VvZElj2ZZ/SIJNFgUnohH9yDThB+CHEQfijxKw=="],
+
+    "scheduler": ["scheduler@0.23.2", "", { "dependencies": { "loose-envify": "^1.1.0" } }, "sha512-UOShsPwz7NrMUqhR6t0hWjFduvOzbtv7toDH1/hIrfRNIDBnnBWd0CwJTGvTpngVlmwGCdP9/Zl/tVrDqcuYzQ=="],
+  }
+}
