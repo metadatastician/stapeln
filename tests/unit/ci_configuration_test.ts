@@ -161,9 +161,22 @@ Deno.test("Dependabot: adjacent update blocks do not inherit another ecosystem's
   }
 });
 
-Deno.test("Workflow security: every changed uses reference is pinned to a full commit SHA", async () => {
+Deno.test("Workflow security: every reusable-workflow call is pinned to a full commit SHA", async () => {
+  // A `uses:` that points into ANOTHER repository is not something this
+  // repository's actions.lock can resolve — the lockfile covers this
+  // repository's own actions and their transitive dependencies, not a job-level
+  // call into hyperpolymath/standards. So these three must carry the immutable
+  // commit themselves, and a tag or branch is not acceptable.
+  //
+  // codeql.yml is deliberately absent. It has an actions.lock, and the lockfile
+  // is the pin authority for a repository's own actions. Requiring an inline
+  // SHA *as well* meant a second, hand-maintained copy of the pin, and when the
+  // two disagreed GitHub rejected the whole workflow before any job started
+  // ("Invalid lockfile") — so the CodeQL scanner silently stopped running with
+  // no failing check to show for it. The equivalent invariant for codeql.yml,
+  // that every ref it uses is recorded in the lock, is asserted in
+  // foundation_ci_config_test.ts.
   const workflowPaths = [
-    ".github/workflows/codeql.yml",
     ".github/workflows/governance.yml",
     ".github/workflows/hypatia-scan.yml",
     ".github/workflows/scorecard.yml",
@@ -248,26 +261,25 @@ Deno.test("CodeQL: initialization and analysis use one immutable action revision
   );
 });
 
-Deno.test("CodeQL: action pins agree with the generated actions lockfile", async () => {
+Deno.test("CodeQL: every action is recorded in the actions lockfile, with an immutable commit", async () => {
   const workflow = await readRepositoryFile(".github/workflows/codeql.yml");
   const lockfile = await readRepositoryFile(".github/workflows/actions.lock");
 
+  // The lockfile owns the commit; the workflow carries the tag ref. Both halves
+  // have to be present: a ref with no lock entry is unpinned, and a lock entry
+  // the workflow does not reference is drift GitHub rejects as "Invalid
+  // lockfile" — the failure that stopped the CodeQL scanner from running.
   for (const reference of parseUsesReferences(workflow)) {
-    assertExists(
-      reference.versionComment,
-      `${reference.action} needs a version comment so its lockfile entry is identifiable`,
-    );
     const action = reference.action.split("/").slice(0, 2).join("/");
-    const dependency = `${action}@${reference.versionComment}`;
+    const dependency = `${action}@${reference.revision}`;
     const commit = lockedCommit(lockfile, dependency);
     assertExists(
       commit,
       `${dependency} should have a dependency entry in actions.lock`,
     );
-    assertEquals(
-      reference.revision,
-      commit,
-      `${reference.action} should use the commit recorded for ${dependency}`,
+    assert(
+      FULL_SHA.test(commit),
+      `${dependency} is locked to ${commit}, which is not an immutable 40-character commit SHA`,
     );
   }
 });
