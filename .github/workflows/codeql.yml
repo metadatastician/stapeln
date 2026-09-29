@@ -40,26 +40,39 @@ jobs:
       # only needed to fetch the source, and leaving it in .git/config lets any
       # later step — or any compromised build script — push as this job.
       #
-      # Each ref is an immutable commit; the `#` comment is the lockfile KEY for
-      # that commit, not decoration. tests/unit/ci_configuration_test.ts uses
-      # those comments to look the commit up in .github/workflows/actions.lock
-      # and asserts the two agree, so the comment and the lockfile must be
-      # updated together with the SHA. Note the previous comments here read
-      # `# v3` while pinning v4 commits, and the lockfile still recorded
-      # v4.38.0: a workflow whose refs disagree with its lockfile is rejected
-      # by GitHub before any job starts ("Invalid lockfile"), which is how the
-      # CodeQL scanner ended up not running at all with no failing check to
-      # show for it.
+      # These refs are TAGS, not SHAs, on purpose. This repository has an
+      # actions.lock, and the lockfile is the pin authority: it records the
+      # immutable commit behind every ref below.
+      #
+      #   actions/checkout      -> sha1-3d3c42e5aac5ba805825da76410c181273ba90b1
+      #   github/codeql-action  -> sha1-1c5b675653bb5c22dbe9b12b556ec555138e09fd
+      #
+      # Re-inlining those SHAs here is what kept this workflow dead. GitHub
+      # validates actions.lock against what the workflows actually reference, so
+      # inline SHAs made the lockfile disagree with the file and GitHub refused
+      # to start the workflow at all:
+      #
+      #   Invalid lockfile: .github/workflows/actions.lock#L1
+      #   The lockfile could not be validated.
+      #
+      # A rejected workflow reports `startup_failure` and produces NO checks, so
+      # the security scanner being off never appeared as a red check. oikosbot.yml
+      # (tag refs) recovered the moment the lock was resynced; this workflow did
+      # not, which is what isolated the inline-SHA form as the remaining cause.
+      # This is the same rule progblocks records in its AGENTS.md ("do not
+      # re-inline action SHAs that .github/workflows/actions.lock already owns")
+      # and the same NOSONAR pin-authority convention already used in
+      # oikosbot.yml and dogfood-gate.yml here.
       - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@v7.0.1
         with:
           persist-credentials: false
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
+        uses: github/codeql-action/init@v4.38.1
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
+        uses: github/codeql-action/analyze@v4.38.1
         with:
           category: "/language:${{ matrix.language }}"
