@@ -109,8 +109,23 @@ REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 # Runtime configuration
 APP_PORT="4010"
 URL="http://localhost:${APP_PORT}"
-PID_FILE="/tmp/${APP_NAME}-server.pid"
-LOG_FILE="/tmp/${APP_NAME}-server.log"
+# Per-user XDG state, not /tmp: a world-writable /tmp path predictable from
+# APP_NAME lets another local user pre-create the pid file and choose which
+# process `stop` kills (CWE-377). Matches launch-scaffolder main's generator
+# (standards/launcher-standard_praxis.deed :pid-file-pattern/:log-file-pattern).
+PID_FILE="${XDG_RUNTIME_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}}/launch-scaffolder/${APP_NAME}/server.pid"
+LOG_FILE="${XDG_STATE_HOME:-$HOME/.local/state}/launch-scaffolder/${APP_NAME}/server.log"
+# -m 0700 with -p only lands on the deepest component (shellcheck SC2174); a
+# non-existent launch-scaffolder/ parent would be created at the umask default.
+# Neither PID_FILE's dirname nor LOG_FILE's dirname stores anything itself
+# (only the app-named leaf below it does, which the loop below covers), and
+# XDG_RUNTIME_DIR/XDG_STATE_HOME are already private to the user, so this is
+# safe; loop to actually get 0700 on every leaf we create.
+for _d in "$(dirname "$PID_FILE")" "$(dirname "$LOG_FILE")"; do
+    mkdir -p "$_d"
+    chmod 0700 "$_d"
+done
+unset _d
 
 # Integration configuration
 ICON_SOURCE="$REPO_DIR/assets/icon-256.png"
@@ -306,7 +321,7 @@ For now, you can open the repo at:
 "$APP_DISPLAY did not become reachable at $URL within 15 seconds.
 
 Check the log file:
-  tail -50 $LOG_FILE
+  tail -50 \"$LOG_FILE\"
 
 Things to try:
   1. Is port $APP_PORT already in use?   ss -tlnp | grep $APP_PORT
@@ -314,7 +329,7 @@ Things to try:
   3. Is the startup command runnable?    $START_COMMAND
 
 If hypatia is installed, you can get assisted diagnosis with:
-  hypatia diagnose --app $APP_NAME --log $LOG_FILE"
+  hypatia diagnose --app $APP_NAME --log \"$LOG_FILE\""
 
         if command -v feedback-o-tron >/dev/null 2>&1; then
             feedback-o-tron --event "launcher:start_failed" \
@@ -644,8 +659,8 @@ do_disinteg() {
 
     if [ "$removed_anything" = "true" ]; then
         log "✓ $APP_DISPLAY removed from your system."
-        log "  Config in ~/.config/$APP_NAME/ and logs in /tmp/ left in place."
-        log "  To remove those too: rm -rf ~/.config/$APP_NAME && rm -f $LOG_FILE"
+        log "  Config in ~/.config/$APP_NAME/ and logs in $(dirname "$LOG_FILE") left in place."
+        log "  To remove those too: rm -rf ~/.config/$APP_NAME && rm -f \"$LOG_FILE\""
     else
         log "Nothing to remove — $APP_DISPLAY was not integrated on this system."
     fi
