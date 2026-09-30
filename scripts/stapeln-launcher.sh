@@ -289,6 +289,11 @@ wait_for_url() {
     return 1
 }
 
+# Start the configured server unless its recorded PID is already running.
+# Takes no arguments; uses START_COMMAND, REPO_DIR, PID_FILE, LOG_FILE and URL.
+# Changes to REPO_DIR, redirects server output to LOG_FILE and records its PID.
+# Returns 0 if already running or reachable, or 1 if no startup command exists
+# or the readiness check times out; reports failures through gui_error.
 start_server() {
     if is_running; then
         log "Server already running (PID $(cat "$PID_FILE"))"
@@ -615,6 +620,11 @@ do_integ() {
 # SYSTEM DIS-INTEGRATION — --disinteg
 # ----------------------------------------------------------------------------
 
+# Remove the platform-specific launcher, shortcuts and icon installed by --integ.
+# Takes no arguments; uses the configured integration paths, PLATFORM and PID_FILE.
+# Stops the tracked server, removes its PID file and refreshes the Linux desktop
+# database when available. Preserves user configuration and logs.
+# Returns 0 on completion, including when no integration artifacts exist.
 do_disinteg() {
     log "Removing $APP_DISPLAY system integration..."
 
