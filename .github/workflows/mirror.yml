@@ -23,10 +23,11 @@ jobs:
     uses: metadatastician/standards/.github/workflows/mirror-reusable.yml@7641c7fdb01420696b5420ab85d88f599f32f609
     # `secrets: inherit` is KEPT here, and it is the one place in this repository
     # that is not a leftover. At this pin the callee's `workflow_call` block
-    # declares eleven optional secrets by name — GITLAB_SSH_KEY,
+    # declares ten optional secrets by name — GITLAB_SSH_KEY,
     # BITBUCKET_SSH_KEY, CODEBERG_SSH_KEY, SOURCEHUT_SSH_KEY, DISROOT_SSH_KEY,
     # GITEA_SSH_KEY, RADICLE_KEY, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY,
-    # R2_AGE_RECIPIENT — and its own header documents `secrets: inherit` as the
+    # R2_AGE_RECIPIENT (counted from the callee's `workflow_call.secrets` at
+    # this pin) — and its own header documents `secrets: inherit` as the
     # supported way for a one-line wrapper to reach them. Each mirror job
     # no-ops with a `::notice::` when its key is empty; without inheritance the
     # mirror to every configured forge silently degrades to that no-op, which is
