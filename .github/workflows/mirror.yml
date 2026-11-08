@@ -13,5 +13,26 @@ permissions:
 
 jobs:
   mirror:
-    uses: hyperpolymath/standards/.github/workflows/mirror-reusable.yml@fad242d35291de1898242d6737ba02b74a59a2f2
+    permissions:
+      actions: read
+      contents: read
+    # The callee moved with the `hyperpolymath/standards` ->
+    # `metadatastician/standards` transfer; a `jobs.<id>.uses:` reference does
+    # not follow the 301 the old owner path serves. This lane was startup-failing
+    # with no check run (run 42419988415, push main@af8714b, 2026-11-07T22:18:28Z).
+    uses: metadatastician/standards/.github/workflows/mirror-reusable.yml@7641c7fdb01420696b5420ab85d88f599f32f609
+    # `secrets: inherit` is KEPT here, and it is the one place in this repository
+    # that is not a leftover. At this pin the callee's `workflow_call` block
+    # declares eleven optional secrets by name — GITLAB_SSH_KEY,
+    # BITBUCKET_SSH_KEY, CODEBERG_SSH_KEY, SOURCEHUT_SSH_KEY, DISROOT_SSH_KEY,
+    # GITEA_SSH_KEY, RADICLE_KEY, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY,
+    # R2_AGE_RECIPIENT — and its own header documents `secrets: inherit` as the
+    # supported way for a one-line wrapper to reach them. Each mirror job
+    # no-ops with a `::notice::` when its key is empty; without inheritance the
+    # mirror to every configured forge silently degrades to that no-op, which is
+    # why this repo's last mirror runs report `skipped` rather than a status.
+    # Narrowing this to an explicit `secrets:` map is the better end state, but
+    # it is a behaviour change to a credential path and belongs in its own
+    # change with a run behind it — not as a side effect of a pin bump.
+    # zizmor's `secrets-inherit` finding is therefore accepted and documented.
     secrets: inherit

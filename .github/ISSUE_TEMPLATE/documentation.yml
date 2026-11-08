@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
-# Documentation issue template for metadatastician/paint-type
+# Documentation issue template for metadatastician/stapeln
 name: Documentation
 description: Report unclear, missing, or incorrect documentation
 title: "[Docs]: "
-labels: ["documentation", "priority: unset", "triage"]
+labels: ["documentation"]
 assignees: []
 body:
   - type: markdown

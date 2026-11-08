@@ -2,6 +2,16 @@
 # This workflow is managed by gh actions-lock.
 name: Governance
 
+# Same startup-failure cause and same fix as hypatia-scan.yml: the callee was
+# transferred from `hyperpolymath/standards` to `metadatastician/standards`,
+# the old path 301-redirects, and a `jobs.<id>.uses:` reference does not follow
+# a redirect — so this workflow was rejected before any job started and emitted
+# no check run (run 42419988455, push main@af8714b, 2026-11-07T22:18:28Z).
+#
+# `7641c7fd` is the revision the fleet has already run green for this callee:
+# metadatastician/burble run 2026-11-07T00:48:27Z, metadatastician/kyq run
+# 2026-11-07T21:07:52Z, both `success`.
+
 on:
   push:
     branches: [main, master]
@@ -10,9 +20,18 @@ on:
   workflow_dispatch:
 
 permissions:
+  # Matches the callee's declaration. Under-granting is a startup error, so
+  # these two are required, not optional.
   actions: read
   contents: read
 
 jobs:
   governance:
-    uses: hyperpolymath/standards/.github/workflows/governance-reusable.yml@fad242d35291de1898242d6737ba02b74a59a2f2
+    permissions:
+      actions: read
+      contents: read
+    uses: metadatastician/standards/.github/workflows/governance-reusable.yml@7641c7fdb01420696b5420ab85d88f599f32f609
+    # NO `secrets: inherit`. The callee declares exactly one optional secret,
+    # HYPATIA_SCAN_PAT, and every job that reads it degrades to GITHUB_TOKEN
+    # when it is absent. Inheriting would hand it every secret this repository
+    # and organisation can see (CWE-250) for no behavioural gain.

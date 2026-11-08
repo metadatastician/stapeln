@@ -7,130 +7,69 @@
 # applied by the probot/settings app when changes are pushed to the default
 # branch. Install the app at: https://github.com/apps/settings
 #
-# Repository settings — configured for paint-type.
+# ─── What this file deliberately does NOT contain ─────────────────────────────
+#
+# 1. A `branches:` / branch-protection block.
+#
+#    This repository's default branch is governed by ACTIVE rulesets, not by
+#    classic branch protection:
+#
+#      23868655  Branch-Floor            (org)   deletion, non-fast-forward,
+#                                                 linear history, secret-scanning
+#                                                 alert resolution
+#      18225024  EstateBranching         (org)   required_signatures, pull_request,
+#                                                 copilot_code_review
+#      24634124  Branch-Signatures       (org)   required_signatures
+#      24310272  Secret-Scan-Floor       (repo)  required check: "scan / gitleaks"
+#
+#    A copied `branches:` block here would be stale the moment the estate
+#    rulesets change, and probot/settings would race them. The rulesets are
+#    authoritative; verify with:
+#
+#       gh api repos/metadatastician/stapeln/rulesets
+#
+#    NOTE: the previously-present block also required signatures via
+#    `required_signatures: true` while listing a `restrictions: null` — that
+#    classic-protection shape is what the rulesets above replaced.
+#
+# 2. A `labels:` block.
+#
+#    Labels are owned by `.github/labels.json`, applied by the dependency-free
+#    `.github/workflows/labels.yml` sync (which deliberately has no `uses:`, so
+#    it needs no actions.lock entry). A second label list here drifted from
+#    that one in name, colour and description — e.g. `security` was `e4e669`
+#    here and `006b75` there, and 11 labels existed only in this file while 32
+#    existed only in labels.json. Two authorities for one set is the bug; the
+#    JSON file plus its workflow is the surviving one.
 
 # ─── Repository Settings ───────────────────────────────────────────────────────
+#
+# Values below are the repo's LIVE state (verified against
+# `gh repo view metadatastician/stapeln --json …`), so applying this file is a
+# no-op rather than a surprise rewrite.
 
 repository:
-  name: "paint-type"
-  description: "Cross-platform open-source image editor — capable enough for real work, simple enough to reach for without thinking"
-  homepage: "https://github.com/metadatastician/paint-type"
+  name: "stapeln"
+  description: "Visual Podman-only container topology designer and deployment compiler that validates stacks, models security gaps, and emits deployment bundles through a formally typed ABI."
+  # No homepage URL is set on the repository; publishing the old
+  # paint-type URL here would have sent visitors to another project.
   private: false
   has_issues: true
   has_projects: true
-  has_wiki: false
-  has_downloads: true
+  has_wiki: true
+  has_discussions: true
+  has_downloads: false
   default_branch: main
+  # Live state: squash-only. The previous `allow_merge_commit: true` and
+  # `allow_rebase_merge: true` disagreed with the repository and with the
+  # org `EstateBranching` ruleset, whose `allowed_merge_methods` are
+  # ["squash", "rebase"] — enabling merge commits here would contradict it.
   allow_squash_merge: true
-  allow_merge_commit: true
-  allow_rebase_merge: true
+  allow_merge_commit: false
+  allow_rebase_merge: false
+  allow_auto_merge: true
   delete_branch_on_merge: true
+  allow_update_branch: true
+  web_commit_signoff_required: true
   enable_automated_security_fixes: true
   enable_vulnerability_alerts: true
-
-# ─── Labels ────────────────────────────────────────────────────────────────────
-
-labels:
-  - name: "bug"
-    color: "d73a4a"
-    description: "Something isn't working"
-
-  - name: "enhancement"
-    color: "a2eeef"
-    description: "New feature or request"
-
-  - name: "documentation"
-    color: "0075ca"
-    description: "Improvements or additions to documentation"
-
-  - name: "security"
-    color: "e4e669"
-    description: "Security-related issue or vulnerability"
-
-  - name: "good first issue"
-    color: "7057ff"
-    description: "Good for newcomers"
-
-  - name: "help wanted"
-    color: "008672"
-    description: "Extra attention is needed"
-
-  - name: "question"
-    color: "d876e3"
-    description: "Further information is requested"
-
-  - name: "duplicate"
-    color: "cfd3d7"
-    description: "This issue or pull request already exists"
-
-  - name: "invalid"
-    color: "e4e669"
-    description: "This doesn't seem right"
-
-  - name: "wontfix"
-    color: "ffffff"
-    description: "This will not be worked on"
-
-  - name: "dependencies"
-    color: "0366d6"
-    description: "Pull requests that update a dependency file"
-
-  - name: "ci/cd"
-    color: "fbca04"
-    description: "Continuous integration and deployment"
-
-  - name: "rsr"
-    color: "006b75"
-    description: "Rhodium Standard Repository compliance"
-
-  - name: "hypatia"
-    color: "5319e7"
-    description: "Hypatia neurosymbolic scanner finding"
-
-  - name: "bot"
-    color: "b4a8d1"
-    description: "Automated action by gitbot-fleet"
-
-  - name: "breaking-change"
-    color: "b60205"
-    description: "Introduces a breaking change"
-
-  - name: "performance"
-    color: "f9d0c4"
-    description: "Performance improvement"
-
-  - name: "refactor"
-    color: "c5def5"
-    description: "Code refactoring with no functional change"
-
-  - name: "proof needed"
-    color: "fbcca0"
-    description: "Formal proof required for verification"
-
-  - name: "proof complete"
-    color: "006b75"
-    description: "Formal proof has been completed and verified"
-
-# ─── Branch Protection ─────────────────────────────────────────────────────────
-
-branches:
-  - name: "main"
-    protection:
-      required_pull_request_reviews:
-        required_approving_review_count: 1
-        dismiss_stale_reviews: true
-        require_code_owner_reviews: true
-        require_last_push_approval: true
-        required_review_thread_resolution: true
-      required_status_checks:
-        strict: true
-        contexts:
-          - "Cargo check + clippy + fmt"
-          - "Cargo test"
-          - "analyze (javascript-typescript, none)"
-          - "openssf-compliance"
-      enforce_admins: true
-      required_signatures: true
-      restrictions: null
-      allow_force_pushes: false
-      allow_deletions: false
