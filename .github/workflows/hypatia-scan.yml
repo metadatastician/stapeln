@@ -2,6 +2,43 @@
 # This workflow is managed by gh actions-lock.
 name: Hypatia Security Scan
 
+# ── Why the pin below names `metadatastician/standards`, and why it is pinned
+#    to that exact revision ────────────────────────────────────────────────────
+#
+# `hyperpolymath/standards` was TRANSFERRED to the `metadatastician` org.
+# `https://github.com/hyperpolymath/standards` now 301-redirects. A browser
+# follows that redirect; a `jobs.<id>.uses:` reference does not. Every workflow
+# in this repo that still pinned `hyperpolymath/standards@…` was rejected before
+# a single job started — a zero-job `startup_failure`, which produces no check
+# run at all and therefore never appeared as a red tick:
+#
+#   run 42419988448 (push,     main@af8714b, 2026-11-07T22:18:28Z)  failure
+#   run 42427811177 (schedule, main@af8714b, 2026-11-08T00:01:00Z)  failure
+#
+# A controlled A/B establishes the cause rather than asserting it: in
+# `metadatastician/paint-type`, at the SAME commit and in the same minute,
+# `secret-scanner.yml` (pinned to `metadatastician/standards`) returned SUCCESS
+# while `governance.yml` and `hypatia-scan.yml` (both pinned to
+# `hyperpolymath/standards`) returned FAILURE.
+#
+# This was precedent, not a guess: gossamer's hypatia-scan.yml carries the
+# note "Executes via step-level checkout of hyperpolymath/standards rather than
+# cross-owner workflow_call so runs succeed under metadatastician's repository
+# Actions allowlist without startup_failure."
+#
+# The revision `7641c7fd` is the one the rest of this fleet has already run
+# green, across all three scanner lanes:
+#
+#   metadatastician/burble  hypatia-scan  push/pull_request  2026-11-07T00:48Z  success
+#   metadatastician/burble  governance    push/pull_request  2026-11-07T00:48Z  success
+#   metadatastician/kyq     governance    push/pull_request  2026-11-07T21:07Z  success
+#   metadatastician/rokur   hypatia-scan  push/pull_request  2026-11-08T16:23Z  success
+#
+# Do NOT bump this to a newer standards tip without a run to point at: `main`
+# moves daily and an unvalidated bump is how this lane went dark before. The
+# nested action pins this reusable uses are recorded in standards' own
+# actions.lock at this same revision.
+
 on:
   push:
     branches: [main, master, develop]
@@ -12,10 +49,34 @@ on:
   workflow_dispatch:
 
 permissions:
+  # Mirrors the callee's own declaration (`actions: read`, `contents: read`,
+  # `security-events: write`). A called workflow can never exceed its caller's
+  # grant, so under-granting here is itself a startup error.
   actions: read
   contents: read
   security-events: write
 
 jobs:
   scan:
-    uses: hyperpolymath/standards/.github/workflows/hypatia-scan-reusable.yml@fad242d35291de1898242d6737ba02b74a59a2f2
+    permissions:
+      # Declared explicitly rather than inherited: a job-level block REPLACES
+      # the workflow-level one. This matches the callee exactly.
+      actions: read
+      contents: read
+      security-events: write
+    uses: metadatastician/standards/.github/workflows/hypatia-scan-reusable.yml@7641c7fdb01420696b5420ab85d88f599f32f609
+    with:
+      # Advisory, not a release gate: Hypatia findings are tracked as issues on
+      # this repo (see #82), never as a merge blocker.
+      block-on-high: false
+      # No gitbot-fleet report-back producer runs in this workflow; leaving the
+      # default would make the reusable wait on an artifact nothing uploads.
+      report-backs-artifact: ""
+      previous-grid-artifact: ""
+    # Deliberately NO `secrets: inherit`. At this pin the reusable declares
+    # exactly one optional secret (HYPATIA_SCAN_PAT) and falls back to the
+    # built-in GITHUB_TOKEN when it is absent. `secrets: inherit` would forward
+    # every repository and organisation secret the caller can see to a callee
+    # that needs none (CWE-250) — the same finding standards#1108 §6b raised
+    # fleet-wide. If the alerts-API leg is ever needed here, pass ONLY that one
+    # secret explicitly, e.g. `secrets: HYPATIA_SCAN_PAT: ${{ secrets.HYPATIA_SCAN_PAT }}`.

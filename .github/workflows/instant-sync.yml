@@ -41,4 +41,10 @@ jobs:
             }
 
       - name: Confirm
-        run: echo "::notice::Propagation triggered for ${{ github.event.repository.name }}"
+        env:
+          # `github.event.repository.name` is repository metadata, but an
+          # expression expanded directly into a `run:` block is treated as
+          # shell source. Treating it as data instead is free and removes
+          # the zizmor `template-injection` finding.
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: echo "::notice::Propagation triggered for $REPO_NAME"

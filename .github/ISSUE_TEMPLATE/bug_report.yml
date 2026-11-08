@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
-# Bug report issue template for metadatastician/paint-type
+# Bug report issue template for metadatastician/stapeln
 name: Bug Report
 description: Create a report to help us improve
 title: "[Bug]: "
-labels: ["bug", "priority: unset", "triage"]
+labels: ["bug"]
 assignees: []
 body:
   - type: markdown

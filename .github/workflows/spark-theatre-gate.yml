@@ -1,9 +1,17 @@
 # SPDX-License-Identifier: MPL-2.0
 # This workflow is managed by gh actions-lock.
 # Estate SPARK Theatre Gate — thin caller of the reusable workflow in
-# hyperpolymath/standards (#135 / #141). Pinned by commit SHA per the
-# estate action-pinning policy. Regenerate the pin only when the reusable
+# standards (#135 / #141). Pinned by commit SHA per the estate
+# action-pinning policy. Regenerate the pin only when the reusable
 # workflow is intentionally bumped.
+#
+# The pin moved with the `hyperpolymath/standards` -> `metadatastician/standards`
+# transfer. A `jobs.<id>.uses:` reference does not follow the 301 redirect the
+# old owner path now serves, so this lane was startup-failing with no check run
+# (run 42419988420, push main@af8714b, 2026-11-07T22:18:28Z).
+#
+# `7641c7fd` is runtime-validated for this callee: metadatastician/burble ran it
+# green on push AND pull_request at 2026-11-07T00:48Z.
 name: SPARK Theatre Gate
 
 on:
@@ -12,12 +20,16 @@ on:
     branches: [main, master]
 
 permissions:
+  # Mirrors the callee's declaration (`actions: read`, `contents: read`).
   actions: read
   contents: read
 
 jobs:
   spark-theatre-gate:
-    uses: hyperpolymath/standards/.github/workflows/spark-theatre-gate.yml@fad242d35291de1898242d6737ba02b74a59a2f2
+    permissions:
+      actions: read
+      contents: read
+    uses: metadatastician/standards/.github/workflows/spark-theatre-gate.yml@7641c7fdb01420696b5420ab85d88f599f32f609
     with:
       paths: "."
       enforce_zero_contract: false

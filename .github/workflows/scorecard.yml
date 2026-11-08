@@ -15,15 +15,24 @@ permissions:
 
 jobs:
   scorecard:
-    uses: hyperpolymath/standards/.github/workflows/scorecard-reusable.yml@fad242d35291de1898242d6737ba02b74a59a2f2
     permissions:
       # `actions: read` is REQUIRED here, not redundant. A job-level permissions
       # block REPLACES the workflow-level one for that job; the reusable workflow
-      # requests `actions: read`, so omitting it made the call a permission
-      # ESCALATION, which GitHub rejects before any job starts. That is why this
-      # workflow produced a zero-job `startup_failure` every day -- a failure mode
-      # `gh pr checks` does not surface, because a rejected workflow has no checks.
+      # requests `actions: read` (Scorecard's Packaging check calls
+      # Actions.ListWorkflowRunsByFileName), so omitting it made the call a
+      # permission ESCALATION, which GitHub rejects before any job starts. That
+      # is why this workflow produced a zero-job `startup_failure` every day --
+      # a failure mode `gh pr checks` does not surface, because a rejected
+      # workflow has no checks.
       actions: read
       contents: read
       security-events: write
       id-token: write
+    # The callee was transferred from `hyperpolymath/standards` to
+    # `metadatastician/standards`. The old owner path 301-redirects and a
+    # `jobs.<id>.uses:` reference does not follow a redirect, so this lane was
+    # additionally startup-failing on the stale owner. `7641c7fd` is the
+    # runtime-validated revision.
+    uses: metadatastician/standards/.github/workflows/scorecard-reusable.yml@7641c7fdb01420696b5420ab85d88f599f32f609
+    # The callee declares no `workflow_call.secrets` and references no
+    # `secrets.*` context, so there is nothing to inherit.

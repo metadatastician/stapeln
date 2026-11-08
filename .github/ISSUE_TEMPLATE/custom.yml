@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MPL-2.0
-# Custom issue template for metadatastician/paint-type
+# Custom issue template for metadatastician/stapeln
 name: Other
 description: Report an issue that does not fit the other categories
 title: ""
-labels: ["triage"]
+labels: []
 assignees: []
 body:
   - type: markdown
